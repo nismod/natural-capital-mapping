@@ -1,2 +1,4 @@
-# natural-capital-mapping
-Natural Capital Mapping
+# Natural Capital Mapping
+
+**Work in progress** mapping natural capital.
+
