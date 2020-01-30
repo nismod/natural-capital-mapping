@@ -220,17 +220,20 @@ Delete OSMM landforms; delete HLU overlaps; erase manmade and water from HLU.
     habitats (there are a few of these in the Oxfordshire dataset) only one of
     these will be kept.
 
-<image src="images/image1.png" width="250" />
+Examples from the South Abingdon / North Drayton area.
 
-<image src="images/image2.png" width="250" />
+Original HLU layer omits urban areas and some water features:
 
-<image src="images/image3.png" width="250" />
+<image src="images/image1.png" width="400" />
 
-Examples from the South Abingdon / North Drayton area. Left: Original HLU layer
-omits urban areas and some water features. Middle: OSMM includes urban areas and
-woodland detail but not type of grassland. Right: pre-processed HLU
-(HLU_Manerase) with manmade and water features erased, revealing shapes of lake
-and new housing estate.
+OSMM includes urban areas and woodland detail but not type of grassland:
+
+<image src="images/image2.png" width="400" />
+
+Pre-processed HLU (HLU_Manerase) with manmade and water features erased,
+revealing shapes of lake and new housing estate:
+
+<image src="images/image3.png" width="400" />
 
 #### Main merge code - `merge_into_base_map_V5a.py`
 
