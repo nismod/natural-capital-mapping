@@ -387,7 +387,7 @@ def relationship(overlap_area, percent_overlap, ignore_low, ignore_high, signifi
 
         # Some of the split polygons may have a large part that was tagged 'new' (because the overlap percentage was very high
         # but there were also smaller parts of the same polygon that were tagged for splitting because they exceeded the significant size).
-        # So we now want to match the non-split parts of these polygons (joined in via the Union) with the correct designation
+        # So we now want to match the non-split parts of these polygons (joined in via the Union) with the correct 
         # ID from the TI table, so that attributes can be transferred later. We do this by sorting both the TI tables and
         # the unioned clip file by size, so that the split polygon parts are matched with the intersections of the same size.
         arcpy.Sort_management("Joint_spatial_clip_union", "Joint_spatial_clip_union_sort", [["Shape_Area", "DESCENDING"]])
