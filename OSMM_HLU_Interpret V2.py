@@ -285,6 +285,8 @@ def Simplify_HLU(HLU_Hab):
         return "Lowland fens"
     elif "marsh" in HLU_Hab:
         return "Marshy grassland"
+    elif "marginal" in HLU_Hab:
+        return "Aquatic marginal vegetation"
     elif "open mosaic" in HLU_Hab:
         return "Open mosaic habitats"
     else:
