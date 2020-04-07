@@ -277,6 +277,10 @@ def Simplify_HLU(HLU_Hab):
         return "Tall herb and fern"
     elif "heath" in HLU_Hab:
         return "Heathland"
+    elif "hedge" in HLU_Hab and "trees" in HLU_Hab:
+        return "Hedge with trees"
+    elif "hedge" in HLU_hab:
+        return "Hedge"
     elif "refuse" in HLU_Hab or "landfill" in HLU_Hab:
         return "Landfill"
     elif "spoil" in HLU_Hab or "quarry" in HLU_Hab:
@@ -434,7 +438,7 @@ def interpretBAP(Hab, BAP):
             return "Calcareous grassland"
         elif "heathland" in BAP:
             return "Heathland"
-        elif "wood pasture" in BAP:
+        elif "wood-pasture" in BAP or "wood pasture" in BAP:
             return "Parkland and scattered trees: broadleaved"
         else:
             return BAP.capitalize()
