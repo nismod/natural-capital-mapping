@@ -28,23 +28,11 @@ region = "Oxon"
 # method = "LCM_PHI"
 method = "HLU"
 
-if region == "Blenheim" and method == "HLU":
-    # Operate in the Oxon_county folder
-    folder = r"D:\cenv0389\Blenheim"
-    gdbs = [os.path.join(folder, "Blenheim.gdb")]
-    in_file_name = "Estate_NatCap"
-    Hab_field = "PHASE1HAB"
-    BAP_field = "S41HABITAT"
-    # Which stages of the code do we want to run? Useful for debugging or updating.
-    simplify_OSMM = True
-    simplify_HLU = False
-    select_HLU_or_OSMM = True
-    interpret_BAP = True
-elif region == "Oxon" and method == "HLU":
+if region == "Oxon" and method == "HLU":
     # Operate in the Oxon_county folder
     folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data"
     gdbs = [os.path.join(folder, "Merge_OSMM_HLU_ALC.gdb")]
- #   LAD_table = os.path.join(folder, "Data.gdb", "Oxon_LADs")
+ #  LAD_table = os.path.join(folder, "Data.gdb", "Oxon_LADs")
     in_file_name = "OSMM_HLU_CROME"
     Hab_field = "PHASE1HAB"
     BAP_field = "S41HABITAT"
@@ -96,7 +84,7 @@ elif region == "Blenheim":
 print("LADs to process: " + "\n ".join(LADs))
 
 for gdb in gdbs:
-#    if (os.path.split(gdb)[1])[:-4] in LADs:
+   if (region == "Oxon" and method == "HLU") or (os.path.split(gdb)[1])[:-4] in LADs:
         arcpy.env.workspace = gdb
         print(''.join(["## Started interpreting habitats for ", gdb, " ", in_file_name, " on : ", time.ctime()]))
         in_file = os.path.join(folder, gdb, in_file_name)
@@ -367,8 +355,8 @@ def Interpret_hab(HLU_hab, OSMM_hab, OSMM_Make, OSMM_area, HLU_area, undefined_o
                 return "Dense scrub"
 
     # Where HLU says woodland and OSMM says trees or scattered trees, use HLU definition unless HLU is unknown woodland
-    if "trees" in OSMM_hab and ("woodland" in HLU_hab or "orchard" in HLU_hab):
-        if "unknown" in HLU_hab:
+    if ("trees" in OSMM_hab or "orchard" in OSMM_hab) and ("woodland" in HLU_hab or "orchard" in HLU_hab):
+        if "unknown" in HLU_hab or HLU_hab = "woodland":
             return OSMM_hab.capitalize()   # if unknown woodland in HLU, use OSMM definition
         else:
             return HLU_hab.capitalize()

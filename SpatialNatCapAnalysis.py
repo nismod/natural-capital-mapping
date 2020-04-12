@@ -22,12 +22,12 @@ arcpy.env.overwriteOutput = True  # Overwrites files
 # -----------------------
 
 # region = "Arc"
-# region = "Oxon"
-region = "Blenheim"
-use_whole_area = False
+region = "Oxon"
+# region = "Blenheim"
+use_whole_area = True
 
 if region == "Oxon":
-    ncdir = r"C:\Users\cenv0389\Documents\Oxon_GIS\Oxon_county\NaturalCapital"
+    ncdir = r"D:\cenv0389\Oxon_GIS\Oxon_county\NaturalCapital"
     ncgdb = os.path.join(ncdir, "Oxon_full.gdb")
     out_gdb = os.path.join(ncdir, "Scenario_analysis.gdb")
     arcpy.env.workspace = ncgdb
@@ -38,8 +38,8 @@ if region == "Oxon":
         Scenario_features = "Spatial_strategy_options"
         short_label = True
     Score_features = ["NatCap_Oxon"]
-    hab_field = "BAP_Interpretation"
-    ssdir = r"C:\Users\cenv0389\Documents\Oxon_GIS\Spreadsheets"
+    hab_field = "Interpreted_habitat"
+    ssdir = r"D:\cenv0389\Oxon_GIS\Spreadsheets"
     lines = ["Hedges"]
     data_gdb = ncgdb
 elif region == "Arc":
@@ -55,25 +55,27 @@ elif region == "Arc":
     data_gdb = ncgdb
     short_label = True
 elif region == "Blenheim":
-    ncdir = r"C:\Users\cenv0389\Documents\Blenheim"
+    ncdir = r"D:\cenv0389\Blenheim"
     ncgdb = os.path.join(ncdir, "Blenheim.gdb")
     out_gdb = os.path.join(ncdir, "Blenheim.gdb")
     arcpy.env.workspace = ncgdb
     Scenario_features = "Blenheim_estate_and_park_boundaries"
-    data_gdb = r"C:\Users\cenv0389\Documents\Oxon_GIS\Oxon_county\NaturalCapital\Oxon_full.gdb"
-    Score_features = ["NatCap_Oxon"]
-    hab_field = "BAP_Interpretation"
-    ssdir = r"C:\Users\cenv0389\Documents\Blenheim"
+    data_gdb = r"D:\cenv0389\Oxon_GIS\Oxon_county\NaturalCapital\Oxon_full.gdb"
+    # Can either clip out from NatCap_Oxon (set use_whole_area to False) or use existing Estate and Park (e.g. if ground truthed)
+    # Score_features = ["NatCap_Oxon"]
+    Score_features = ["NatCap_Estate", "NatCap_Park"]
+    hab_field = "Interpreted_habitat"
+    ssdir = r"D:\cenv0389\Blenheim"
     lines = ["Hedges", "PROW", "Sustrans_offroad", "National_trails_Ox", "OS_rivers_Ox", "zoom_waterlines_Ox"]
     short_label = False
 
 tree_data = os.path.join(data_gdb, "AncientTrees")
 
 # What stages of the code do we want to run?
-calc_trees = False
-calc_lines = False
+calc_trees = True
+calc_lines = True
 high_nc_polygons = True
-calculate_habitat_areas = False
+calculate_habitat_areas = True
 calculate_scores = True
 export_to_excel = False
 if use_whole_area:

@@ -18,25 +18,40 @@ arcpy.env.qualifiedFieldNames = False
 
 # region = "Arc"
 region = "Oxon"
+# region = "Blenheim"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
 # method = "LCM_PHI"
 method = "HLU"
 
-if region == "Oxon" and method == "HLU":
+if (region == "Oxon" or region == "Blenheim") and method == "HLU":
     folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\NaturalCapital"
     arcpy.env.workspace = os.path.join(folder, "Oxon_full.gdb")
-    gdbs = [os.path.join(folder, "Oxon_full.gdb")]
-    # folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc\NaturalCapital"
-    # arcpy.env.workspace = os.path.join(folder, "NaturalCapital.gdb")
-    # gdbs = [os.path.join(folder, "NaturalCapital.gdb")]
+    if region == "Oxon":
+        gdbs = [os.path.join(folder, "Oxon_full.gdb")]
+        area_name = "Oxon"
+        Base_map = "OSMM_HLU_CR_ALC_Des_GS_PA"
+        # This is for when we do it by LAD instead, but at the moment we are still processing all the Oxon LADS in a single county dataset
+        # folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc\NaturalCapital"
+        # arcpy.env.workspace = os.path.join(folder, "NaturalCapital.gdb")
+        # gdbs = [os.path.join(folder, "NaturalCapital.gdb")]
+    elif region == "Blenheim":
+        # This is for ground truthing updates to the Blenheim extract of the Oxon map, i.e. updating
+        # adjusted scores using multipliers, and then updating averages and max scores
+        # Caution because the matrices of multipliers are in a different gdb (Oxon_full.ddb)
+        gdbs = [r"D:\cenv0389\Blenheim\Blenheim.gdb"]
+        # Nat cap map is expected to be called NatCap_Estate
+        area_name = "Estate"
+        # To start again from the habitat base map, manually unselect all the score fields (Properties, Fields)
+        # then export to base map called Estate_habitats or similar
+        Base_map = "Estate_habitats"
     hab_field = "Interpreted_habitat"
-    area_name = "Oxon"
-    Matrix = "Matrix.dbf"
-    ALC_multipliers = "ALC_multipliers.dbf"
-    Base_map = "OSMM_HLU_CR_ALC_Des_GS_PA"
+    Matrix = r"D:\cenv0389\Oxon_GIS\Oxon_county\NaturalCapital\Oxon_full.gdb\Matrix.dbf"
+    ALC_multipliers = r"D:\cenv0389\Oxon_GIS\Oxon_county\NaturalCapital\Oxon_full.gdb\ALC_multipliers.dbf"
     nature_fields = "!SAC! + !RSPB! + !SSSI! + !NNR! + !LNR! + !LWS! + !Prop_LWS! + !AncientWood! + !RdVergeNR!"
-    culture_fields = "!LGS! + !MillenGn! + !DoorstepGn! + !NT! + !CountryPk! + !GreenBelt! + !AONB!"
-    education_fields = nature_fields + "!LGS! +  !CountryPk! + !NT!"
+    culture_fields = "!LGS! + !MillenGn! + !DoorstepGn! + !NT! + !CountryPk! + !GreenBelt! + !AONB! + !SchMon! + !WHS! + !HistPark!"
+    education_fields = nature_fields + "!LGS! +  !CountryPk! + !NT!+ !SchMon! + !WHS! + !HistPark!"
+    all_des_fields = ["SAC", "RSPB", "SSSI", "NNR", "LNR", "LWS", "Prop_LWS", "AncientWood", "RdVergeNR",
+                      "LGS","MillenGn","DoorstepGn", "NT", "CountryPk", "GreenBelt", "AONB", "SchMon", "WHS", "HistPark"]
 elif region == "Arc" or (region == "Oxon" and method == "LCM_PHI"):
     folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc"
     arcpy.env.workspace = folder
@@ -56,8 +71,8 @@ elif region == "Arc" or (region == "Oxon" and method == "LCM_PHI"):
     ALC_multipliers = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc\Data\Matrix.gdb\ALC_multipliers"
     Base_map = "OSMM_LCM_PHI_ALC_Desig_GS_access"
     nature_fields = "!SAC! + !SPA! + !Ramsar! + !IBA! + !RSPB! + !SSSI! + !NNR! + !LNR! + !AncientWood!"
-    culture_fields = "!MillenGn! + !DoorstepGn! + !NT! + !CountryPk! + !GreenBelt! + !AONB!"
-    education_fields = nature_fields + "!CountryPk! + !NT!"
+    culture_fields = "!MillenGn! + !DoorstepGn! + !NT! + !CountryPk! + !GreenBelt! + !AONB!+ !SchMon! + !WHS! + !HistPark!"
+    education_fields = nature_fields + "!CountryPk! + !NT!+ !SchMon! + !WHS! + !HistPark!"
 
 # Multiplier for aesthetic value if area is in an AONB
 AONB_multiplier = 1.1
@@ -65,11 +80,12 @@ Max_des_mult = 1.2
 Max_food_mult = 3.03
 
 # Which stages of the script do we want to run? (Useful for debugging or for updating only certain scores)
-tidy_fields = True
+tidy_fields = False
 join_tables = True
 food_scores = True
 aesthetic_scores = True
 other_cultural = True
+null_to_zero = True
 public_access_multiplier = True
 calc_averages = True
 calc_max = True
@@ -155,7 +171,7 @@ for gdb in gdbs:
         # Add new field and populate with aesthetic value score (default for habitats not in AONB)
         print("Setting up new field for adjusted aesthetic value")
         MyFunctions.check_and_add_field(NatCap_scores, "Aesthetic_AONB", "Float", 0)
-        arcpy.CalculateField_management(NatCap_scores,"Aesthetic_AONB", "!Aesthetic!", "PYTHON_9.3")
+        arcpy.CalculateField_management(NatCap_scores, "Aesthetic_AONB", "!Aesthetic!", "PYTHON_9.3")
 
         # Select AONB areas and multiply aesthetic value score by AONB multiplier
         print("Multiplying by AONB multiplier")
@@ -173,6 +189,11 @@ for gdb in gdbs:
     # -------------------------------------------------------------------------------------------------------
     if other_cultural:
         # Add new fields and populate with number of nature and cultural designations
+        # Replace null values with zeros
+        if null_to_zero:
+            print ("Replacing nulls with zeros in designation indices, before adding")
+            for des_field in all_des_fields:
+                MyFunctions.select_and_copy(NatCap_scores, des_field, des_field + " IS NULL", 0)
         print("Adding nature, cultural and education designation fields")
         MyFunctions.check_and_add_field(NatCap_scores, "NatureDesig", "SHORT", 0)
         arcpy.CalculateField_management(NatCap_scores, "NatureDesig", nature_fields, "PYTHON_9.3")
@@ -188,7 +209,7 @@ for gdb in gdbs:
         MyFunctions.check_and_add_field(NatCap_scores, "Sense_desig", "Float", 0)
 
         codeblock = """
-def DesMult(NatureDesig, CultureDesig, EdDesig, GreenSpace, Score, Service):
+def DesMult(NatureDesig, CultureDesig, EdDesig, ScheduledMonument, Habitat, GreenSpace, Score, Service):
     # GreenSpace currently not used (see notes for reasons) but could be in future
     if Service == "SensePlace":
         if NatureDesig is None or NatureDesig == 0:
@@ -208,24 +229,37 @@ def DesMult(NatureDesig, CultureDesig, EdDesig, GreenSpace, Score, Service):
         return Score
 
     if NumDesig is None or NumDesig == 0:
-        return Score / 1.2
+        NewScore = Score / 1.2
     elif NumDesig == 1:
-        return 1.1 * Score / 1.2
+        NewScore = 1.1 * Score / 1.2
     elif NumDesig == 2:
-        return 1.15 * Score / 1.2
+        NewScore = 1.15 * Score / 1.2
     elif NumDesig >=3:
-        return 1.2 * Score / 1.2
+        NewScore = 1.2 * Score / 1.2
     else:
-        return Score
+        NewScore = Score
+
+    # Minimum score of 7/10 for scheduled monuments unless arable (min score 3) or sealed surface (Score =0)
+    if Service == "SensePlace" or Service == "Education":
+        if ScheduledMonument == 1 and Score > 0:
+            if Habitat == "Arable":
+                if NewScore <3:
+                    NewScore = 3
+            elif NewScore <7:
+                NewScore = 7
+ 
+    return NewScore
 """
         print("Calculating education field")
-        expression = 'DesMult(!NatureDesig!, !CultureDesig!, !EdDesig!, !GreenSpace!, !Education!, "Education" )'
+        expression = 'DesMult(!NatureDesig!, !CultureDesig!, !EdDesig!, !SchMon!, !Interpreted_habitat!, !GreenSpace!, !Education!, ' \
+                     '"Education" )'
         arcpy.CalculateField_management(NatCap_scores, "Education_desig", expression, "PYTHON_9.3", codeblock)
         print("Calculating nature field")
-        expression = 'DesMult( !NatureDesig! , !CultureDesig!, !EdDesig!, !GreenSpace!, !Nature!, "Nature" )'
+        expression = 'DesMult( !NatureDesig! , !CultureDesig!, !EdDesig!, !SchMon!, !Interpreted_habitat!, !GreenSpace!, !Nature!, "Nature" )'
         arcpy.CalculateField_management(NatCap_scores,"Nature_desig", expression, "PYTHON_9.3", codeblock)
         print("Calculating sense of place field")
-        expression = 'DesMult(!NatureDesig!, !CultureDesig!, !EdDesig!, !GreenSpace!, !SensePlace!, "SensePlace")'
+        expression = 'DesMult(!NatureDesig!, !CultureDesig!, !EdDesig!, !SchMon!, !Interpreted_habitat!, !GreenSpace!, !SensePlace!, ' \
+                     '"SensePlace")'
         arcpy.CalculateField_management(NatCap_scores, "Sense_desig", expression, "PYTHON_9.3", codeblock)
 
     if public_access_multiplier:
@@ -233,6 +267,8 @@ def DesMult(NatureDesig, CultureDesig, EdDesig, GreenSpace, Score, Service):
         print ("Calculating recreation field with public access multiplier")
         MyFunctions.check_and_add_field(NatCap_scores, "Rec_access", "FLOAT", 0)
         arcpy.CalculateField_management(NatCap_scores, "Rec_access", "!Recreation! * !AccessMult!", "PYTHON_9.3")
+        # Set all habitats within path buffers to an absolute score of 7.5 out of 10 (unless sealed surface)
+        MyFunctions.select_and_copy(NatCap_scores, "Rec_access", "AccessType = 'Path' AND Recreation > 0", 7.5)
         # Replace null values with zeros (needed later for calculating scenario impact)
         MyFunctions.select_and_copy(NatCap_scores, "Rec_access", "Rec_access IS NULL", 0)
 
