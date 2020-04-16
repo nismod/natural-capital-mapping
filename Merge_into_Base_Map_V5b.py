@@ -89,7 +89,7 @@ elif merge_type == "Oxon_Designations":
     base_TI_fields = []
     new_TI_fields = ["Name"]
     Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "POLY_ID", "PHASE1HAB", "S41HABITAT", "S41HAB2",
-              "SITEREF", "COPYRIGHT", "VERSION", "OSMM_hab", "HLU_hab", "Interpreted_habitat", "ALC_GRADE"]
+              "SITEREF", "COPYRIGHT", "VERSION", "OSMM_hab", "HLU_hab", "Interpreted_habitat", "CROME_desc", "CROME_simple", "ALC_GRADE"]
     significant_size = 500
     snap_env = [[Base_map_name, "EDGE", "0.5 Meters"], [Base_map_name, "VERTEX", "0.5 Meters"]]
 elif merge_type == "Arc_LCM_PHI":
