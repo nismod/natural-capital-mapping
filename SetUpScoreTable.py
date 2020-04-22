@@ -330,6 +330,10 @@ def DesMult(NatureDesig, CultureDesig, EdDesig, ScheduledMonument, Habitat, Gree
                                         'max(!WaterProv!, !Flood!, !Erosion!, !WaterQual!, !Carbon!, !AirQuality!, !Cooling!, !Noise!, '
                                         '!Pollination!, !PestControl!, !Aesthetic_norm!, !Education_desig!, !Nature_desig!,'
                                         ' !Sense_desig!, !Rec_access!)', "PYTHON_9.3")
+        MyFunctions.check_and_add_field(NatCap_scores, "MaxRegCultFood", "Float", 0)
+        arcpy.CalculateField_management(NatCap_scores, "MaxRegCultFood", 'max(!Food_ALC_norm!, !MaxRegCult!)', "PYTHON_9.3")
+        MyFunctions.check_and_add_field(NatCap_scores, "MaxWSRegCultFood", "Float", 0)
+        arcpy.CalculateField_management(NatCap_scores, "MaxWSRegCultFood", 'max(!WaterProv!, !MaxRegCultFood!)', "PYTHON_9.3")
 
     print("## Completed " + gdb + " on " +  time.ctime())
 
