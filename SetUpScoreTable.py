@@ -46,10 +46,10 @@ if (region == "Oxon" or region == "Blenheim") and method == "HLU":
     Matrix = r"D:\cenv0389\Oxon_GIS\Oxon_county\NaturalCapital\Oxon_full.gdb\Matrix.dbf"
     ALC_multipliers = r"D:\cenv0389\Oxon_GIS\Oxon_county\NaturalCapital\Oxon_full.gdb\ALC_multipliers.dbf"
     nature_fields = "!SAC! + !RSPB! + !SSSI! + !NNR! + !LNR! + !LWS! + !Prop_LWS! + !AncientWood! + !RdVergeNR!"
-    culture_fields = "!LGS! + !MillenGn! + !DoorstepGn! + !NT! + !CountryPk! + !GreenBelt! + !AONB!"
-    education_fields = nature_fields + " + !LGS! +  !CountryPk! + !NT!"
+    culture_fields = "!LGS! + !MillenGn! + !DoorstepGn! + !NT! + !CountryPk! + !GreenBelt! + !AONB! + !SchMon! + !WHS! + !HistPkGdn!"
+    education_fields = nature_fields + " + !LGS! +  !CountryPk! + !NT! + !SchMon! + !WHS! + !HistPkGdn!"
     all_des_fields = ["SAC", "RSPB", "SSSI", "NNR", "LNR", "LWS", "Prop_LWS", "AncientWood", "RdVergeNR",
-                      "LGS", "MillenGn", "DoorstepGn", "NT", "CountryPk", "GreenBelt", "AONB"]
+                      "LGS", "MillenGn", "DoorstepGn", "NT", "CountryPk", "GreenBelt", "AONB", "SchMon", "WHS", "HistPkGdn"]
 
 elif region == "Arc" or (region == "Oxon" and method == "LCM_PHI"):
     folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc"
@@ -70,15 +70,10 @@ elif region == "Arc" or (region == "Oxon" and method == "LCM_PHI"):
     ALC_multipliers = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc\Data\Matrix.gdb\ALC_multipliers"
     Base_map = "OSMM_LCM_PHI_ALC_Desig_GS_access"
     nature_fields = "!SAC! + !SPA! + !Ramsar! + !IBA! + !RSPB! + !SSSI! + !NNR! + !LNR! + !AncientWood!"
-    culture_fields = "!MillenGn! + !DoorstepGn! + !NT! + !CountryPk! + !GreenBelt! + !AONB!"
-    education_fields = nature_fields + " + !CountryPk! + !NT!"
+    culture_fields = "!MillenGn! + !DoorstepGn! + !NT! + !CountryPk! + !GreenBelt! + !AONB! + !SchMon! + !WHS! + !HistPkGdn!"
+    education_fields = nature_fields + " + !CountryPk! + !NT! + !SchMon! + !WHS! + !HistPkGdn!"
 
-# Has the dataset has had historic data integrated? Currently added for Blenheim but not Oxon or Arc.
-historic_data = False
-if historic_data == True:
-    culture_fields = culture_fields + " + !SchMon! + !WHS! + !HistPark!"
-    education_fields = education_fields + " + !SchMon! + !WHS! + !HistPark!"
-    all_des_fields = all_des_fields + " + !SchMon! + !WHS! + !HistPark!"
+historic_data = True
 # Temporary fix because the extra historical designations have been added manually to Blenheim, so the other designations for these rows
 # can be nulls
 if region == "Blenheim":
@@ -93,6 +88,7 @@ Max_food_mult = 3.03
 
 # Which stages of the script do we want to run? (Useful for debugging or for updating only certain scores)
 tidy_fields = False
+fix_grazing_marsh = True  # Temporary fix
 join_tables = True
 food_scores = True
 aesthetic_scores = True
@@ -135,6 +131,13 @@ for gdb in gdbs:
     #     public_access_multiplier = True
     #     calc_averages = False
     #     calc_max = True
+
+    # Temp fix to correct flood plain grazing marsh: only set it to Marshy Grassland if it is grassland, not arable, scrub, etc
+    # Not a perfect fix, as CROME data will not have been recorded for any of these polygons
+    if fix_grazing_marsh:
+        print ("Fixing grazing marsh")
+        expression = "S41HABITAT = 'Coastal and Floodplain Grazing Marsh' AND HLU_hab NOT LIKE '%rass%'"
+        MyFunctions.select_and_copy(Base_map, "Interpreted_habitat", expression, "!HLU_hab!")
 
     # Join base map to scores
     # -----------------------
@@ -330,6 +333,7 @@ def DesMult(NatureDesig, CultureDesig, EdDesig, ScheduledMonument, Habitat, Gree
                                         'max(!WaterProv!, !Flood!, !Erosion!, !WaterQual!, !Carbon!, !AirQuality!, !Cooling!, !Noise!, '
                                         '!Pollination!, !PestControl!, !Aesthetic_norm!, !Education_desig!, !Nature_desig!,'
                                         ' !Sense_desig!, !Rec_access!)', "PYTHON_9.3")
+        # MaxRegCultFood is the max of all regulating and cultural services or food production
         MyFunctions.check_and_add_field(NatCap_scores, "MaxRegCultFood", "Float", 0)
         arcpy.CalculateField_management(NatCap_scores, "MaxRegCultFood", 'max(!Food_ALC_norm!, !MaxRegCult!)', "PYTHON_9.3")
         MyFunctions.check_and_add_field(NatCap_scores, "MaxWSRegCultFood", "Float", 0)

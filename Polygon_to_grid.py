@@ -60,7 +60,7 @@ for i in range(0, iter):
     arcpy.MakeFeatureLayer_management(input_grid, "grid_lyr", where_clause=expression)
     arcpy.CopyFeatures_management("grid_lyr", "grid_chunk")
     arcpy.Delete_management("grid_lyr")
-    print ("Processing chunk " + str(i) + " of " + str( iter) + ": grid cells " + str(start_row) + " to " + str(end_row))
+    print ("Processing chunk " + str(i) + " of " + str( iter) + ": grid cells " + str(start_row) + " to " + str(end_row-1))
 
     # Intersect the grid chunk and the polygon data
     arcpy.MakeFeatureLayer_management(input_poly, "poly_lyr")

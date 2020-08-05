@@ -9,18 +9,18 @@ print(''.join(["## Started on : ", time.ctime()]))
 arcpy.CheckOutExtension("Spatial")
 arcpy.env.overwriteOutput = True  # Overwrites files
 
-# region = "Oxon"
-region = "Arc"
+region = "Oxon"
+# region = "Arc"
 # Which parts of the code do we want to run? useful for debugging or updates.
 # Flag for bypassing the first part when restarting code after the manual inspection of gaps vs slivers
 first_part = False
 elim_slivers = True
 
 if region == "Arc":
-    Union_gdb = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc\Data\Union_Designations.gdb"
+    Union_gdb = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Union_Designations.gdb"
     road_verge = False
 elif region == "Oxon":
-    Union_gdb = r"C:\Users\cenv0389\Documents\Oxon_GIS\Designations\Union_Designations.gdb"
+    Union_gdb = r"D:\cenv0389\Oxon_GIS\Designations\Union_Designations.gdb"
     road_verge = True
 
 arcpy.env.workspace = Union_gdb
@@ -162,5 +162,6 @@ for row in cursor:
 print("Adding up number of designations")
 print (expression)
 arcpy.CalculateField_management("Designations", "NumDesig", expression, "PYTHON_9.3")
-print("Completed. Now copy output file 'Designations' to new gdb and run Merge_into_Base_Map.py")
+print("Completed. Now export output file 'Designations' to MergeDesignations.gdb "
+      "(hide all the FID fields first as these are not needed) and run Merge_into_Base_Map.py")
 exit()

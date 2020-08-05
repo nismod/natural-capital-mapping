@@ -88,14 +88,16 @@ clip_region = False
 buffer_paths = False
 merge_paths = False
 clip_PA_into_LAD_gdb = False    # Do not use this if the public access layer is made in the same gdb
-extract_relevant_polygons = True
-intersect_access = True
+extract_relevant_polygons = False
+intersect_access = False
 sp_and_repair = True
 interpret_access = True
 correct = True
 tidy_fields = True
 if method == "LCM_PHI":
     tidy_workspace = True # DO NOT USE THIS FOR OXON HLU method!! It is not set up yet.
+else:
+    tidy_workspace = False
 
 # *** End of parameter entry
 # --------------------------
@@ -366,8 +368,8 @@ for gdb in gdbs:
         # Sort by shape so it displays faster
         print("    Converting to single part and sorting")
         arcpy.MultipartToSinglepart_management(base_map + "_merge", base_map + "_merge_sp")
-        arcpy.Sort_management(base_map + "_merge_sp", base_map + "_access", [["SHAPE", "ASCENDING"]], "PEANO")
-        print ("    Rows have increased from " + str(numrows) + " to " + str(arcpy.GetCount_management(base_map + "_access")))
+        arcpy.Sort_management(base_map + "_merge_sp", base_map + "_PA", [["SHAPE", "ASCENDING"]], "PEANO")
+        print ("    Rows have increased from " + str(numrows) + " to " + str(arcpy.GetCount_management(base_map + "_PA")))
 
         # Check and repair geometry
         MyFunctions.check_and_repair(base_map + "_PA")

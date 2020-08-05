@@ -64,11 +64,11 @@ if merge_type == "Oxon_OSMM_HLU":
     new_tag = "HLU"
     # names of key fields in base map and new features
     base_key = "Descriptive_Group"
-    new_key = "PHASE1HABI"
+    new_key = "PHASE1HAB"
     # Enter any other fields you want to be included in the Tabulate Intersection tables
     # WARNING Any fields named the same as any of these fields but with a suffix of "_1*" will be deleted as assumed to be duplicates.
     base_TI_fields = ["TOID", "Descriptive_Term", "Make"]
-    new_TI_fields = ["POLY_ID", "BAP_HABITA"]
+    new_TI_fields = ["POLYID", "S41HABITAT"]
     # Enter list of all fields in the base map that need to be kept
     Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make"]
     # Significant area - polygons will be split if the intersect between base map and new features is larger than this area
@@ -88,7 +88,7 @@ elif merge_type == "Oxon_Designations":
     new_key = "Type"
     base_TI_fields = []
     new_TI_fields = ["Name"]
-    Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "POLY_ID", "PHASE1HAB", "S41HABITAT", "S41HAB2",
+    Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "POLYID", "PHASE1HAB", "S41HABITAT", "S41HAB2",
               "SITEREF", "COPYRIGHT", "VERSION", "OSMM_hab", "HLU_hab", "Interpreted_habitat", "CROME_desc", "CROME_simple", "ALC_GRADE"]
     significant_size = 500
     snap_env = [[Base_map_name, "EDGE", "0.5 Meters"], [Base_map_name, "VERTEX", "0.5 Meters"]]
@@ -187,7 +187,7 @@ split_overlap = 0.95
 xy_tol = "0.001 Meters"
 
 # Which sections of code do we want to run? For de-bugging or updating - no point repeating sections already completed.
-sp_base = False               # Convert input base map to single part
+sp_base = True               # Convert input base map to single part
 clip_new = False              # Clip new features to exact boundary of region
 snap_new_features = True      # No need to snap if input features are consistent with base map geometry
 tabulate_intersections = True

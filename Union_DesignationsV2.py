@@ -12,17 +12,17 @@ print(''.join(["## Started on : ", time.ctime()]))
 arcpy.CheckOutExtension("Spatial")
 arcpy.env.overwriteOutput = True  # Overwrites files
 
-region = "Arc"
-# region = "Oxon"
+# region = "Arc"
+region = "Oxon"
 
 if region == "Oxon":
-    in_folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\Designations\UnionInputs"
-    Union_gdb = r"C:\Users\cenv0389\Documents\Oxon_GIS\Designations\Union_Designations.gdb"
+    in_folder = r"D:\cenv0389\Oxon_GIS\Designations\UnionInputs"
+    Union_gdb = r"D:\cenv0389\Oxon_GIS\Designations\Union_Designations.gdb"
     desc_len = 254
     desc_field = True
     habitat_field = True
 elif region == "Arc":
-    in_folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc\Data"
+    in_folder = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data"
     Union_gdb = os.path.join(in_folder, "Union_Designations.gdb")
     desc_len = 50
     desc_field = True
@@ -40,7 +40,7 @@ InfoTable = os.path.join(In_gdb, "DesignationFiles")
 
 # Which stages of the code do we want to run? Useful for debugging or updates.
 copy_inputs = False
-sort_info_table = False
+sort_info_table = True
 copy_to_new_fcs = True
 dissolve = True
 union_GB = True
