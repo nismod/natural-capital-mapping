@@ -40,8 +40,8 @@ arcpy.env.XYTolerance = "0.001 Meters"
 # Enter all parameters needed by the code
 # ---------------------------------------
 # The merge type simply identifies which block of pre-set parameters is selected from those listed below.
-# merge_type = "Oxon_OSMM_HLU"
-merge_type = "Oxon_Designations"
+merge_type = "Oxon_OSMM_HLU"
+# merge_type = "Oxon_Designations"
 # merge_type = "Arc_Designations"
 # merge_type = "Arc_LCM_PHI"
 # merge_type = "Arc_access"
@@ -53,7 +53,7 @@ region = "Oxon"
 # -------------------------------------------------------------------------------------------------
 if merge_type == "Oxon_OSMM_HLU":
     # Enter workspace name
-    gdbs = [r"D:\cenv0389\Oxon_GIS\Oxon_county\Merge_OSMM_HLU.gdb"]
+    gdbs = [r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Merge_OSMM_HLU_CR_ALC.gdb"]
     # names for input base map feature class, new features to be merged with base map, and output feature class
     Base_map_name = "OSMM_noLandform"
     New_features = "HLU_preprocessed"

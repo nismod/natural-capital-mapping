@@ -24,7 +24,7 @@ arcpy.env.overwriteOutput = True  # Overwrites files
 # region = "Arc"
 region = "Oxon"
 # region = "Blenheim"
-use_whole_area = True
+use_whole_area = False
 
 if region == "Oxon":
     ncdir = r"D:\cenv0389\Oxon_GIS\Oxon_county\NaturalCapital"
@@ -35,7 +35,8 @@ if region == "Oxon":
         Scenario_features = "Oxfordshire"
         short_label = False
     else:
-        Scenario_features = "Spatial_strategy_options"
+        # Scenario_features = "Spatial_strategy_options"
+        Scenario_features = "OP2050_haloes"
         short_label = True
     Score_features = ["NatCap_Oxon"]
     hab_field = "Interpreted_habitat"
