@@ -31,14 +31,14 @@ method = "HLU"
 if region == "Oxon" and method == "HLU":
     # Operate in the Oxon_county folder
     folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data"
-    gdbs = [os.path.join(folder, "Merge_OSMM_HLU_ALC.gdb")]
+    gdbs = [os.path.join(folder, "Merge_OSMM_HLU_CR_ALC.gdb")]
  #  LAD_table = os.path.join(folder, "Data.gdb", "Oxon_LADs")
-    in_file_name = "OSMM_HLU_CROME"
+    in_file_name = "OSMM_HLU"
     Hab_field = "PHASE1HAB"
     BAP_field = "S41HABITAT"
     # Which stages of the code do we want to run? Useful for debugging or updating.
     simplify_OSMM = True
-    simplify_HLU = False
+    simplify_HLU = True
     select_HLU_or_OSMM = True
     interpret_BAP = True
 
@@ -235,7 +235,7 @@ def Simplify_OSMM(OSMM_Group, OSMM_Term, OSMM_Make):
             codeblock = """
 def Simplify_HLU(HLU_Hab):
 
-    if HLU_Hab is None or HLU_Hab.strip() == "":
+    if HLU_Hab is None or HLU_Hab.strip() == "" or HLU_Hab == "Unknown":
         return ""
     else:
         HLU_Hab = HLU_Hab.lower()
@@ -267,7 +267,7 @@ def Simplify_HLU(HLU_Hab):
         return "Heathland"
     elif "hedge" in HLU_Hab and "trees" in HLU_Hab:
         return "Hedge with trees"
-    elif "hedge" in HLU_hab:
+    elif "hedge" in HLU_Hab:
         return "Hedge"
     elif "refuse" in HLU_Hab or "landfill" in HLU_Hab:
         return "Landfill"
@@ -356,11 +356,11 @@ def Interpret_hab(HLU_hab, OSMM_hab, OSMM_Make, OSMM_area, HLU_area, undefined_o
 
     # Where HLU says woodland and OSMM says trees or scattered trees, use HLU definition unless HLU is unknown woodland
     if ("trees" in OSMM_hab or "orchard" in OSMM_hab) and ("woodland" in HLU_hab or "orchard" in HLU_hab):
-        if "unknown" in HLU_hab or HLU_hab = "woodland":
+        if ("unknown" in HLU_hab) or (HLU_hab == "woodland"):
             return OSMM_hab.capitalize()   # if unknown woodland in HLU, use OSMM definition
         else:
             return HLU_hab.capitalize()
-    
+
     if "semi-natural grassland" in OSMM_hab and ("amenity" in HLU_hab or "arable" in HLU_hab):   # OSMM rough grass trumps arable /amenity
         return "Semi-natural grassland"
 
@@ -371,10 +371,10 @@ def Interpret_hab(HLU_hab, OSMM_hab, OSMM_Make, OSMM_area, HLU_area, undefined_o
     else:
         return HLU_hab.capitalize()
  """
-            arcpy.CalculateField_management(in_file, "Interpreted_habitat",
-                                            "Interpret_hab(!HLU_hab!, !OSMM_hab!, !Make!, !OSMM_Area!, !HLU_Area!, '" + undefined_or_original + "')",
-                                            "PYTHON_9.3", codeblock)
+            expression = "Interpret_hab(!HLU_hab!, !OSMM_hab!, !Make!, !OSMM_Area!, !HLU_Area!, '" + undefined_or_original + "')"
+            arcpy.CalculateField_management(in_file, "Interpreted_habitat", expression, "PYTHON_9.3", codeblock)
 
+        # Update Interpreted_habitat column where appropriate using S41 Habitat information
         if interpret_BAP:
             print(''.join(["## BAP interpretation started on : ", time.ctime()]))
 
@@ -414,8 +414,13 @@ def interpretBAP(Hab, BAP):
         elif "open mosaic habitat" in BAP:
             return "Open mosaic habitats"
 
-        elif "purple moor grass" in BAP or "grazing marsh" in BAP:
+        elif "purple moor grass" in BAP:
             return "Marshy grassland"
+        elif "grazing marsh" in BAP:
+            if "grass" in Hab.lower():
+                return "Marshy grassland"
+            else:
+                return Hab
         elif "deciduous" in BAP or "beech and yew" in BAP:
             return "Woodland: broadleaved, semi-natural"
         elif "acid grass" in BAP:

@@ -28,35 +28,40 @@ method = "HLU"
 if region == "Oxon" and method == "HLU":
     # Operate in the Oxon_county folder
     folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data"
-    CROME_data = os.path.join(folder, "Merge_OSMM_HLU_ALC.gdb\CROME_Oxon_dissolve")
+    CROME_data = os.path.join(folder, "Merge_OSMM_HLU_CR_ALC.gdb\CROME_Oxon_dissolve")
     Hab_field = "Interpreted_habitat"
-    out_gdb = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Merge_OSMM_HLU_ALC.gdb"
+    out_gdb = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Merge_OSMM_HLU_CR_ALC.gdb"
     arcpy.env.workspace = out_gdb
-    out_map = "OSMM_HLU_CROME"
+    in_map = "OSMM_HLU"
+    out_map = "OSMM_HLU_CR"
 
 # Which stages of the code do we want to run?
 merge_CROME = True
 interpret_CROME = True
 
 if merge_CROME:
-    # Create a feature layer copy of the main table
-    arcpy.MakeFeatureLayer_management(out_map, "ag_lyr")
+    print("Copying " + in_map + " to " + out_map)
+    arcpy.CopyFeatures_management(in_map, out_map)
+
     # Add in a unique ID for each polygon in the main table, to use for joining later
     print("      Copying OBJECTID for base map")
-    MyFunctions.check_and_add_field("ag_lyr", "BaseID", "LONG", 0)
-    arcpy.CalculateField_management("ag_lyr", "BaseID", "!OBJECTID!", "PYTHON_9.3")
+    MyFunctions.check_and_add_field(out_map, "BaseID", "LONG", 0)
+    arcpy.CalculateField_management(out_map, "BaseID", "!OBJECTID!", "PYTHON_9.3")
+
     # Select agricultural habitats as these are the ones for which we are interested in CROME
     # Don't include arable field margins as they are probably accurately mapped
     # Also don't include ''Natural surface' as this is mainly road verges and amenity grass in urban areas
     print ("Identifying farmland")
-    expression = Hab_field + " IN ('Agricultural land', 'Cultivated/disturbed land', 'Arable', " \
-                             "'Arable and scattered trees', 'Improved grassland', 'Improved grassland and scattered scrub')"
+    arcpy.MakeFeatureLayer_management(out_map, "ag_lyr")
+    expression = Hab_field + " IN ('Agricultural land', 'Cultivated/disturbed land', 'Arable', 'Arable and scattered trees') OR ("
+    expression = expression +  Hab_field + " LIKE 'Improved grassland%')"
     arcpy.SelectLayerByAttribute_management("ag_lyr", where_clause = expression)
     # Calculating percentage of farmland features within CROME polygons
     # This only intersects the selected (agricultural) polygons
     print("Tabulating intersections")
     arcpy.TabulateIntersection_analysis("ag_lyr", ["OBJECTID", Hab_field, "BaseID", "Shape_Area"],
-                                        CROME_data, "CROME_TI", ["LUCODE", "Land_Use_Description", "field", "Shape_Area"])
+                                        CROME_data, "CROME_TI", ["lucode", "Land_Use_Description", "field", "Shape_Area"])
+
     # Sorting TI table by size so that larger intersections are first in the list
     print("Sorting table with largest intersections first")
     arcpy.Sort_management("CROME_TI", "CROME_TI_sort", [["AREA", "DESCENDING"]])

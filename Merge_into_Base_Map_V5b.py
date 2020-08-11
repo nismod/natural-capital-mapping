@@ -40,8 +40,8 @@ arcpy.env.XYTolerance = "0.001 Meters"
 # Enter all parameters needed by the code
 # ---------------------------------------
 # The merge type simply identifies which block of pre-set parameters is selected from those listed below.
-merge_type = "Oxon_OSMM_HLU"
-# merge_type = "Oxon_Designations"
+# merge_type = "Oxon_OSMM_HLU"
+merge_type = "Oxon_Designations"
 # merge_type = "Arc_Designations"
 # merge_type = "Arc_LCM_PHI"
 # merge_type = "Arc_access"
@@ -245,9 +245,12 @@ for gdb in gdbs:
         # Correcting slivers and overlaps after the snap
         print("   Correcting overlaps after snapping")
         MyFunctions.check_and_repair("New_snap")
-        # Had mysterious problem here (error 999999, Table not found, Topology error, Duplicate segment) with latest Oxon designations
-        # but got it to work in ArcMap instead (so long as I did not fill in a numerical rank or enter cluster tolerance)
-        # It worked fine before the latest updates to include National Trust data
+        print("Unioning. If this fails with an exit code, read the comments in the script for help.")
+        # Have had mysterious problem here (error 999999, Table not found, Topology error, Duplicate segment) or
+        # 'Process finished with exit code -1073741819 (0xC0000005)' even when the process has worked correctly before with the same data!
+        # Previously got it to work in ArcMap instead (so long as I did not fill in a numerical rank or enter cluster tolerance)
+        # If the designation data has not changed, you can comment out the first part of this section and restart the
+        # code from 'Deleting identical polygons after snap and union' using the previously created version of New_snap_union_sp
         try:
             arcpy.Union_analysis([["New_snap", 1]], "New_snap_union", "NO_FID", cluster_tolerance=xy_tol)
         except:

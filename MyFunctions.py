@@ -17,6 +17,7 @@ def check_and_repair(in_file):
     print("      {} geometry problems found, see {} for details.".format(num_errors, out_table))
     if num_errors > 0:
         arcpy.RepairGeometry_management(in_file)
+        print ("      Finished repairing geometries ")
     return
 
 def delete_fields(in_file, needed_fields, out_file):
@@ -28,12 +29,13 @@ def delete_fields(in_file, needed_fields, out_file):
     Fields = arcpy.ListFields(out_file)
     fieldNameList = []
     for field in Fields:
-        # print("Field " + field.name + " in list: " + (str(field.name in needed_fields)))
-        if field.name not in needed_fields and not field.required:
+         print("Field " + field.name + " in list: " + (str(field.name in needed_fields)))
+         if field.name not in needed_fields and not field.required:
             fieldNameList.append(field.name)
     if len(fieldNameList)>0:
         print ("      Deleting from " + out_file + ": " + ", ".join(fieldNameList))
         arcpy.DeleteField_management(out_file, fieldNameList)
+        print ("      Finished deleting unnecessary fields from " + out_file + " on " + time.ctime())
     else:
         print ("      No fields need to be deleted from " + out_file)
     return
@@ -47,14 +49,14 @@ def tidy_fields(in_file):
             or "_Area" in field.name or field.name == "Shape_Leng") and not field.required:
             fieldNameList.append(field.name)
     print ("      Deleting unnecessary fields in " + in_file + ": " + ', '.join(fieldNameList))
-    print("      Started on " + time.ctime() + ". May take several hours for large files. It is much quicker to select needed fields"
+    print ("      Started on " + time.ctime() + ". May take several hours for large files. It is much quicker to select needed fields"
                                                " in ArcMap and then export.")
     if len(fieldNameList)>0:
         print ("      Deleting from " + in_file + ": " + ", ".join(fieldNameList))
         arcpy.DeleteField_management(in_file, fieldNameList)
     else:
         print ("      No fields need to be deleted from " + in_file)
-    print ("      Finished deleting unnecessary fields in " + in_file + " on " + time.ctime())
+    print ("      Finished deleting unnecessary fields from " + in_file + " on " + time.ctime())
     return
 
 def check_and_add_field(in_table, in_field, type, len):
@@ -64,7 +66,7 @@ def check_and_add_field(in_table, in_field, type, len):
             print ("*** WARNING: " + in_field + " field already exists in " + in_table)
             if ifield.type == "String" and type == "TEXT":
                 if ifield.length <> len:
-                    print("*** WARNING: the existing text field has a different length to the new field specification.")
+                    print ("*** WARNING: the existing text field has a different length to the new field specification.")
                     # arcpy.DeleteField_management(in_table, in_field)
                 else:
                     print ("    Duplicate field will be overwritten")
@@ -84,14 +86,16 @@ def check_and_add_field(in_table, in_field, type, len):
         arcpy.AddField_management(in_table, in_field, type, field_length=len)
     else:
         arcpy.AddField_management(in_table, in_field, type)
+    print ("      New field " + in_field + " added successfully to " + in_table)
     return
 
 def delete_by_size (in_table, size):
-    print("      Deleting slivers under " + str(size) + " from " + in_table)
+    print ("      Deleting slivers under " + str(size) + " from " + in_table)
     arcpy.MakeFeatureLayer_management(in_table, "del_lyr")
     arcpy.SelectLayerByAttribute_management("del_lyr", where_clause="Shape_Area < " + str(size))
     arcpy.DeleteFeatures_management("del_lyr")
     arcpy.Delete_management("del_lyr")
+    print ("      Finished deleting slivers from " + in_table)
     return
 
 def select_and_copy (in_table, in_field, expression, copy_string):
@@ -99,4 +103,5 @@ def select_and_copy (in_table, in_field, expression, copy_string):
     arcpy.SelectLayerByAttribute_management("copy_lyr", where_clause=expression)
     arcpy.CalculateField_management("copy_lyr", in_field, copy_string, "PYTHON_9.3")
     arcpy.Delete_management("copy_lyr")
+    print ("      Finished updating " + in_field + " values in " + in_table)
     return

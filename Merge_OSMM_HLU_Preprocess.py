@@ -38,13 +38,15 @@ boundary = "Oxfordshire" #needed if clipping
 
 # Fields that you want to keep (the rest will get deleted)
 OSMM_Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make"]
-HLU_Needed = ["POLY_ID", "PHASE1HAB", "S41HABITAT", "S41HAB2", "SITEREF", "COPYRIGHT", "VERSION"]
+HLU_Needed = ["POLYID", "PHASE1HAB", "S41HABITAT", "S41HAB2", "SITEREF", "COPYRIGHT", "VERSION"]
 
 # What stages of the code do we want to run? Useful for debugging or updates
 clip_HLU = True
 clip_OSMM = False
-delete_not_needed_fields = True
-delete_and_erase = True
+delete_not_needed_fields_OSMM = False
+delete_not_needed_fields_HLU = True
+delete_OSMM_overlaps = False
+delete_and_erase_HLU = True
 elim_HLU_slivers = True
 check = True
 
@@ -63,14 +65,15 @@ if clip_OSMM:
     arcpy.Clip_analysis(OSMM + "_in", boundary, OSMM)
     print(''.join(["## Finished clipping OSMM on : ", time.ctime()]))
 # Optional step: delete not needed fields
-if delete_not_needed_fields:
+if delete_not_needed_fields_OSMM:
     print("Deleting un-necessary fields")
     MyFunctions.delete_fields("OSMM", OSMM_Needed, "OSMM_delfields")
-    MyFunctions.delete_fields("HLU", HLU_Needed, "HLU_delfields")
     OSMM = "OSMM_delfields"
+if delete_not_needed_fields_HLU:
+    MyFunctions.delete_fields("HLU", HLU_Needed, "HLU_delfields")
     HLU = "HLU_delfields"
 
-if delete_and_erase:
+if delete_OSMM_overlaps:
     ###  Deleting overlapping "landform" features in OSMM
     print("   Deleting overlapping 'Landform' and 'Pylon' from OSMM")
     arcpy.CopyFeatures_management(OSMM, "OSMM_noLandform")
@@ -81,6 +84,7 @@ if delete_and_erase:
     arcpy.Delete_management("OSMM_layer")
     print("   Finished deleting overlapping 'Landform' and 'Pylon' from OSMM")
 
+if delete_and_erase_HLU:
     # Delete HLU water features so we don't get remnants later.
     print("   Deleting HLU water")
     arcpy.CopyFeatures_management(HLU, "HLU_noWater")

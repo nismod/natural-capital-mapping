@@ -19,10 +19,10 @@ method = "HLU"
 
 if region == "Oxon" and method == "HLU":
     folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data"
-    gdbs = [os.path.join(folder,"Merge_OSMM_HLU_ALC.gdb")]
-    base_map_name = "OSMM_HLU_CROME"
+    gdbs = [os.path.join(folder,"Merge_OSMM_HLU_CR_ALC.gdb")]
+    base_map_name = "OSMM_HLU_CR"
     out_name = "OSMM_HLU_CR_ALC"
-    ALC_data = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Merge_OSMM_HLU_ALC.gdb\ALC_Union"
+    ALC_data = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Merge_OSMM_HLU_CR_ALC.gdb\ALC_Union"
 elif method == "LCM_PHI":
     folder = r"D:\Users\cenv0389\Oxon_GIS\OxCamArc"
     arcpy.env.workspace = folder
