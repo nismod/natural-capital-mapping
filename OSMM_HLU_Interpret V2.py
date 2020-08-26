@@ -21,12 +21,12 @@ arcpy.env.overwriteOutput = True  # Overwrites files
 
 # *** Enter parameters here
 # -------------------------
-# region = "Arc"
-region = "Oxon"
+region = "Arc"
+# region = "Oxon"
 # region = "Blenheim"
 
-# method = "LCM_PHI"
-method = "HLU"
+method = "CROME_PHI"
+# method = "HLU"
 
 if region == "Oxon" and method == "HLU":
     # Operate in the Oxon_county folder
@@ -42,15 +42,15 @@ if region == "Oxon" and method == "HLU":
     select_HLU_or_OSMM = True
     interpret_BAP = True
 
-elif method == "LCM_PHI":
-    folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc"
+elif method == "CROME_PHI":
+    folder = r"D:\cenv0389\OxCamArc\LADs"
     arcpy.env.workspace = folder
     gdbs = arcpy.ListWorkspaces("*", "FileGDB")
-    LAD_table = os.path.join(folder, "Data\Data.gdb", "Arc_LADs")
-    in_file_name = "OSMM"   # Legacy issue - Arc LAD gdbs currently only have OSMM_LCM. Need to recreate OSMM only files.
-    Hab_field = "Interpreted_Habitat"
+    LAD_table = r"D:\cenv0389\OxCamArc\Arc_LADs_sort.shp"
+    in_file_name = "OSMM"
+    Hab_field = "Interpreted_habitat"
     if region == "Arc":
-        LADs_included = ["Bedfordshire", "Buckinghamshire", "Cambridgeshire", "Northamptonshire"]
+        LADs_included = ["Bedfordshire", "Buckinghamshire", "Cambridgeshire", "Northamptonshire", "Oxfordshire", "Peterborough"]
     elif region == "Oxon":
         LADs_included = ["Oxfordshire"]
     else:
@@ -109,10 +109,10 @@ def Simplify_OSMM(OSMM_Group, OSMM_Term, OSMM_Make):
             elif OSMM_Term in ["Track","Traffic Calming"]:
                return "Road"
         elif "Path" in OSMM_Group:
-            return "Path - manmade"
+            return "Path: manmade"
         elif OSMM_Term is None or OSMM_Term == "":
             if OSMM_Group == "Roadside":
-                return "Roadside - manmade"
+                return "Roadside: manmade"
             else:
                 return "Sealed surface"
         elif OSMM_Term == "Electricity Sub Station":
@@ -124,9 +124,15 @@ def Simplify_OSMM(OSMM_Group, OSMM_Term, OSMM_Make):
         elif OSMM_Term in ["Mill Leat","Mine Leat","Lock","Conduit"]:
             return "Canal"
         elif "Landfill" in OSMM_Term:
-            return "Landfill"
+            if "Inactive" in OSMM_Term:
+                return "Landfill: disused"
+            else:
+                return "Landfill"
         elif  "Mineral Workings" in OSMM_Term or "Spoil" in OSMM_Term or "Slag" in OSMM_Term:
-            return "Quarry or spoil"
+            if "Inactive" in OSMM_Term:
+                return "Quarry or spoil: disused"
+            else:
+                return "Quarry or spoil"
         else:
             return "Sealed surface"
 
@@ -165,7 +171,7 @@ def Simplify_OSMM(OSMM_Group, OSMM_Term, OSMM_Make):
         elif OSMM_Term == "Track":
             return "Track"
         elif OSMM_Term in ["Bridge","Footbridge"]:
-            return "Bridge - natural"
+            return "Bridge: natural"
 
         elif "Trees" in OSMM_Term or "Coppice Or Osiers" in OSMM_Term:
             if "Nonconiferous" in OSMM_Term or "Coppice Or Osiers" in OSMM_Term:
@@ -264,7 +270,10 @@ def Simplify_HLU(HLU_Hab):
     elif "herb and fern" in HLU_Hab:
         return "Tall herb and fern"
     elif "heath" in HLU_Hab:
-        return "Heathland"
+        if "grass" in HLU_Hab:
+            return "Heath/grass mosaic"
+        else:
+            return "Heathland"
     elif "hedge" in HLU_Hab and "trees" in HLU_Hab:
         return "Hedge with trees"
     elif "hedge" in HLU_Hab:

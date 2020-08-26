@@ -20,7 +20,7 @@ arcpy.env.qualifiedFieldNames = False
 region = "Oxon"
 # region = "Blenheim"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
-# method = "CROME_PHI"
+# method = "LCM_PHI"
 method = "HLU"
 
 if (region == "Oxon" or region == "Blenheim") and method == "HLU":
@@ -51,28 +51,24 @@ if (region == "Oxon" or region == "Blenheim") and method == "HLU":
     all_des_fields = ["SAC", "RSPB", "SSSI", "NNR", "LNR", "LWS", "Prop_LWS", "AncientWood", "RdVergeNR",
                       "LGS", "MillenGn", "DoorstepGn", "NT", "CountryPk", "GreenBelt", "AONB", "SchMon", "WHS", "HistPkGdn"]
 
-elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
-    folder = r"D:\cenv0389\OxCamArc\LADs"
+elif region == "Arc" or (region == "Oxon" and method == "LCM_PHI"):
+    folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc"
     arcpy.env.workspace = folder
     # LAD gdbs
     if region == "Arc":
-        gdbs = []
         gdbs = arcpy.ListWorkspaces("*", "FileGDB")
-        # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
-        # gdbs.append(os.path.join(folder, "ValeofWhiteHorse.gdb"))
     elif region == "Oxon":
         gdbs = []
         LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
         for LAD in LADs:
             gdbs.append(os.path.join(folder, LAD))
     hab_field = "Interpreted_habitat"
-    del_fields = ["FeatureCode", "Version", "VersionDate", "CalculatedAreaValue", "PhysicalLevel"]
-    # del_fields = ["OBJECTID_1", "FID_ALC_di", "Shape_Leng", "ORIG_FID", "Base_Area", "Base_Relationship", "ORIG_FID_1", "Desig_OBJID",
-    #               "Desig_Area", "Base_Relationship_1", "Desig_OBJID_1", "BaseID_GS", "FID_Natural_features", "FID_Public_access_erase_sp",
-    #               "ORIG_FID_12" ]
-    Matrix = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Matrix.gdb\Matrix"
-    ALC_multipliers = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Matrix.gdb\ALC_multipliers"
-    Base_map = "OSMM_CR_PHI_ALC_Desig_GS_PA"
+    del_fields = ["OBJECTID_1", "FID_ALC_di", "Shape_Leng", "ORIG_FID", "Base_Area", "Base_Relationship", "ORIG_FID_1", "Desig_OBJID",
+                  "Desig_Area", "Base_Relationship_1", "Desig_OBJID_1", "BaseID_GS", "FID_Natural_features", "FID_Public_access_erase_sp",
+                  "ORIG_FID_12" ]
+    Matrix = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc\Data\Matrix.gdb\Matrix"
+    ALC_multipliers = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc\Data\Matrix.gdb\ALC_multipliers"
+    Base_map = "OSMM_LCM_PHI_ALC_Desig_GS_access"
     nature_fields = "!SAC! + !SPA! + !Ramsar! + !IBA! + !RSPB! + !SSSI! + !NNR! + !LNR! + !AncientWood!"
     culture_fields = "!MillenGn! + !DoorstepGn! + !NT! + !CountryPk! + !GreenBelt! + !AONB! + !SchMon! + !WHS! + !HistPkGdn!"
     education_fields = nature_fields + " + !CountryPk! + !NT! + !SchMon! + !WHS! + !HistPkGdn!"
@@ -91,7 +87,8 @@ Max_des_mult = 1.2
 Max_food_mult = 3.03
 
 # Which stages of the script do we want to run? (Useful for debugging or for updating only certain scores)
-tidy_fields = True
+tidy_fields = False
+fix_CROME_and_grazing_marsh = True  # Temporary fix
 join_tables = True
 food_scores = True
 aesthetic_scores = True
@@ -105,7 +102,7 @@ for gdb in gdbs:
     arcpy.env.workspace = gdb
     numrows = arcpy.GetCount_management(os.path.join(gdb, Base_map))
     print (''.join(["### Started processing ", gdb, " on ", time.ctime(), ": ", str(numrows), " rows"]))
-    if region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
+    if region == "Arc" or (region == "Oxon" and method == "LCM_PHI"):
         path, file = os.path.split(gdb)
         area_name = file[:-4]
         # Tidy up surplus fields in input table
@@ -114,11 +111,6 @@ for gdb in gdbs:
 
     print ("Area is " + area_name)
     NatCap_scores = "NatCap_" + area_name
-
-    # Temporary fix
-    # print("Correcting broadleaved woodland category name")
-    # expression = hab_field + " = 'Broadleaved woodland: semi-natural'"
-    # MyFunctions.select_and_copy(Base_map, hab_field, expression, "'Woodland: broadleaved, semi-natural'")
 
     # # This block of code is for debugging - re-starting part way through the loop through LADs, to avoid duplicating what is already done...
     # if area_name == "AylesburyVale":
@@ -139,6 +131,85 @@ for gdb in gdbs:
     #     public_access_multiplier = True
     #     calc_averages = False
     #     calc_max = True
+
+
+    # Temp fix to correct missing CROME data for Arc and then correct flood plain grazing marsh: only set it to Marshy Grassland
+    # if it is grassland, not arable, scrub,
+    if fix_CROME_and_grazing_marsh:
+        out_map = Base_map
+        # *** Katherine please check file paths ***
+        data_gdb = os.path.join(folder, "Data\Data.gdb")
+        CROME_data = os.path.join(data_gdb, "CROME_Arc_dissolve")
+
+        # Add in a unique ID for each polygon in the main table, to use for joining later
+        print("      Adding CROME data back in. Copying OBJECTID for base map")
+        MyFunctions.check_and_add_field(out_map, "BaseID_CROME", "LONG", 0)
+        arcpy.CalculateField_management(out_map, "BaseID_CROME", "!OBJECTID!", "PYTHON_9.3")
+
+        # Select agricultural habitats as these are the ones for which we are interested in CROME
+        # Don't include arable field margins as they are probably accurately mapped
+        # Also don't include ''Natural surface' as this is mainly road verges and amenity grass in urban areas
+        print ("Identifying farmland")
+        arcpy.MakeFeatureLayer_management(out_map, "ag_lyr")
+        expression = hab_field + " IN ('Agricultural land', 'Cultivated/disturbed land', 'Arable', 'Arable and scattered trees'," \
+                                 " 'Marshy grassland') OR (" + hab_field + " LIKE 'Improved grassland%')"
+        arcpy.SelectLayerByAttribute_management("ag_lyr", where_clause=expression)
+        # Calculating percentage of farmland features within CROME polygons. This only intersects the selected (agricultural) polygons
+        print("Tabulating intersections")
+        # *** Katherine - this is the other way round to your expression but I think this is the correct way?
+        # Please check that the case of 'lucode' matches your version of the input CROME data.
+        arcpy.TabulateIntersection_analysis("ag_lyr", ["OBJECTID", hab_field, "BaseID_CROME", "Shape_Area"],
+                                            CROME_data, "CROME_TI", ["lucode", "Land_Use_Description", "field", "Shape_Area"])
+
+        # Sorting TI table by size so that larger intersections are first in the list
+        print("Sorting table with largest intersections first")
+        arcpy.Sort_management("CROME_TI", "CROME_TI_sort", [["AREA", "DESCENDING"]])
+        # Delete all but the largest intersection. We need to do this, otherwise the join later is not robust - the wrong rows can be
+        # copied across even if we think we have selected and joined to the right rows.
+        print("Deleting identical (smaller intersection) rows")
+        # *** Katherine  - please check that 'OBJECTID_1' is correct. If there are other OBJECTID fields in your datasets that have not yet
+        # been 'tiedied up' then this will need to be changed. Check the field aliases not just the apparent field names.
+        arcpy.DeleteIdentical_management("CROME_TI_sort", ["OBJECTID_1"])
+        arcpy.MakeTableView_management("CROME_TI_sort", "CROME_lyr")
+        # Adding fields for CROME data
+        MyFunctions.check_and_add_field(out_map, "CROME_desc", "TEXT", 50)
+        MyFunctions.check_and_add_field(out_map, "CROME_simple", "TEXT", 30)
+        # Join the intersected table to join in the largest intersection to each polygon
+        print ("Joining CROME info for base map polygons")
+        arcpy.AddJoin_management("ag_lyr", "BaseID_CROME", "CROME_lyr", "BaseID_CROME", "KEEP_ALL")
+        # Select only agricultural CROME polygons and intersections where there is >30% overlap
+        # Data will only be copied for the selected polygons
+        expression = "field IN ('Cereal Crops', 'Leguminous Crops', 'Grassland', 'Energy Crop', 'Trees') AND PERCENTAGE > 30"
+        arcpy.SelectLayerByAttribute_management("ag_lyr", where_clause=expression)
+        # Copy data from ag_lyr which is now joined with CROME into the main layer
+        print("Copying CROME data")
+        arcpy.CalculateField_management("ag_lyr", out_map + ".CROME_desc", "!CROME_TI_sort.Land_Use_Description!", "PYTHON_9.3")
+        print("Finished copying CROME desc")
+        arcpy.CalculateField_management("ag_lyr", out_map + ".CROME_simple", "!CROME_TI_sort.field!", "PYTHON_9.3")
+        print("Finished copying CROME simple")
+
+        # Remove the join
+        arcpy.RemoveJoin_management("ag_lyr", "CROME_TI_sort")
+        arcpy.Delete_management("ag_lyr")
+        arcpy.Delete_management("CROME_lyr")
+        print("Finished merging CROME")
+        print ("Fixing grazing marsh")
+        expression = "Interpreted_habitat ='Marshy grassland' AND PHI = 'Coastal and floodplain grazing marsh' AND CROME_desc <> 'Grass'"
+        MyFunctions.select_and_copy(Base_map, "Interpreted_habitat", expression, "!OSMM_hab!")
+        print ("Interpreting CROME")
+        # If CROME says grass and interpretation is currently arable, change it. But most 'fallow' land looks more like arable than grass
+        # in Google earth, so set that to arable as well (even though CROME simple description is grass).
+        expression = "CROME_desc = 'Grass' AND " \
+                     + hab_field + " IN ('Agricultural land', 'Arable', 'Cultivated/disturbed land', 'Natural surface')"
+        MyFunctions.select_and_copy(out_map, hab_field, expression, "'Improved grassland'")
+        # If CROME says arable and habitat is improved grassland or general agricultural, change. But don't change improved grassland
+        # with scattered scrub, as inspection shows that is mainly small non-farmed areas that do not fit the CROME hexagons well.
+        expression = "CROME_simple IN ('Cereal Crops', 'Leguminous Crops', 'Fallow') AND " + hab_field + \
+                     " IN ('Agricultural land', 'Cultivated/disturbed land', 'Improved grassland', 'Natural surface')"
+        MyFunctions.select_and_copy(out_map, hab_field, expression, "'Arable'")
+
+        Base_map = out_map
+        print ("Finished fixing CROME and grazing marsh")
 
     # Join base map to scores
     # -----------------------

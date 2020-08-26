@@ -28,7 +28,7 @@ method = "HLU"
 if region == "Oxon" and method == "HLU":
     # Operate in the Oxon_county folder
     folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data"
-    CROME_data = os.path.join(folder, "Merge_OSMM_HLU_CR_ALC.gdb\CROME_Oxon_dissolve")
+    CROME_data = os.path.join(folder, "Merge_OSMM_HLU_CR_ALC.gdb\CROME_2019_Oxon_dissolve")
     Hab_field = "Interpreted_habitat"
     out_gdb = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Merge_OSMM_HLU_CR_ALC.gdb"
     arcpy.env.workspace = out_gdb
@@ -45,8 +45,8 @@ if merge_CROME:
 
     # Add in a unique ID for each polygon in the main table, to use for joining later
     print("      Copying OBJECTID for base map")
-    MyFunctions.check_and_add_field(out_map, "BaseID", "LONG", 0)
-    arcpy.CalculateField_management(out_map, "BaseID", "!OBJECTID!", "PYTHON_9.3")
+    MyFunctions.check_and_add_field(out_map, "BaseID_CROME", "LONG", 0)
+    arcpy.CalculateField_management(out_map, "BaseID_CROME", "!OBJECTID!", "PYTHON_9.3")
 
     # Select agricultural habitats as these are the ones for which we are interested in CROME
     # Don't include arable field margins as they are probably accurately mapped
@@ -59,8 +59,8 @@ if merge_CROME:
     # Calculating percentage of farmland features within CROME polygons
     # This only intersects the selected (agricultural) polygons
     print("Tabulating intersections")
-    arcpy.TabulateIntersection_analysis("ag_lyr", ["OBJECTID", Hab_field, "BaseID", "Shape_Area"],
-                                        CROME_data, "CROME_TI", ["lucode", "Land_Use_Description", "field", "Shape_Area"])
+    arcpy.TabulateIntersection_analysis("ag_lyr", ["OBJECTID", Hab_field, "BaseID_CROME", "Shape_Area"],
+                                        CROME_data, "CROME_TI", ["lucode", "Land_Use_Description", "Simple", "Shape_Area"])
 
     # Sorting TI table by size so that larger intersections are first in the list
     print("Sorting table with largest intersections first")
@@ -72,19 +72,19 @@ if merge_CROME:
     arcpy.MakeTableView_management("CROME_TI_sort", "CROME_lyr")
     # Adding fields for CROME data
     MyFunctions.check_and_add_field(out_map, "CROME_desc", "TEXT", 50)
-    MyFunctions.check_and_add_field(out_map, "CROME_simple", "TEXT", 30)
+    MyFunctions.check_and_add_field(out_map, "CROME_simple", "TEXT", 50)
     # Join the intersected table to join in the largest intersection to each polygon
     print ("Joining CROME info for base map polygons")
-    arcpy.AddJoin_management("ag_lyr", "BaseID", "CROME_lyr", "BaseID", "KEEP_ALL")
+    arcpy.AddJoin_management("ag_lyr", "BaseID_CROME", "CROME_lyr", "BaseID_CROME", "KEEP_ALL")
     # Select only agricultural CROME polygons and intersections where there is >30% overlap
     # Data will only be copied for the selected polygons
-    expression = "field IN ('Cereal Crops', 'Leguminous Crops', 'Grassland', 'Energy Crop', 'Trees') AND PERCENTAGE > 30"
+    expression = "CROME_TI_sort.Simple <> 'Non-agricultural land' AND PERCENTAGE > 30"
     arcpy.SelectLayerByAttribute_management("ag_lyr", where_clause=expression)
     # Copy data from ag_lyr which is now joined with CROME into the main layer
     print("Copying CROME data")
     arcpy.CalculateField_management("ag_lyr", out_map + ".CROME_desc", "!CROME_TI_sort.Land_Use_Description!", "PYTHON_9.3")
     print("Finished copying CROME desc")
-    arcpy.CalculateField_management("ag_lyr", out_map + ".CROME_simple", "!CROME_TI_sort.field!", "PYTHON_9.3")
+    arcpy.CalculateField_management("ag_lyr", out_map + ".CROME_simple", "!CROME_TI_sort.Simple!", "PYTHON_9.3")
     print("Finished copying CROME simple")
 
     # Remove the join
@@ -106,7 +106,7 @@ if interpret_CROME:
     MyFunctions.select_and_copy(out_map, Hab_field, expression, "'Improved grassland and scattered trees'")
     # If CROME says arable and habitat is improved grassland or general agricultural, change. But don't change improved grassland
     # with scattered scrub, as inspection shows that is mainly small non-farmed areas that do not fit the CROME hexagons well.
-    expression = "CROME_simple IN ('Cereal Crops', 'Leguminous Crops', 'Fallow') AND " + Hab_field + \
+    expression = "CROME_simple IN ('Arable', 'Cereal Crops', 'Leguminous Crops', 'Fallow') AND " + Hab_field + \
                  " IN ('Agricultural land', 'Cultivated/disturbed land', 'Improved grassland', 'Natural surface')"
     MyFunctions.select_and_copy(out_map, Hab_field, expression, "'Arable'")
     # Examination for Oxon shows only two single CROME polygons for SRC, both look like mis-classifications so ignore

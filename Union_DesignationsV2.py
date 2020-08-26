@@ -12,8 +12,8 @@ print(''.join(["## Started on : ", time.ctime()]))
 arcpy.CheckOutExtension("Spatial")
 arcpy.env.overwriteOutput = True  # Overwrites files
 
-# region = "Arc"
-region = "Oxon"
+region = "Arc"
+# region = "Oxon"
 
 if region == "Oxon":
     in_folder = r"D:\cenv0389\Oxon_GIS\Designations\UnionInputs"
@@ -24,7 +24,7 @@ if region == "Oxon":
 elif region == "Arc":
     in_folder = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data"
     Union_gdb = os.path.join(in_folder, "Union_Designations.gdb")
-    desc_len = 50
+    desc_len = 254
     desc_field = True
     habitat_field = True
 
@@ -239,30 +239,3 @@ exit()
 #             if field_info.getFieldName(index) not in fieldsToSelect:
 #                 field_info.setVisible(index, "HIDDEN")
 #             print("{0}".format(field_info.getFieldName(index)) + " {0}".format(field_info.getVisible(index)))
-
-
-# Code remnant from when I thought output field map was not working - in fact it was just that old names
-# were kept as aliases
-#
-# #   Field map does not work - output fields retain their original names
-# #   So add new fields with the correct names and copy the values across
-# #   First check that the field does not already exist
-# NewName = ShortName + "_name"
-# FieldList = [f.name for f in arcpy.ListFields(NewFile)]
-# print ("  Fields for " + ShortName + ": ", FieldList)
-# if NewName not in FieldList:
-#     arcpy.AddField_management(NewFile, NewName, field_type="TEXT", field_length=80)
-# expression = "!" + NameField + "!"
-# arcpy.CalculateField_management(NewFile, NewName, expression, "PYTHON_9.3")
-#
-# NewHab = ShortName + "_hab"
-# if (NewHab not in FieldList) and HabField:
-#     arcpy.AddField_management(NewFile, NewHab, field_type="TEXT", field_length=80)
-# if HabField:
-#     arcpy.CalculateField_management(NewFile, NewHab, "!" + HabField + "!", "PYTHON_9.3")
-#
-# NewDesc = ShortName + "_desc"
-# if (NewDesc not in FieldList) and DescField:
-#     arcpy.AddField_management(NewFile, NewDesc, field_type="TEXT", field_length=250)
-# if DescField:
-#     arcpy.CalculateField_management(NewFile, NewDesc, "!" + DescField + "!", "PYTHON_9.3")

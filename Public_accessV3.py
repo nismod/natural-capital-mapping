@@ -25,7 +25,7 @@ arcpy.env.XYTolerance = "0.001 Meters"
 # region = "Arc"
 region = "Oxon"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
-# method = "LCM_PHI"
+# method = "CROME_PHI"
 method = "HLU"
 
 if region == "Oxon" and method == "HLU":
@@ -36,26 +36,28 @@ if region == "Oxon" and method == "HLU":
     area_tag = "Oxon"
     hab_field = "Interpreted_habitat"
 
-elif region == "Arc" or (region == "Oxon" and method == "LCM_PHI"):
-    folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc"
+elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
+    folder = r"D:\cenv0389\OxCamArc\LADs"
     arcpy.env.workspace = folder
     if region == "Arc":
         gdbs = arcpy.ListWorkspaces("*", "FileGDB")
+        # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
+        # gdbs = []
+        # gdbs.append(os.path.join(folder, "ValeofWhiteHorse.gdb"))
     elif region == "Oxon":
         gdbs = []
         LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
         for LAD in LADs:
             gdbs.append(os.path.join(folder, LAD))
     boundary = "boundary"
-    region_boundary = "Arc_LADs.shp"
-    base_map = "OSMM_LCM_PHI_ALC_Desig_GS"
-    area_tag = ""
+    region_boundary = os.path.join(folder, "Arc_outline.shp")
+    base_map = "OSMM_CR_PHI_ALC_Desig_GS"
+    area_tag = "Arc"
     hab_field = "Interpreted_habitat"
     # Feature classes to keep - the others will be deleted if you select 'tidy_workspace' = true
-    keep_fcs = ["boundary", "Designations", "LCM_arable", "LCM_improved_grassland", "OS_Open_GS", "OS_Open_GS_clip", "OSGS", "OSMM_LCM",
-                "OSMM_LCM_PHI", "OSMM_LCM_PHI_merge", "OSMM_LCM_PHI_ALC", "OSMM_LCM_PHI_merge_ALC", "OSMM_LCM_PHI_ALC_Desig",
-                "OSMM_LCM_PHI_ALC_Desig_GS", "OSMM_LCM_PHI_ALC_Desig_GS_access", "OSMM_LCM_PHI_ALC_Desig_GS_access_merge", "PHI",
-                "Public_access"]
+    keep_fcs = ["boundary", "Designations", "LCM_arable", "LCM_improved_grassland", "OS_Open_GS", "OS_Open_GS_clip", "OSGS",
+                "OSMM", "OSMM_CROME", "OSMM_CROME_PHI", "OSMM_CR_PHI_ALC", "OSMM_CR_PHI_ALC_Desig",
+                "OSMM_CR_PHI_ALC_Desig_GS", "OSMM_CR_PHI_ALC_Desig_GS_PA", "PHI", "Public_access"]
 
 # Source of public access data and gdb where public access layer will be created
 if region == "Oxon":
@@ -65,7 +67,7 @@ if region == "Oxon":
                           "(CountryPk IS NULL AND NT IS NULL AND NNR IS NULL AND LNR IS NULL AND MillenGn IS NULL AND DoorstepGn IS NULL" \
                           " AND RSPB IS NULL))"
 elif region == "Arc":
-    data_gdb = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc\Data\Public_access.gdb"
+    data_gdb = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Public_access.gdb"
     des_list = ['CountryPk', 'NT', 'NNR', 'LNR', 'DoorstepGn', 'MillenGn', 'RSPB']
     des_list_expression = "(((CountryPk + NT + NNR + LNR + MillenGn + DoorstepGn + RSPB) = 0) OR " \
                           "(CountryPk IS NULL AND NT IS NULL AND NNR IS NULL AND LNR IS NULL AND MillenGn IS NULL AND DoorstepGn IS " \
@@ -85,16 +87,16 @@ dissolve_paths = True
 # Which stages of the process do we want to run? Useful for debugging or updates
 create_access_layer = False
 clip_region = False
-buffer_paths = False
-merge_paths = False
+buffer_paths = True
+merge_paths = True
 clip_PA_into_LAD_gdb = False    # Do not use this if the public access layer is made in the same gdb
-extract_relevant_polygons = False
-intersect_access = False
+extract_relevant_polygons = True
+intersect_access = True
 sp_and_repair = True
 interpret_access = True
 correct = True
 tidy_fields = True
-if method == "LCM_PHI":
+if method == "CROME_PHI":
     tidy_workspace = True # DO NOT USE THIS FOR OXON HLU method!! It is not set up yet.
 else:
     tidy_workspace = False
@@ -439,29 +441,30 @@ for gdb in gdbs:
             arcpy.RemoveJoin_management("school_lyr", AccessTable_name)
         arcpy.Delete_management("school_lyr")
 
-    if correct:
-        # Green spaces (from OS green space and OS open green space) - correct for Rail in OSGS Amenity residential
-        arcpy.MakeFeatureLayer_management(base_map + "_PA", "sel_lyr4")
-        expression = "GreenSpace IS NOT NULL AND GreenSpace <> '' AND DescriptiveGroup LIKE '%Rail%'"
-        arcpy.SelectLayerByAttribute_management("sel_lyr4", where_clause=expression)
-        if arcpy.GetCount_management("sel_lyr4") > 0:
-            arcpy.CalculateField_management("sel_lyr4", "GreenSpace", "'Amenity - Transport'", "PYTHON_9.3")
-            arcpy.CalculateField_management("sel_lyr4", "PAType", "''", "PYTHON_9.3")
-            arcpy.CalculateField_management("sel_lyr4", "PADescription", "''", "PYTHON_9.3")
-            arcpy.CalculateField_management("sel_lyr4", "Source", "''", "PYTHON_9.3")
-            arcpy.CalculateField_management("sel_lyr4", "AccessType", "''", "PYTHON_9.3")
-            arcpy.CalculateField_management("sel_lyr4", "AccessMult", 0, "PYTHON_9.3")
-        arcpy.Delete_management("sel_lyr4")
+    # if correct:
+    #     # Green spaces (from OS green space and OS open green space) - correct for Rail in OSGS Amenity residential
+    #     arcpy.MakeFeatureLayer_management(base_map + "_PA", "sel_lyr4")
+    #     expression = "GreenSpace IS NOT NULL AND GreenSpace <> '' AND DescriptiveGroup LIKE '%Rail%'"
+    #     arcpy.SelectLayerByAttribute_management("sel_lyr4", where_clause=expression)
+    #     if arcpy.GetCount_management("sel_lyr4") > 0:
+    #         arcpy.CalculateField_management("sel_lyr4", "GreenSpace", "'Amenity - Transport'", "PYTHON_9.3")
+    #         arcpy.CalculateField_management("sel_lyr4", "PAType", "''", "PYTHON_9.3")
+    #         arcpy.CalculateField_management("sel_lyr4", "PADescription", "''", "PYTHON_9.3")
+    #         arcpy.CalculateField_management("sel_lyr4", "Source", "''", "PYTHON_9.3")
+    #         arcpy.CalculateField_management("sel_lyr4", "AccessType", "''", "PYTHON_9.3")
+    #         arcpy.CalculateField_management("sel_lyr4", "AccessMult", 0, "PYTHON_9.3")
+    #     arcpy.Delete_management("sel_lyr4")
 
     if tidy_fields:
         MyFunctions.tidy_fields(base_map + "_PA")
 
-    if tidy_workspace and (method == "LCM_PHI"):   # Not set up yet for Oxon gdb used for HLU method
+    if tidy_workspace and (method == "CROME_PHI"):   # Not set up yet for Oxon gdb used for HLU method
         fcs = arcpy.ListFeatureClasses("*")
         delete_fcs = []
         for fc in fcs:
             if fc not in keep_fcs and "NatCap_" not in fc:
                 delete_fcs.append (fc)
+                # print("Deleting " + fc + " from " + gdb)
                 if len(delete_fcs) > 0:
                     arcpy.Delete_management (fc)
         if len(delete_fcs) > 0:

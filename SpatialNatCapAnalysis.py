@@ -1,7 +1,7 @@
 # Analyses natural capital scores within a site boundary, either for the whole site or
 # for a series of sub-areas, which could represent different development scenarios
 # INPUT:
-# 1. (If using sub-areas): dataset containing boudaries of each 'scenario'.
+# 1. (If using sub-areas): dataset containing boundaries of each 'scenario'.
 # 2. NatCap scores.
 # 3. Line features - PROW, Sustrans routes, hedges, rivers, waterlines
 # 4. Point features - ancient trees
@@ -149,14 +149,14 @@ for scenario in scenarios:
         for line in lines:
             line_data = os.path.join(data_gdb, line)
             line_scenario = os.path.join(out_gdb, label + "_" + line)
-            arcpy.Intersect_analysis(["scen_lyr", line_data], line_scenario)
             print("  Calculating " + line + " length")
+            arcpy.Intersect_analysis(["scen_lyr", line_data], line_scenario)
             line_list = []
             with arcpy.da.SearchCursor(line_scenario, ["Shape_Length"]) as cursor:
                 for row in cursor:
                     line_list.append(row[0])
             line_length = sum(line_list)
-            print("  " + line + "  length is: " + str(line_length))
+            print("  " + line + " length is: " + str(line_length))
             f2.writelines("\n" + scenarios[i - 1] + ", " + line + " length (m), " + str(line_length))
 
     # Select all polygons from the natural capital layer(s) that intersect each spatial strategy zone and save to a new file

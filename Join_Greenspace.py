@@ -28,7 +28,7 @@ arcpy.env.XYTolerance = "0.001 Meters"
 # region = "Arc"
 region = "Oxon"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
-# method = "LCM_PHI"
+# method = "CROME_PHI"
 method = "HLU"
 
 # Folder containing multiple OS Greenspace shapefile tiles to be joined together
@@ -43,17 +43,20 @@ if region == "Oxon" and method == "HLU":
     Base_map_name = "OSMM_HLU_CR_ALC_Des"
     boundary = "Oxfordshire"
     Hab_field = "Interpreted_habitat"
-elif region == "Arc" or (region == "Oxon" and method == "LCM_PHI"):
-    work_folder = r"D:\cenv0389\Oxon_GIS\OxCamArc"
+elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
+    work_folder = r"D:\cenv0389\OxCamArc\LADs"
     arcpy.env.workspace = work_folder
     if region == "Arc":
         gdbs = arcpy.ListWorkspaces("*", "FileGDB")
+        # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
+        # gdbs = []
+        # gdbs.append(os.path.join(work_folder, "ValeofWhiteHorse.gdb"))
     elif region == "Oxon":
         gdbs = []
         LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
         for LAD in LADs:
             gdbs.append(os.path.join(work_folder, LAD))
-    Base_map_name = "OSMM_LCM_PHI_ALC_Desig"
+    Base_map_name = "OSMM_CR_PHI_ALC_Desig"
     boundary = "boundary"
     Hab_field = "Interpreted_habitat"
 
@@ -63,7 +66,7 @@ clip_GS_files = False
 copy_base_map = True
 join_OSGS = True
 clip_openGS = True
-join_openGS =  True
+join_openGS = True
 interpret_GS = True
 
 # Loop through all the OSGS tiles in the OSGS folder and merge into a single file
@@ -210,19 +213,3 @@ for gdb in gdbs:
     print("### Completed " + gdb_name + " on : " + time.ctime())
 
 exit()
-
-# Spare code - this approach didn't work
-# GSfunctions = ["Playing Field", "Public Park Or Garden", "Religious Grounds", "Golf Course", "Other Sports Facility",
-#                    "Allotments Or Community Growing Spaces", "Bowling Green", "Cemetery", "Tennis Court", "Play Space"]
-# for GSfunction in GSfunctions:
-#     # The order of functions ensures that the more specific function (e.g. play area, tennis courts) appears last and
-#     # therefore over-writes more generic functions (e.g. public park; playing fields) where there are multiple layers
-#     print ("Selecting polygons with centroids within OS open GS layer for " + GSfunction)
-#     arcpy.MakeFeatureLayer_management(Open_GS + "_clip", "func_lyr")
-#     arcpy.SelectLayerByAttribute_management("func_lyr", where_clause="function = '" + GSfunction + "'")
-#     arcpy.MakeFeatureLayer_management(Base_map, "sel_lyr")
-#     arcpy.SelectLayerByLocation_management("sel_lyr", "HAVE_THEIR_CENTER_IN", "func_lyr")
-# print("Spatial join to get GS names")
-# # Caution: this is a one to many join being treated (by default) as a one to one join. Ideally would sort first.
-# arcpy.SpatialJoin_analysis(Base_map, Open_GS + "_clip", Base_map + "_GS", match_option="HAVE_THEIR_CENTER_IN")
-# arcpy.CalculateField_management(Base_map + "_GS", "OpenGS_name", "!distName1!", "PYTHON_9.3")

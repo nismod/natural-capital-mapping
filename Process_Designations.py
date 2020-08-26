@@ -9,8 +9,8 @@ print(''.join(["## Started on : ", time.ctime()]))
 arcpy.CheckOutExtension("Spatial")
 arcpy.env.overwriteOutput = True  # Overwrites files
 
-region = "Oxon"
-# region = "Arc"
+# region = "Oxon"
+region = "Arc"
 # Which parts of the code do we want to run? useful for debugging or updates.
 # Flag for bypassing the first part when restarting code after the manual inspection of gaps vs slivers
 first_part = False
@@ -162,6 +162,6 @@ for row in cursor:
 print("Adding up number of designations")
 print (expression)
 arcpy.CalculateField_management("Designations", "NumDesig", expression, "PYTHON_9.3")
-print("Completed. Now export output file 'Designations' to MergeDesignations.gdb "
+print("Completed. Now export output file 'Designations' to new gdb (MergeDesignations.gdb) for Oxon or to Designations_Tidy for Arc"
       "(hide all the FID fields first as these are not needed) and run Merge_into_Base_Map.py")
 exit()

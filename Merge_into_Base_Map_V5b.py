@@ -42,8 +42,8 @@ arcpy.env.XYTolerance = "0.001 Meters"
 # The merge type simply identifies which block of pre-set parameters is selected from those listed below.
 # merge_type = "Oxon_OSMM_HLU"
 merge_type = "Oxon_Designations"
+# merge_type = "Arc_CROME_PHI"
 # merge_type = "Arc_Designations"
-# merge_type = "Arc_LCM_PHI"
 # merge_type = "Arc_access"
 
 region = "Oxon"
@@ -92,54 +92,62 @@ elif merge_type == "Oxon_Designations":
               "SITEREF", "COPYRIGHT", "VERSION", "OSMM_hab", "HLU_hab", "Interpreted_habitat", "CROME_desc", "CROME_simple", "ALC_GRADE"]
     significant_size = 500
     snap_env = [[Base_map_name, "EDGE", "0.5 Meters"], [Base_map_name, "VERTEX", "0.5 Meters"]]
-elif merge_type == "Arc_LCM_PHI":
-    folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc"
+elif merge_type == "Arc_CROME_PHI":
+    folder = r"D:\cenv0389\OxCamArc\LADs"
     arcpy.env.workspace = folder
     if region == "Arc":
         gdbs = arcpy.ListWorkspaces("*", "FileGDB")
+        # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
+        # gdbs = []
+        # gdbs.append(os.path.join(folder, "ValeofWhiteHorse.gdb"))
+
     elif region == "Oxon":
         gdbs = []
         LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
         for LAD in LADs:
             gdbs.append(os.path.join(folder, LAD))
-    Base_map_name = "OSMM_LCM"
+    Base_map_name = "OSMM_CROME"
     New_features = "PHI"
-    Output_fc = "OSMM_LCM_PHI_merge"
-    base_tag = "OSMM_LCM"
+    Output_fc = "OSMM_CROME_PHI"
+    base_tag = "OSMM_CROME"
     new_tag = "PHI"
-    base_key = "Interpreted_Habitat"
+    base_key = "Interpreted_habitat"
     new_key = "PHI"
     base_TI_fields = ["TOID"]
     new_TI_fields = ["WPP", "OMHD"]
-    Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab", "LCM_farmland", "Interpreted_habitat"]
+    Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab", "Interpreted_habitat",
+              "CROME_desc", "CROME_simple"]
     significant_size = 200
     snap_env = [[Base_map_name, "VERTEX", "0.5 Meters"], [Base_map_name, "EDGE", "1 Meters"], [Base_map_name, "VERTEX", "1 Meters"]]
 elif merge_type == "Arc_Designations":
-    folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc"
+    folder = r"D:\cenv0389\OxCamArc\LADs"
     arcpy.env.workspace = folder
     if region == "Arc":
         gdbs = arcpy.ListWorkspaces("*", "FileGDB")
+        # *** Temporary fix to repeat Peterborough only ***
+        # gdbs = []
+        # gdbs.append(os.path.join(folder, "Peterborough.gdb"))
     elif region == "Oxon":
         gdbs = []
         LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
         for LAD in LADs:
             gdbs.append(os.path.join(folder, LAD))
-    # base map name depends on whether the LCM_PHI data was merged (currently called OSMM_LCM_PHI_merge_ALC) or intersected (OSMM_LCM_PHI_ALC)
-    Base_map_name = "OSMM_LCM_PHI_merge_ALC"
-    New_in = os.path.join(folder, "Data\Union_Designations.gdb\Designations_tidy")
+    Base_map_name = "OSMM_CR_PHI_ALC"
+    New_in = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Union_Designations.gdb\Designations_tidy"
     New_features = "Designations"
-    Output_fc = "OSMM_LCM_PHI_ALC_Desig"
+    Output_fc = "OSMM_CR_PHI_ALC_Desig"
     base_tag = "Base"
     new_tag = "Desig"
-    base_key = "Interpreted_Habitat"
+    base_key = "Interpreted_habitat"
     new_key = "Type"
     base_TI_fields = []
     new_TI_fields = ["Name"]
-    Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab", "LCM_farmland", "PHI", "WPP", "OMHD",
-              "Interpreted_habitat", "ALC_GRADE"]
+    Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab", "CROME_desc", "CROME_simple",
+              "PHI", "WPP", "OMHD", "Interpreted_habitat", "ALC_GRADE"]
     significant_size = 500
     snap_env = [[Base_map_name, "EDGE", "0.5 Meters"], [Base_map_name, "VERTEX", "0.5 Meters"]]
 elif merge_type == "Arc_access":
+    # Not used: by default, the public access layer is just intersected in Public_access.py instead of being merged properly.
     folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc"
     arcpy.env.workspace = folder
     gdbs = arcpy.ListWorkspaces("*", "FileGDB")
@@ -203,18 +211,11 @@ for gdb in gdbs:
     if sp_base:
         numrows = arcpy.GetCount_management(Base_map)
         print("   Converting base map to single part. " + str(numrows) + " features present initially.")
-
-        # Temporary fix for Arc_desig because base map (output from merge) is currently called OSMM_LCM_PHI_merge_ALC
-        # Ignore this for most cases!
-        if merge_type == "Arc_desig":
-            arcpy.MultipartToSinglepart_management(Base_map, "OSMM_LCM_PHI_ALC_sp")
-            Base_map = "OSMM_LCM_PHI_ALC_sp"
-        else:
-            arcpy.MultipartToSinglepart_management(Base_map, Base_map + "_sp")
-            Base_map = Base_map + "_sp"
-
-        numrows = arcpy.GetCount_management(Base_map)
+        arcpy.MultipartToSinglepart_management(Base_map, Base_map + "_sp")
+        numrows = arcpy.GetCount_management(Base_map + "_sp")
         print("   " + str(numrows) + " features present after conversion of " + Base_map + " to single part.")
+    # If this step is omitted during debugging, the code later on needs to know that Base_map now = Base_map_sp
+    Base_map = Base_map + "_sp"
 
     if clip_new:
         # Clip new features to match the area boundary
@@ -245,12 +246,12 @@ for gdb in gdbs:
         # Correcting slivers and overlaps after the snap
         print("   Correcting overlaps after snapping")
         MyFunctions.check_and_repair("New_snap")
-        print("Unioning. If this fails with an exit code, read the comments in the script for help.")
+        print("   Unioning. If this fails with an exit code, read the comments in the script for help.")
         # Have had mysterious problem here (error 999999, Table not found, Topology error, Duplicate segment) or
         # 'Process finished with exit code -1073741819 (0xC0000005)' even when the process has worked correctly before with the same data!
-        # Previously got it to work in ArcMap instead (so long as I did not fill in a numerical rank or enter cluster tolerance)
-        # If the designation data has not changed, you can comment out the first part of this section and restart the
-        # code from 'Deleting identical polygons after snap and union' using the previously created version of New_snap_union_sp
+        # Sometimes it will work in ArcMap instead (try not entering a numerical rank or cluster tolerance)
+        # If the designation data and base map polygons have not changed, you can set 'snap_new_features' to false and omit
+        # this part of the code. Sometimes it then crashes at Tabulate Intersection as well but this can be done manually in ArcMap.
         try:
             arcpy.Union_analysis([["New_snap", 1]], "New_snap_union", "NO_FID", cluster_tolerance=xy_tol)
         except:
@@ -345,6 +346,7 @@ def relationship(overlap_area, percent_overlap, ignore_low, ignore_high, signifi
         arcpy.Sort_management("Base_TI_not_split", "Base_TI_not_split_sort", [["AREA", "DESCENDING"]])
         arcpy.DeleteIdentical_management("Base_TI_not_split_sort",[base_ID])
 
+        print("     Creating joint spatial layer")
         arcpy.CopyFeatures_management(Base_map, "Joint_spatial")
 
         # Add new fields for the attributes we want to join

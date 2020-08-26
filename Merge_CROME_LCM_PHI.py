@@ -19,13 +19,13 @@ arcpy.env.overwriteOutput = True         # Overwrites files
 arcpy.env.qualifiedFieldNames = False    # Joined fields will be exported without the join table name
 arcpy.env.XYTolerance = "0.001 Meters"
 
-region = "Oxon"
-# region = "Arc"
+# region = "Oxon"
+region = "Arc"
 
-method = "HLU"
-# method = "LCM_PHI"
+# method = "HLU"
+method = "CROME_LCM_PHI"
 
-if method == "LCM_PHI":
+if method == "CROMELCM_PHI":
     folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc"
     if region == "Arc":
         LADs_included = ["Bedfordshire", "Buckinghamshire", "Cambridgeshire", "Northamptonshire"]

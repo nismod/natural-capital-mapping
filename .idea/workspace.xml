@@ -34,8 +34,8 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.Merge_into_Base_Map_V5b">
-    <configuration name="Merge_ALC" type="PythonConfigurationType" factoryName="Python" temporary="true">
+  <component name="RunManager" selected="Python.SpatialNatCapAnalysis">
+    <configuration name="Join_Greenspace" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="natural-capital-mapping" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -47,49 +47,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Merge_ALC.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Merge_CROME" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="natural-capital-mapping" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Merge_CROME.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="Merge_OSMM_HLU_Preprocess" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="natural-capital-mapping" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Merge_OSMM_HLU_Preprocess.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Join_Greenspace.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -119,7 +77,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="OSMM_HLU_Interpret V2" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="Public_accessV3" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="natural-capital-mapping" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -131,7 +89,49 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/OSMM_HLU_Interpret V2.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Public_accessV3.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="SetUpScoreTable" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="natural-capital-mapping" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SetUpScoreTable.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="SpatialNatCapAnalysis" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="natural-capital-mapping" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SpatialNatCapAnalysis.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -142,18 +142,18 @@
     </configuration>
     <list>
       <item itemvalue="Python.Merge_into_Base_Map_V5b" />
-      <item itemvalue="Python.Merge_OSMM_HLU_Preprocess" />
-      <item itemvalue="Python.OSMM_HLU_Interpret V2" />
-      <item itemvalue="Python.Merge_CROME" />
-      <item itemvalue="Python.Merge_ALC" />
+      <item itemvalue="Python.Join_Greenspace" />
+      <item itemvalue="Python.Public_accessV3" />
+      <item itemvalue="Python.SetUpScoreTable" />
+      <item itemvalue="Python.SpatialNatCapAnalysis" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.SpatialNatCapAnalysis" />
+        <item itemvalue="Python.SetUpScoreTable" />
+        <item itemvalue="Python.Public_accessV3" />
+        <item itemvalue="Python.Join_Greenspace" />
         <item itemvalue="Python.Merge_into_Base_Map_V5b" />
-        <item itemvalue="Python.Merge_ALC" />
-        <item itemvalue="Python.Merge_CROME" />
-        <item itemvalue="Python.OSMM_HLU_Interpret V2" />
-        <item itemvalue="Python.Merge_OSMM_HLU_Preprocess" />
       </list>
     </recent_temporary>
   </component>

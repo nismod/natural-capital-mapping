@@ -29,7 +29,7 @@ def delete_fields(in_file, needed_fields, out_file):
     Fields = arcpy.ListFields(out_file)
     fieldNameList = []
     for field in Fields:
-         print("Field " + field.name + " in list: " + (str(field.name in needed_fields)))
+         # print("Field " + field.name + " in list: " + (str(field.name in needed_fields)))
          if field.name not in needed_fields and not field.required:
             fieldNameList.append(field.name)
     if len(fieldNameList)>0:
@@ -67,7 +67,14 @@ def check_and_add_field(in_table, in_field, type, len):
             if ifield.type == "String" and type == "TEXT":
                 if ifield.length <> len:
                     print ("*** WARNING: the existing text field has a different length to the new field specification.")
-                    # arcpy.DeleteField_management(in_table, in_field)
+                    print("     Contents will be transferred via a temporary field, old field will be deleted and new field may be overwritten")
+                    arcpy.AddField_management(in_table, in_field + "_temp", type, field_length=len)
+                    arcpy.CalculateField_management(in_table, in_field + "_temp", "!" + ifield.name + "!", "PYTHON_9.3")
+                    arcpy.DeleteField_management(in_table, in_field)
+                    arcpy.AddField_management(in_table, in_field, type, field_length=len)
+                    arcpy.CalculateField_management(in_table, in_field, "!" + in_field + "_temp!", "PYTHON_9.3")
+                    arcpy.DeleteField_management(in_table, in_field + "_temp")
+                    arcpy.DeleteField_management(in_table, in_field)
                 else:
                     print ("    Duplicate field will be overwritten")
                     return
@@ -86,7 +93,7 @@ def check_and_add_field(in_table, in_field, type, len):
         arcpy.AddField_management(in_table, in_field, type, field_length=len)
     else:
         arcpy.AddField_management(in_table, in_field, type)
-    print ("      New field " + in_field + " added successfully to " + in_table)
+    # print ("      New field " + in_field + " added successfully to " + in_table)
     return
 
 def delete_by_size (in_table, size):
@@ -103,5 +110,5 @@ def select_and_copy (in_table, in_field, expression, copy_string):
     arcpy.SelectLayerByAttribute_management("copy_lyr", where_clause=expression)
     arcpy.CalculateField_management("copy_lyr", in_field, copy_string, "PYTHON_9.3")
     arcpy.Delete_management("copy_lyr")
-    print ("      Finished updating " + in_field + " values in " + in_table)
+    # print ("      Finished updating " + in_field + " values in " + in_table)
     return
