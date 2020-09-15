@@ -22,8 +22,8 @@ arcpy.env.overwriteOutput = True  # Overwrites files
 # -----------------------
 
 # region = "Arc"
-region = "Oxon"
-# region = "Blenheim"
+# region = "Oxon"
+region = "Blenheim"
 use_whole_area = True
 
 if region == "Oxon":
@@ -81,7 +81,7 @@ calc_lines = True
 high_nc_polygons = True
 calculate_habitat_areas = True
 calculate_scores = True
-export_to_excel = False
+export_to_excel = True
 if use_whole_area:
     intersect_scenarios = False
     clip_scenario_intersections = False
@@ -179,14 +179,17 @@ for scenario in scenarios:
 
     if export_to_excel:
         if use_whole_area:
-            export_table = score_feature
+            export_table = Score_features[i-1]
         else:
             export_table = intersect_fc + "_clip"
         num_rows = arcpy.GetCount_management(export_table)
+        print("Number of rows in " + export_table + " is " + str(num_rows))
         if num_rows > 60000:
+            # For some reason this line executes even when there are less than 60000 rows..?
             print("Cannot export natural capital score data to Excel because table has over 60,000 rows: there are " + str(num_rows))
         else:
-            arcpy.TableToExcel_conversion(intersect_fc + "_clip", os.path.join(ssdir, "NatCap_" + label + ".xls"))
+            print("Exporting " + label + " to Excel")
+            arcpy.TableToExcel_conversion(export_table, os.path.join(ssdir, "NatCap_" + label + ".xls"))
 
     arcpy.Delete_management("scen_lyr")
 
@@ -234,7 +237,8 @@ for scenario in scenarios:
             with arcpy.da.SearchCursor(sfile, ["Shape_Area"]) as cursor:
                 for row in cursor:
                     area_list.append(row[0])
-            scenario_area = sum(area_list)
+            # Convert from m2 to ha
+            scenario_area = sum(area_list)/10000
             print("    Area is: " + str(scenario_area))
             f1.writelines("\n" + scenarios[i - 1] + " " + score_feature + ", " + str(scenario_area) + ", ")
 

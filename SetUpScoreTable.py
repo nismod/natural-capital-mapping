@@ -16,12 +16,12 @@ arcpy.CheckOutExtension("Spatial")
 arcpy.env.overwriteOutput = True  # Overwrites files
 arcpy.env.qualifiedFieldNames = False
 
-region = "Arc"
+# region = "Arc"
 # region = "Oxon"
-# region = "Blenheim"
+region = "Blenheim"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
-method = "CROME_PHI"
-# method = "HLU"
+# method = "CROME_PHI"
+method = "HLU"
 
 if (region == "Oxon" or region == "Blenheim") and method == "HLU":
     folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\NaturalCapital"
@@ -79,12 +79,12 @@ elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
     education_fields = nature_fields + " + !CountryPk! + !NT! + !SchMon! + !WHS! + !HistPkGdn!"
 
 historic_data = True
-# Temporary fix because the extra historical designations have been added manually to Blenheim, so the other designations for these rows
-# can be nulls
-if region == "Blenheim":
-    null_to_zero = True
-else:
-    null_to_zero = False
+# # Temporary fix because the extra historical designations have been added manually to Blenheim, so the other designations for these rows
+# # can be nulls
+# if region == "Blenheim":
+#     null_to_zero = True
+# else:
+null_to_zero = False
 
 # Multiplier for aesthetic value if area is in an AONB
 AONB_multiplier = 1.1
@@ -115,31 +115,6 @@ for gdb in gdbs:
 
     print ("Area is " + area_name)
     NatCap_scores = "NatCap_" + area_name
-
-    # Temporary fix
-    # print("Correcting broadleaved woodland category name")
-    # expression = hab_field + " = 'Broadleaved woodland: semi-natural'"
-    # MyFunctions.select_and_copy(Base_map, hab_field, expression, "'Woodland: broadleaved, semi-natural'")
-
-    # # This block of code is for debugging - re-starting part way through the loop through LADs, to avoid duplicating what is already done...
-    # if area_name == "AylesburyVale":
-    #     join_tables = False
-    #     food_scores = False
-    #     aesthetic_scores = False
-    #     aesthetic_scores = False
-    #     other_cultural = False
-    #     public_access_multiplier = False
-    #     calc_averages = False
-    #     calc_max = True
-    # else:
-    #     join_tables = True
-    #     food_scores = True
-    #     aesthetic_scores = True
-    #     aesthetic_scores = True
-    #     other_cultural = True
-    #     public_access_multiplier = True
-    #     calc_averages = False
-    #     calc_max = True
 
     # Join base map to scores
     # -----------------------
