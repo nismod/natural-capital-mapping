@@ -50,14 +50,14 @@ if merge_CROME:
 
     # Select agricultural habitats as these are the ones for which we are interested in CROME
     # Don't include arable field margins as they are probably accurately mapped
-    # Also don't include ''Natural surface' as this is mainly road verges and amenity grass in urban areas
+    # Also include ''Natural surface' - mainly road verges and amenity grass in urban areas - as this could be set to 'amenity grass'
     print ("Identifying farmland")
     arcpy.MakeFeatureLayer_management(out_map, "ag_lyr")
-    expression = Hab_field + " IN ('Agricultural land', 'Cultivated/disturbed land', 'Arable', 'Arable and scattered trees') OR ("
-    expression = expression +  Hab_field + " LIKE 'Improved grassland%')"
+    expression = Hab_field + " IN ('Agricultural land', 'Cultivated/disturbed land', 'Arable', 'Arable and scattered trees',"
+    expression = " 'Natural surface') OR (" +  Hab_field + " LIKE 'Improved grassland%')"
     arcpy.SelectLayerByAttribute_management("ag_lyr", where_clause = expression)
-    # Calculating percentage of farmland features within CROME polygons
-    # This only intersects the selected (agricultural) polygons
+    # Calculating percentage of farmland and amenity grass features within CROME polygons
+    # This only intersects the selected (agricultural and amenity) polygons
     print("Tabulating intersections")
     arcpy.TabulateIntersection_analysis("ag_lyr", ["OBJECTID", Hab_field, "BaseID_CROME", "Shape_Area"],
                                         CROME_data, "CROME_TI", ["lucode", "Land_Use_Description", "Simple", "Shape_Area"])
@@ -97,8 +97,7 @@ if interpret_CROME:
     print ("Interpreting")
     # If CROME says grass and interpretation is currently arable, change it. But most 'fallow' land looks more like arable than grass
     # in Google earth, so set that to arable as well (even though CROME simple description is grass).
-    expression = "CROME_desc = 'Grass' AND " \
-                 + Hab_field + " IN ('Agricultural land', 'Arable', 'Cultivated/disturbed land', 'Natural surface')"
+    expression = "CROME_desc = 'Grass' AND " + Hab_field + " IN ('Agricultural land', 'Arable', 'Cultivated/disturbed land')"
     MyFunctions.select_and_copy(out_map, Hab_field, expression, "'Improved grassland'")
     # If CROME says 'arable and scattered trees' is grass, change to 'Improved grassland and scattered trees'
     # (in fact there are no polygons like this).
@@ -107,7 +106,7 @@ if interpret_CROME:
     # If CROME says arable and habitat is improved grassland or general agricultural, change. But don't change improved grassland
     # with scattered scrub, as inspection shows that is mainly small non-farmed areas that do not fit the CROME hexagons well.
     expression = "CROME_simple IN ('Arable', 'Cereal Crops', 'Leguminous Crops', 'Fallow') AND " + Hab_field + \
-                 " IN ('Agricultural land', 'Cultivated/disturbed land', 'Improved grassland', 'Natural surface')"
+                 " IN ('Agricultural land', 'Cultivated/disturbed land', 'Improved grassland')"
     MyFunctions.select_and_copy(out_map, Hab_field, expression, "'Arable'")
     # Examination for Oxon shows only two single CROME polygons for SRC, both look like mis-classifications so ignore
     # Similarly, ignore for now the Nursery trees and Perennial crops or isolated trees categories in CROME as they look dodgy, some look

@@ -14,9 +14,10 @@ arcpy.env.overwriteOutput = True         # Overwrites files
 arcpy.env.qualifiedFieldNames = False    # Joined fields will be exported without the join table name
 arcpy.env.XYTolerance = "0.001 Meters"
 
-out_gdb = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc\OSMM.gdb"
-LAD_gdb = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc\OSMM_Arc_LAD.gdb"
-tile_folder = r"W:\Arc\ArcOSMM_Tiles"
+out_gdb = r"D:\cenv0389\OxCamArc\OSMM.gdb"
+LAD_gdb = r"D:\cenv0389\OxCamArc\OSMM_update.gdb"
+tile_folder = r"D:\cenv0389\OxCamArc\OSMM_update"
+LAD_table = r"D:\cenv0389\OxCamArc\Arc_LADs_sort.shp"
 arcpy.env.workspace = tile_folder
 
 collate_tiles = False
@@ -38,7 +39,7 @@ if collate_tiles:
             print ("    gdb " + in_gdb)
             arcpy.env.workspace = in_gdb
             i = i + 1
-            out_fc = os.path.join(out_gdb, "OSMM_tile_" + str(i))
+            out_fc = os.path.join(out_gdb, "OSMM_tile_" + folder)
             print ("    Copying to " + out_fc)
             arcpy.CopyFeatures_management("TopographicArea", out_fc)
 
@@ -46,16 +47,17 @@ if merge_tiles:
     print ("Merging tiles")
     arcpy.env.workspace = out_gdb
     in_fcs = arcpy.ListFeatureClasses()
-    arcpy.Merge_management(in_fcs, "OSMM_Arc")
+    arcpy.Merge_management(in_fcs, "OSMM_Arc_update")
     print(''.join(["## Finished merge on : ", time.ctime()]))
 
 # Split into LADS
 # ------------------
 if split_LADs:
 
-    arcpy.env.workspace = out_gdb
     LAD_names = []
-    LADs = arcpy.SearchCursor("Arc_LADs")
+    LADs = arcpy.SearchCursor(LAD_table)
+    # Or use this line to repeat for selected LADs only...
+    # LADs = ["SouthOxfordshire", "Oxford", "Wycombe"]
     arcpy.env.workspace = out_gdb
 
     for LAD in LADs:
@@ -63,10 +65,10 @@ if split_LADs:
         LAD_name = LAD_full_name.replace(" ","")
         LAD_names.append(LAD_name)
         print("Clipping " + LAD_name)
-        arcpy.MakeFeatureLayer_management("Arc_LADs", "LAD_lyr")
+        arcpy.MakeFeatureLayer_management(LAD_table, "LAD_lyr")
         arcpy.SelectLayerByAttribute_management("LAD_lyr", where_clause="desc_ = '" + LAD_full_name + "'")
         out_file = os.path.join(LAD_gdb, "OSMM_" + LAD_name)
-        arcpy.Clip_analysis("OSMM_Arc", "LAD_lyr", out_file)
+        arcpy.Clip_analysis("OSMM_Arc_update", "LAD_lyr", out_file)
         arcpy.Delete_management("sel_lyr")
         arcpy.DeleteIdentical_management(out_file, ["Shape"])
         MyFunctions.check_and_repair(out_file)

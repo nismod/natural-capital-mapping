@@ -24,7 +24,7 @@ arcpy.env.overwriteOutput = True  # Overwrites files
 # region = "Arc"
 region = "Oxon"
 # region = "Blenheim"
-use_whole_area = False
+use_whole_area = True
 
 if region == "Oxon":
     ncdir = r"D:\cenv0389\Oxon_GIS\Oxon_county\NaturalCapital"
@@ -43,6 +43,7 @@ if region == "Oxon":
     ssdir = r"D:\cenv0389\Oxon_GIS\Spreadsheets"
     lines = ["Hedges"]
     data_gdb = ncgdb
+    tree_data = os.path.join(data_gdb, "AncientTrees")
 elif region == "Arc":
     ncdir = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc\NaturalCapital"
     ncgdb = os.path.join(ncdir, "NaturalCapital.gdb")
@@ -55,6 +56,7 @@ elif region == "Arc":
     lines = []
     data_gdb = ncgdb
     short_label = True
+    tree_data = os.path.join(data_gdb, "AncientTrees")
 elif region == "Blenheim":
     ncdir = r"D:\cenv0389\Blenheim"
     ncgdb = os.path.join(ncdir, "Blenheim.gdb")
@@ -69,8 +71,9 @@ elif region == "Blenheim":
     ssdir = r"D:\cenv0389\Blenheim"
     lines = ["Hedges", "PROW", "Sustrans_offroad", "National_trails_Ox", "OS_rivers_Ox", "zoom_waterlines_Ox"]
     short_label = False
-
-tree_data = os.path.join(data_gdb, "AncientTrees")
+    # note: some of the ancient trees are just outside the estate boundary (in a 20m buffer) because the boundary is inaccurately drawn,
+    # but they should be included. So you should replace the tree numbers output here with the actual numbers in the input dataset.
+    tree_data = os.path.join(ncgdb, "EstateVet_WTAncientTrees")
 
 # What stages of the code do we want to run?
 calc_trees = True
@@ -244,7 +247,8 @@ for scenario in scenarios:
                 with arcpy.da.SearchCursor(sfile, [service, "Shape_Area"]) as cursor:
                     for row in cursor:
                         list.append(row[0] * row[1])
-                sumlist = sum(list)
+                # Divide by 10000 because score is per ha but areas are per m2 (added 15/9/2020; previously we did this manually afterwards)
+                sumlist = sum(list)/10000
                 print(service + " sum is:" + str(sumlist))
                 result_list.append(sumlist)
 

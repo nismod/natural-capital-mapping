@@ -8,6 +8,13 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -35,7 +42,7 @@
     </option>
   </component>
   <component name="RunManager" selected="Python.SpatialNatCapAnalysis">
-    <configuration name="Join_Greenspace" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="Copy_fcs_to_new_gdb" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="natural-capital-mapping" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -47,7 +54,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Join_Greenspace.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Copy_fcs_to_new_gdb.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -56,7 +63,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Merge_into_Base_Map_V5b" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="Merge_datasets" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="natural-capital-mapping" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -68,7 +75,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Merge_into_Base_Map_V5b.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Merge_datasets.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -77,7 +84,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Public_accessV3" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="SetUpMapLayers" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="natural-capital-mapping" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -85,11 +92,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="WORKING_DIRECTORY" value="D:/cenv0389/Oxon_GIS/Scripts" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Public_accessV3.py" />
+      <option name="SCRIPT_NAME" value="D:/cenv0389/Oxon_GIS/Scripts/SetUpMapLayers.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -141,19 +148,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.Merge_into_Base_Map_V5b" />
-      <item itemvalue="Python.Join_Greenspace" />
-      <item itemvalue="Python.Public_accessV3" />
       <item itemvalue="Python.SetUpScoreTable" />
+      <item itemvalue="Python.Merge_datasets" />
+      <item itemvalue="Python.Copy_fcs_to_new_gdb" />
+      <item itemvalue="Python.SetUpMapLayers" />
       <item itemvalue="Python.SpatialNatCapAnalysis" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.SpatialNatCapAnalysis" />
+        <item itemvalue="Python.SetUpMapLayers" />
+        <item itemvalue="Python.Copy_fcs_to_new_gdb" />
+        <item itemvalue="Python.Merge_datasets" />
         <item itemvalue="Python.SetUpScoreTable" />
-        <item itemvalue="Python.Public_accessV3" />
-        <item itemvalue="Python.Join_Greenspace" />
-        <item itemvalue="Python.Merge_into_Base_Map_V5b" />
       </list>
     </recent_temporary>
   </component>

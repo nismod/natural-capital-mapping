@@ -22,11 +22,11 @@ arcpy.env.XYTolerance = "0.001 Meters"
 
 # *** Enter parameters
 # --------------------
-# region = "Arc"
-region = "Oxon"
+region = "Arc"
+# region = "Oxon"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
-# method = "CROME_PHI"
-method = "HLU"
+method = "CROME_PHI"
+# method = "HLU"
 
 if region == "Oxon" and method == "HLU":
     gdbs = [r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Public_access.gdb"]
@@ -43,7 +43,9 @@ elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
         gdbs = arcpy.ListWorkspaces("*", "FileGDB")
         # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
         # gdbs = []
-        # gdbs.append(os.path.join(folder, "ValeofWhiteHorse.gdb"))
+        # gdbs.append(os.path.join(folder, "AylesburyVale.gdb"))
+        # gdbs.append(os.path.join(folder, "Chiltern.gdb"))
+        # gdbs.append(os.path.join(folder, "SouthOxfordshire.gdb"))
     elif region == "Oxon":
         gdbs = []
         LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]

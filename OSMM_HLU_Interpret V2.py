@@ -37,6 +37,7 @@ if region == "Oxon" and method == "HLU":
     Hab_field = "PHASE1HAB"
     BAP_field = "S41HABITAT"
     # Which stages of the code do we want to run? Useful for debugging or updating.
+    delete_landform = False
     simplify_OSMM = True
     simplify_HLU = True
     select_HLU_or_OSMM = True
@@ -56,7 +57,8 @@ elif method == "CROME_PHI":
     else:
         print("ERROR: Invalid region")
         exit()
-    # We only want to run simplify_OSMM.
+    # We only want to run delete_landform and simplify_OSMM.
+    delete_landform = True
     simplify_OSMM = True
     simplify_HLU = False
     select_HLU_or_OSMM = False
@@ -78,6 +80,8 @@ elif region == "Arc":
     for LAD in arcpy.SearchCursor(LAD_table):
         if LAD.getValue("county") in LADs_included:
             LADs.append(LAD.getValue("desc_").replace(" ", ""))
+    # Or use this line to update only certain LADs
+    # LADs = ["AylesburyVale", "Chiltern", "Oxford", "SouthOxfordshire", "Wycombe"]
 elif region == "Blenheim":
     LADs = ["Blenheim"]
 
@@ -88,6 +92,14 @@ for gdb in gdbs:
         arcpy.env.workspace = gdb
         print(''.join(["## Started interpreting habitats for ", gdb, " ", in_file_name, " on : ", time.ctime()]))
         in_file = os.path.join(folder, gdb, in_file_name)
+
+        if delete_landform:
+            print("  Deleting overlapping 'Landform' and 'Pylon' from OSMM for " + in_file_name)
+            arcpy.MakeFeatureLayer_management(in_file, "OSMM_layer")
+            expression = "DescriptiveGroup LIKE '%Landform%' OR DescriptiveTerm IN ('Cliff','Slope','Pylon')"
+            arcpy.SelectLayerByAttribute_management("OSMM_layer", where_clause=expression)
+            arcpy.DeleteFeatures_management("OSMM_layer")
+            arcpy.Delete_management("OSMM_layer")
     
         # Simplify the OSMM habitats
         # --------------------------

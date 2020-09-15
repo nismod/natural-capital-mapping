@@ -54,14 +54,12 @@ LAD_names = []
 needed_fields = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab"]
 
 # Which stages of the code do we want to run? Change step = 1 to step = 2 after running Merge_into_base_map to merge OSMM_CROME with PHI
-step = 2
+step = 1
 if step == 1:
-    delete_landform = True
     add_interpreted_habitat = True   # ONLY for Arc version that uses only OSMM, CROME and PHI etc
     merge_CROME = True
     interpret_PHI = False
 elif step == 2:
-    delete_landform = False
     add_interpreted_habitat = False
     merge_CROME = False
     interpret_PHI = True
@@ -75,6 +73,8 @@ for LAD in LADs:
     if LAD_county in LADs_included:
         LAD_name = LAD_full_name.replace(" ", "")
         LAD_names.append(LAD_name)
+# Or use this line to repeat for selected LADs only...
+# LAD_names = ["Wycombe"]
 
 # Now process each LAD gdb
 
@@ -87,41 +87,31 @@ if merge_CROME:
         print ("Processing " + LAD)
         arcpy.env.workspace = os.path.join(folder, LAD + ".gdb")
         in_map = in_map_name
-
-        if delete_landform:
-            print("   Deleting overlapping 'Landform' and 'Pylon' from OSMM for " + LAD)
-            arcpy.MakeFeatureLayer_management(in_map, "OSMM_layer")
-            expression = "DescriptiveGroup LIKE '%Landform%' OR DescriptiveTerm IN ('Cliff','Slope','Pylon')"
-            arcpy.SelectLayerByAttribute_management("OSMM_layer", where_clause=expression)
-            arcpy.DeleteFeatures_management("OSMM_layer")
-            arcpy.Delete_management("OSMM_layer")
-
         out_map = out_map_name
-        print("Copying " + in_map + " to " + out_map)
+        print("  Copying " + in_map + " to " + out_map)
         arcpy.CopyFeatures_management(in_map, out_map)
 
         if add_interpreted_habitat == True:
-            print("Copying OSMM_hab to new Interpreted habitat field")
+            print("  Copying OSMM_hab to new Interpreted habitat field")
             MyFunctions.check_and_add_field(out_map, Hab_field, "TEXT", 100)
             arcpy.CalculateField_management(out_map, Hab_field, "!OSMM_hab!", "PYTHON_9.3")
 
-        print("      Copying OBJECTID for base map")
+        print("  Copying OBJECTID for base map")
         MyFunctions.check_and_add_field(out_map, "BaseID_CROME", "LONG", 0)
         arcpy.CalculateField_management(out_map, "BaseID_CROME", "!OBJECTID!", "PYTHON_9.3")
 
-        print ("  Identifying farmland")
-        # Don't include ''Natural surface' as this is mainly road verges and amenity grass in urban areas
+        print ("  Identifying farmland and amenity grass")
+        # 'Natural surface' is mainly road verges and amenity grass in urban areas
         arcpy.MakeFeatureLayer_management(out_map, "ag_lyr")
-        expression = Hab_field + " IN ('Agricultural land', 'Cultivated/disturbed land', 'Arable', 'Arable and scattered trees') OR ("
-        expression = expression + Hab_field + " LIKE 'Improved grassland%')"
+        expression = Hab_field + " IN ('Agricultural land', 'Natural surface')"
         arcpy.SelectLayerByAttribute_management("ag_lyr", where_clause=expression)
 
-        print("      Calculating percentage of farmland features within CROME polygons")
+        print("  Calculating percentage of farmland and amenity features within CROME polygons")
         arcpy.TabulateIntersection_analysis("ag_lyr", ["OBJECTID", Hab_field, "BaseID_CROME", "Shape_Area"],
                                             CROME_data, "CROME_TI", ["lucode", "Land_Use_Description", "Simple", "Shape_Area"])
 
         # Sorting TI table by size so that larger intersections are first in the list
-        print("Sorting table with largest intersections first")
+        print("  Sorting table with largest intersections first")
         arcpy.Sort_management("CROME_TI", "CROME_TI_sort", [["AREA", "DESCENDING"]])
         # Delete all but the largest intersection. We need to do this, otherwise the join later is not robust - the wrong rows can be
         # copied across even if we think we have selected and joined to the right rows.
@@ -152,28 +142,25 @@ if merge_CROME:
         print("Finished merging CROME")
 
         print ("Interpreting")
-        # If CROME says grass and interpretation is currently arable, change it. But most 'fallow' land looks more like arable than grass
-        # in Google earth, so set that to arable as well (even though CROME simple description is grass).
-        expression = "CROME_desc = 'Grass' AND " \
-                     + Hab_field + " IN ('Agricultural land', 'Arable', 'Cultivated/disturbed land', 'Natural surface')"
+        # Copy over CROME for grass to 'Agricultural land' but not for 'Natural surface' as that is mainly road verges
+        # and amenity grass in urban areas
+        expression = "CROME_desc = 'Grass' AND " + Hab_field + " IN ('Agricultural land')"
         MyFunctions.select_and_copy(out_map, Hab_field, expression, "'Improved grassland'")
-        # If CROME says 'arable and scattered trees' is grass, change to 'Improved grassland and scattered trees'
-        # (in fact there are no polygons like this).
-        expression = "CROME_desc = 'Grass' AND " + Hab_field + " = 'Arable and scattered trees'"
-        MyFunctions.select_and_copy(out_map, Hab_field, expression, "'Improved grassland and scattered trees'")
-        # If CROME says arable and habitat is improved grassland or general agricultural, change. But don't change improved grassland
-        # with scattered scrub, as inspection shows that is mainly small non-farmed areas that do not fit the CROME hexagons well.
-        expression = "CROME_simple IN ('Arable', 'Fallow land') AND " + Hab_field + \
-                     " IN ('Agricultural land', 'Cultivated/disturbed land', 'Improved grassland', 'Natural surface')"
+        # Copy over CROME for arable to 'Agricultural land' but not for 'Natural surface'.
+        # Most 'fallow' land in CROME looks more like arable than grass
+        # in Google earth, so set that to arable as well (even though CROME simple description is grass).
+        expression = "CROME_simple IN ('Arable', 'Fallow land') AND " + Hab_field + " IN ('Agricultural land')"
         MyFunctions.select_and_copy(out_map, Hab_field, expression, "'Arable'")
         # Examination for Oxon shows only two single CROME polygons for SRC, both look like mis-classifications so ignore
         # Similarly, ignore for now the Nursery trees and Perennial crops or isolated trees categories in CROME as they look dodgy,
         # some look like grassland and some like arable though some could actually be correct.
 
-        # Set interpreted habitat Amenity grassland if this is 'Natural surface'
+        # This is commented out as it is better to wait for Join_Greenspace to identify amenity grass, because OSMM GreenSpace distinguishes
+        # transport from general amenity and other natural surface such as old airfields or golf courses) (though only in urban areas):
+        # Set interpreted habitat to Amenity grassland if this is 'Natural surface'
         # unless it is railside (do not want to flag this as amenity grassland because it is not generally accessible)
-        expression = "CROME_desc = 'Grass' AND " + Hab_field + " = 'Natural surface' AND DescriptiveGroup <> 'Rail'"
-        MyFunctions.select_and_copy(out_map, Hab_field, expression, "'Amenity grassland'")
+        # expression = "CROME_desc = 'Grass' AND " + Hab_field + " = 'Natural surface' AND DescriptiveGroup <> 'Rail'"
+        # MyFunctions.select_and_copy(out_map, Hab_field, expression, "'Amenity grassland'")
 
         print(''.join(["## Finished adding CROME data to " + LAD + " on : ", time.ctime()]))
 
@@ -182,17 +169,6 @@ if interpret_PHI:
         arcpy.env.workspace = os.path.join(folder, LAD + ".gdb")
         print("Interpreting " + LAD)
         out_map = out_map_name + "_PHI"
-
-        # Temporary fix to correct some interpretation errors
-        # print("    Fixing interpretation errors for parkland")
-        # expression = Hab_field + " = 'Parkland with scattered trees'"
-        # MyFunctions.select_and_copy(out_map, Hab_field, expression, "'Parkland and scattered trees'")
-        # expression = Hab_field + " = 'Parkland with scattered trees: broadleaved'"
-        # MyFunctions.select_and_copy(out_map, Hab_field, expression, "'Parkland and scattered trees: broadleaved'")
-        # expression = Hab_field + " = 'Parkland with scattered trees: mixed'"
-        # MyFunctions.select_and_copy(out_map, Hab_field, expression, "'Parkland and scattered trees: mixed'")
-        # expression = Hab_field + " = 'Parkland with scattered trees: coniferous'"
-        # MyFunctions.select_and_copy(out_map, Hab_field, expression, "'Parkland and scattered trees: coniferous'")
 
         # Copy PHI habitat across, but not for manmade, gardens, water, unidentified PHI, grazing marsh, wood pasture or
         # OMHD (all dealt with later)

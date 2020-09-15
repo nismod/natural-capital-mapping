@@ -16,12 +16,12 @@ arcpy.CheckOutExtension("Spatial")
 arcpy.env.overwriteOutput = True  # Overwrites files
 arcpy.env.qualifiedFieldNames = False
 
-# region = "Arc"
-region = "Oxon"
+region = "Arc"
+# region = "Oxon"
 # region = "Blenheim"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
-# method = "CROME_PHI"
-method = "HLU"
+method = "CROME_PHI"
+# method = "HLU"
 
 if (region == "Oxon" or region == "Blenheim") and method == "HLU":
     folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\NaturalCapital"
@@ -59,7 +59,8 @@ elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
         gdbs = []
         gdbs = arcpy.ListWorkspaces("*", "FileGDB")
         # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
-        # gdbs.append(os.path.join(folder, "ValeofWhiteHorse.gdb"))
+        # gdbs.append(os.path.join(folder, "AylesburyVale.gdb"))
+        # gdbs.append(os.path.join(folder, "Chiltern.gdb"))
     elif region == "Oxon":
         gdbs = []
         LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]

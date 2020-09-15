@@ -11,11 +11,11 @@ print(''.join(["## Started on : ", time.ctime()]))
 arcpy.CheckOutExtension("Spatial")
 arcpy.env.overwriteOutput = True  # Overwrites files
 
-# region = "Arc"
-region = "Oxon"
+region = "Arc"
+# region = "Oxon"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
-# method = "CROME_PHI"
-method = "HLU"
+method = "CROME_PHI"
+# method = "HLU"
 
 if region == "Oxon" and method == "HLU":
     folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data"
@@ -32,7 +32,8 @@ elif method == "CROME_PHI":
         gdbs = []
         gdbs = arcpy.ListWorkspaces("*", "FileGDB")
         # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
-        # gdbs.append(os.path.join(folder, "ValeofWhiteHorse.gdb"))
+        #gdbs.append(os.path.join(folder, "AylesburyVale.gdb"))
+        #gdbs.append(os.path.join(folder, "Chiltern.gdb"))
         ALC_data = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Data.gdb\ALC_diss_union"
     elif region == "Oxon":
         gdbs = []
@@ -53,10 +54,7 @@ for gdb in gdbs:
     arcpy.CopyFeatures_management(base_map_name, "noFarmland")
     arcpy.MakeFeatureLayer_management("noFarmland", "farmland_layer")
     expression = "(Interpreted_habitat LIKE 'Arable%' OR Interpreted_habitat = 'Agricultural land' "
-    if region == "Oxon" and method == "HLU":
-        expression = expression + "OR Interpreted_habitat LIKE 'Improved%' OR Interpreted_habitat = 'Orchard')"
-    elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
-        expression = expression + "OR Interpreted_habitat LIKE 'Improved%' OR Interpreted_habitat LIKE '%rchard%')"
+    expression = expression + "OR Interpreted_habitat LIKE 'Improved%' OR Interpreted_habitat LIKE '%rchard%')"
     arcpy.SelectLayerByAttribute_management("farmland_layer", where_clause=expression)
 
     print("    Running Identity")

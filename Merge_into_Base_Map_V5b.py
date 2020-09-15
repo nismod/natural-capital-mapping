@@ -41,13 +41,13 @@ arcpy.env.XYTolerance = "0.001 Meters"
 # ---------------------------------------
 # The merge type simply identifies which block of pre-set parameters is selected from those listed below.
 # merge_type = "Oxon_OSMM_HLU"
-merge_type = "Oxon_Designations"
+# merge_type = "Oxon_Designations"
 # merge_type = "Arc_CROME_PHI"
-# merge_type = "Arc_Designations"
+merge_type = "Arc_Designations"
 # merge_type = "Arc_access"
 
-region = "Oxon"
-# region = "Arc"
+# region = "Oxon"
+region = "Arc"
 
 # *** ENTER PARAMETERS HERE. A number of pre-set parameter blocks have been set up for convenience.
 # -------------------------------------------------------------------------------------------------
@@ -96,10 +96,14 @@ elif merge_type == "Arc_CROME_PHI":
     folder = r"D:\cenv0389\OxCamArc\LADs"
     arcpy.env.workspace = folder
     if region == "Arc":
-        gdbs = arcpy.ListWorkspaces("*", "FileGDB")
+        # gdbs = arcpy.ListWorkspaces("*", "FileGDB")
         # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
-        # gdbs = []
-        # gdbs.append(os.path.join(folder, "ValeofWhiteHorse.gdb"))
+        gdbs = []
+        gdbs.append(os.path.join(folder, "AylesburyVale.gdb"))
+        gdbs.append(os.path.join(folder, "Chiltern.gdb"))
+        gdbs.append(os.path.join(folder, "SouthOxfordshire.gdb"))
+        gdbs.append(os.path.join(folder, "Oxford.gdb"))
+        gdbs.append(os.path.join(folder, "Wycombe.gdb"))
 
     elif region == "Oxon":
         gdbs = []
@@ -124,9 +128,13 @@ elif merge_type == "Arc_Designations":
     arcpy.env.workspace = folder
     if region == "Arc":
         gdbs = arcpy.ListWorkspaces("*", "FileGDB")
-        # *** Temporary fix to repeat Peterborough only ***
+        # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
         # gdbs = []
-        # gdbs.append(os.path.join(folder, "Peterborough.gdb"))
+        # gdbs.append(os.path.join(folder, "AylesburyVale.gdb"))
+        # gdbs.append(os.path.join(folder, "Chiltern.gdb"))
+        # gdbs.append(os.path.join(folder, "SouthOxfordshire.gdb"))
+        # gdbs.append(os.path.join(folder, "Oxford.gdb"))
+        # gdbs.append(os.path.join(folder, "Wycombe.gdb"))
     elif region == "Oxon":
         gdbs = []
         LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]

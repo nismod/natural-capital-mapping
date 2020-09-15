@@ -25,11 +25,11 @@ arcpy.env.qualifiedFieldNames = False    # Joined fields will be exported withou
 arcpy.env.XYTolerance = "0.001 Meters"
 
 # Choose whether to do this for just Oxon or the Ox-Cam Arc
-# region = "Arc"
-region = "Oxon"
+region = "Arc"
+# region = "Oxon"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
-# method = "CROME_PHI"
-method = "HLU"
+method = "CROME_PHI"
+# method = "HLU"
 
 # Folder containing multiple OS Greenspace shapefile tiles to be joined together
 OSGS_folder = r"D:\cenv0389\Oxon_GIS\OxCamArc\OSGS"
@@ -50,7 +50,9 @@ elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
         gdbs = arcpy.ListWorkspaces("*", "FileGDB")
         # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
         # gdbs = []
-        # gdbs.append(os.path.join(work_folder, "ValeofWhiteHorse.gdb"))
+        # gdbs.append(os.path.join(work_folder, "AylesburyVale.gdb"))
+        # gdbs.append(os.path.join(work_folder, "Chiltern.gdb"))
+
     elif region == "Oxon":
         gdbs = []
         LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
@@ -76,10 +78,8 @@ if merge_GS_files:
     ifile = 0
     for file in arcpy.ListFiles("*_GreenspaceArea.shp"):
         ifile = ifile + 1
-        # Select all rows except gardens (and optionally amenity) - we don't need those
+        # Select all rows except gardens - we don't need those
         arcpy.MakeFeatureLayer_management(file, "sel_lyr")
-        # expression = "priFunc <> 'Private Garden' AND priFunc <> 'Amenity - Transport' AND priFunc <> 'Amenity - Residential Or Business' " \
-        #              "AND secFunc <> 'Private Garden' AND secFunc <> 'Amenity - Transport' AND secFunc <> 'Amenity - Residential Or Business'"
         expression = "priFunc <> 'Private Garden' AND secFunc <> 'Private Garden'"
         arcpy.SelectLayerByAttribute_management("sel_lyr", where_clause=expression)
         if ifile == 1:
@@ -186,8 +186,8 @@ for gdb in gdbs:
 
         # Modify base map habitats for allotments, playing fields, play spaces etc - but only generic areas (not paths, woods, water etc)
         print("    Interpreting habitats with GS")
-        generic_natural = "(Interpreted_habitat IN ('Arable', 'Agricultural land', 'Improved grassland', 'Natural surface', " \
-                          "'Amenity grassland', 'Cultivated/disturbed land'))"
+        generic_natural = "(" + Hab_field + " IN ('Agricultural land', 'Natural surface', 'Amenity grassland', 'Cultivated/disturbed land')"
+        generic_natural = generic_natural + " OR " + Hab_field + " LIKE 'Arable%' OR " + Hab_field + " LIKE 'Improved grass%')"
         expression = generic_natural + " AND GreenSpace = 'Allotments Or Community Growing Spaces'"
         MyFunctions.select_and_copy(Base_map, Hab_field, expression,  "'Allotments, city farm, community garden'")
 
@@ -201,14 +201,16 @@ for gdb in gdbs:
         expression = generic_natural + " AND GreenSpace = 'Golf Course'"
         MyFunctions.select_and_copy(Base_map, Hab_field, expression,"'Golf course'")
 
-        # Replace 'Natural surface' with 'Amenity grassland' - but not for transport (roadside and railside) as not all of this is usable?
-        # Also not for 'arable' or 'improved grassland' because much OSGS 'Amenity' is actually farmland around urban areas
-        expression = "Interpreted_habitat = 'Natural surface' AND GreenSpace = 'Amenity - Residential Or Business'"
-        MyFunctions.select_and_copy(Base_map, Hab_field, expression,"'Amenity grassland'")
-
         # Correct 'Amenity - Residential Or Business' to 'Amenity - Transport' where Rail occurs in DescriptiveGroup (this is an OSGS error)
         expression = "GreenSpace = 'Amenity - Residential Or Business' AND DescriptiveGroup LIKE '%Rail%'"
         MyFunctions.select_and_copy(Base_map, "GreenSpace", expression, "'Amenity - Transport'")
+
+        # Replace 'Natural surface' with 'Amenity grassland' - but not for transport (roadside and railside) as not all of this is usable.
+        # Also not for 'arable' or 'improved grassland' because some OSGS 'Amenity' is actually farmland around urban areas
+        expression = Hab_field + " = 'Natural surface' AND GreenSpace = 'Amenity - Residential Or Business'"
+        MyFunctions.select_and_copy(Base_map, Hab_field, expression,"'Amenity grassland'")
+
+        # We do not copy over Amenity - Transport because that should be already identified as Road verge from OSMM
 
     print("### Completed " + gdb_name + " on : " + time.ctime())
 
