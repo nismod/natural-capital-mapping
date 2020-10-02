@@ -337,7 +337,11 @@ for gdb in gdbs:
         # Select base map polygons that are not 'Manmade' or 'Garden', green space or designated as accessible types, and export to new file
         print ("    Extracting polygons that are not gardens or manmade and have no relevant greenspace or designation attributes")
         arcpy.MakeFeatureLayer_management(base_map, "sel_lyr")
-        expression = hab_field + " NOT IN ('Garden', 'Amenity_grassland') AND Make <> 'Manmade' AND " \
+        # There was an error here: Amenity grassland had an underscore between the words so would not have been excluded as intended.
+        # Fixed on 1/10/2020. This will have affected all the work done for Blenheim and EA Arc, and updated Oxon map sent to
+        # Nick and Mel end Sept 2020. Not clear how much difference it makes; possibly none? Because it simply added either Open or Path
+        # to amenity grassland not in Greenspace (rather than leaving it out), which is later over-ridden to Open for all amenity grassland.
+        expression = hab_field + " NOT IN ('Garden', 'Amenity grassland') AND Make <> 'Manmade' AND " \
                                  "(GreenSpace IS NULL OR GreenSpace = '') AND " + des_list_expression
         arcpy.SelectLayerByAttribute_management("sel_lyr", where_clause=expression)
         arcpy.CopyFeatures_management("sel_lyr", "Natural_features")

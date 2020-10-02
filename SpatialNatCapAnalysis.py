@@ -69,7 +69,7 @@ elif region == "Blenheim":
     Score_features = ["NatCap_Estate", "NatCap_Park"]
     hab_field = "Interpreted_habitat"
     ssdir = r"D:\cenv0389\Blenheim"
-    lines = ["Hedges", "PROW", "Sustrans_offroad", "National_trails_Ox", "OS_rivers_Ox", "zoom_waterlines_Ox"]
+    lines = ["Hedges", "PROW", "Sustrans_offroad", "National_trails_Ox", "OS_rivers_Ox", "zoom_waterlines_Ox_local"]
     short_label = False
     # note: some of the ancient trees are just outside the estate boundary (in a 20m buffer) because the boundary is inaccurately drawn,
     # but they should be included. So you should replace the tree numbers output here with the actual numbers in the input dataset.

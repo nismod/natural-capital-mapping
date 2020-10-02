@@ -15,8 +15,8 @@ arcpy.env.overwriteOutput = True         # Overwrites files
 arcpy.env.qualifiedFieldNames = False    # Joined fields will be exported without the join table name
 arcpy.env.XYTolerance = "0.001 Meters"
 
-region = "Oxon"
-# region = "Arc"
+# region = "Oxon"
+region = "Arc"
 # Which method are we using - Phase 1 habitat data or LCM and PHI?
 # method = "HLU"
 method = "LCM_PHI"

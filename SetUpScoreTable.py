@@ -41,7 +41,7 @@ if (region == "Oxon" or region == "Blenheim") and method == "HLU":
         area_name = "Estate"
         # To start again from the habitat base map, manually unselect all the score fields (Properties, Fields)
         # then export to base map called Estate_habitats or similar
-        Base_map = "Estate_habitats"
+        Base_map = "Estate_habitats_Zones_Tenancies_Paths"
     hab_field = "Interpreted_habitat"
     Matrix = r"D:\cenv0389\Oxon_GIS\Oxon_county\NaturalCapital\Oxon_full.gdb\Matrix.dbf"
     ALC_multipliers = r"D:\cenv0389\Oxon_GIS\Oxon_county\NaturalCapital\Oxon_full.gdb\ALC_multipliers.dbf"

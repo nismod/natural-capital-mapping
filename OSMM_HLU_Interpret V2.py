@@ -376,7 +376,7 @@ def Interpret_hab(HLU_hab, OSMM_hab, OSMM_Make, OSMM_area, HLU_area, undefined_o
                 return "Dense scrub"
 
     # Where HLU says woodland and OSMM says trees or scattered trees, use HLU definition unless HLU is unknown woodland
-    if ("trees" in OSMM_hab or "orchard" in OSMM_hab) and ("woodland" in HLU_hab or "orchard" in HLU_hab):
+    if ("woodland" in OSMM_hab or "orchard" in OSMM_hab) and ("woodland" in HLU_hab or "orchard" in HLU_hab):
         if ("unknown" in HLU_hab) or (HLU_hab == "woodland"):
             return OSMM_hab.capitalize()   # if unknown woodland in HLU, use OSMM definition
         else:
@@ -411,7 +411,7 @@ def interpretBAP(Hab, BAP):
             else:
                 return Hab
         elif "possible priority grassland" in BAP:
-            if Hab in ["Natural surface", "Improved grassland"]:
+            if Hab in ["Natural surface", "Improved grassland", "Agricultural land"]:
                 return "Semi-natural grassland"
             elif Hab == "Scattered scrub":
                 return "Semi-natural grassland and scattered scrub"
