@@ -41,7 +41,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.Merge_datasets">
+  <component name="RunManager" selected="Python.Compare_fcs">
     <configuration name="Compare_fcs" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="natural-capital-mapping" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -105,6 +105,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="Public_accessV3" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="natural-capital-mapping" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Public_accessV3.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="SetUpScoreTable" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="natural-capital-mapping" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -126,41 +147,20 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="SpatialNatCapAnalysis" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="natural-capital-mapping" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SpatialNatCapAnalysis.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <list>
+      <item itemvalue="Python.Public_accessV3" />
       <item itemvalue="Python.SetUpScoreTable" />
-      <item itemvalue="Python.Merge_datasets" />
       <item itemvalue="Python.Copy_fcs_to_new_gdb" />
-      <item itemvalue="Python.SpatialNatCapAnalysis" />
+      <item itemvalue="Python.Merge_datasets" />
       <item itemvalue="Python.Compare_fcs" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.Merge_datasets" />
         <item itemvalue="Python.Compare_fcs" />
+        <item itemvalue="Python.Merge_datasets" />
         <item itemvalue="Python.Copy_fcs_to_new_gdb" />
-        <item itemvalue="Python.SpatialNatCapAnalysis" />
         <item itemvalue="Python.SetUpScoreTable" />
+        <item itemvalue="Python.Public_accessV3" />
       </list>
     </recent_temporary>
   </component>

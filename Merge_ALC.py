@@ -24,10 +24,12 @@ if region == "Oxon" and method == "HLU":
     out_name = "OSMM_HLU_CR_ALC"
     ALC_data = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Merge_OSMM_HLU_CR_ALC.gdb\ALC_Union"
 elif method == "CROME_PHI":
-    folder = r"D:\cenv0389\OxCamArc\LADs"
+    folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData"
     arcpy.env.workspace = folder
-    base_map_name = "OSMM_CROME_PHI"
-    out_name = "OSMM_CR_PHI_ALC"
+    # base_map_name = "OSMM_CROME_PHI"
+    base_map_name = "LERC"
+    # out_name = "OSMM_CR_PHI_ALC"
+    out_name = "LERC_ALC"
     if region == "Arc":
         gdbs = []
         gdbs = arcpy.ListWorkspaces("*", "FileGDB")

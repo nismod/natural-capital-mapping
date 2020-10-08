@@ -21,13 +21,15 @@ arcpy.env.overwriteOutput = True  # Overwrites files
 # Define input parameters
 # -----------------------
 
-# region = "Arc"
+region = "Arc"
 # region = "Oxon"
-region = "Blenheim"
-use_whole_area = True
+# region = "Blenheim"
+use_whole_area = False
+Run_name = "ATI_"
 
 if region == "Oxon":
     ncdir = r"D:\cenv0389\Oxon_GIS\Oxon_county\NaturalCapital"
+    outdir = ncdir
     ncgdb = os.path.join(ncdir, "Oxon_full.gdb")
     out_gdb = os.path.join(ncdir, "Scenario_analysis.gdb")
     arcpy.env.workspace = ncgdb
@@ -45,20 +47,22 @@ if region == "Oxon":
     data_gdb = ncgdb
     tree_data = os.path.join(data_gdb, "AncientTrees")
 elif region == "Arc":
-    ncdir = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc\NaturalCapital"
+    ncdir = r"D:\cenv0389\Oxon_GIS\OxCamArc\NaturalCapital"
     ncgdb = os.path.join(ncdir, "NaturalCapital.gdb")
-    out_gdb = os.path.join(ncdir, "Scenario_analysis.gdb")
+    outdir = r"D:\cenv0389\Oxon_GIS\OxCamArc\ATI"
+    out_gdb = os.path.join(outdir, "ATI.gdb")
     arcpy.env.workspace = ncgdb
-    Scenario_features = "UDM_scenarios"
-    Score_features = ["NatCap_Arc", "NatCap_Oxon"]
+    Scenario_features = "ATI_scenarios"
+    Score_features = ["NatCap_Arc_not_Oxon", "NatCap_Oxon"]
     hab_field = "Interpreted_habitat"
-    ssdir = r"C:\Users\cenv0389\Documents\Oxon_GIS\Spreadsheets"
+    ssdir = r"D:\cenv0389\Oxon_GIS\Spreadsheets"
     lines = []
     data_gdb = ncgdb
-    short_label = True
+    short_label = False
     tree_data = os.path.join(data_gdb, "AncientTrees")
 elif region == "Blenheim":
     ncdir = r"D:\cenv0389\Blenheim"
+    outdir = ncdir
     ncgdb = os.path.join(ncdir, "Blenheim.gdb")
     out_gdb = os.path.join(ncdir, "Blenheim.gdb")
     arcpy.env.workspace = ncgdb
@@ -77,7 +81,7 @@ elif region == "Blenheim":
 
 # What stages of the code do we want to run?
 calc_trees = True
-calc_lines = True
+calc_lines = False
 high_nc_polygons = True
 calculate_habitat_areas = True
 calculate_scores = True
@@ -111,14 +115,14 @@ elif service_lookup == "info_table":
         service_list.append(str(service[0]))
 
 if calculate_scores:
-    outfile1 = "Scenario_analysis_scores.txt"
-    file1 = os.path.join(ncdir, outfile1)
+    outfile1 = Run_name + "Scenario_analysis_scores.txt"
+    file1 = os.path.join(outdir, outfile1)
     print ("Opening output file: " + file1)
     f1 = open(file1, "w")
 
 if calc_trees or calc_lines or high_nc_polygons:
-    outfile2 = "Scenario_analysis_assets.txt"
-    file2 = os.path.join(ncdir, outfile2)
+    outfile2 = Run_name + "Scenario_analysis_assets.txt"
+    file2 = os.path.join(outdir, outfile2)
     print ("Opening output file: " + file2)
     f2 = open(file2, "w")
 

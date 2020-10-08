@@ -48,6 +48,8 @@ merge_type = "Arc_Designations"
 
 # region = "Oxon"
 region = "Arc"
+# Special case for LNCP project with LERC data
+LNCP_LERC = True
 
 # *** ENTER PARAMETERS HERE. A number of pre-set parameter blocks have been set up for convenience.
 # -------------------------------------------------------------------------------------------------
@@ -124,7 +126,7 @@ elif merge_type == "Arc_CROME_PHI":
     significant_size = 200
     snap_env = [[Base_map_name, "VERTEX", "0.5 Meters"], [Base_map_name, "EDGE", "1 Meters"], [Base_map_name, "VERTEX", "1 Meters"]]
 elif merge_type == "Arc_Designations":
-    folder = r"D:\cenv0389\OxCamArc\LADs"
+    folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData"
     arcpy.env.workspace = folder
     if region == "Arc":
         gdbs = arcpy.ListWorkspaces("*", "FileGDB")
@@ -140,18 +142,25 @@ elif merge_type == "Arc_Designations":
         LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
         for LAD in LADs:
             gdbs.append(os.path.join(folder, LAD))
-    Base_map_name = "OSMM_CR_PHI_ALC"
     New_in = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Union_Designations.gdb\Designations_tidy"
     New_features = "Designations"
-    Output_fc = "OSMM_CR_PHI_ALC_Desig"
+    if LNCP_LERC:
+        Base_map_name = "LERC_ALC"
+        Output_fc = "LERC_ALC_Desig"
+        Needed = ["Toid", "DescGroup", "DescTerm", "make", "GI_type", "LWS_p", "AccessGI", "LCM_type", "GI_Type_Final",
+                  "Accessible", "Ph1code", "Ph1code_1", "Ph1code_12", "HabNmPLUS", "Ph1ColBestFit", "HabType2",
+                  "Interpreted_habitat", "ALC_GRADE"]
+    else:
+        Base_map_name = "OSMM_CR_PHI_ALC"
+        Output_fc = "OSMM_CR_PHI_ALC_Desig"
+        Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab", "CROME_desc", "CROME_simple",
+                  "PHI", "WPP", "OMHD", "Interpreted_habitat", "ALC_GRADE"]
     base_tag = "Base"
     new_tag = "Desig"
     base_key = "Interpreted_habitat"
     new_key = "Type"
     base_TI_fields = []
     new_TI_fields = ["Name"]
-    Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab", "CROME_desc", "CROME_simple",
-              "PHI", "WPP", "OMHD", "Interpreted_habitat", "ALC_GRADE"]
     significant_size = 500
     snap_env = [[Base_map_name, "EDGE", "0.5 Meters"], [Base_map_name, "VERTEX", "0.5 Meters"]]
 elif merge_type == "Arc_access":
@@ -179,6 +188,13 @@ else:
     print("Error - merge type not defined")
     exit()
 
+# CAUTION: Provide the name of the Index fields. This is usually but not always OBJECTID. Check aliases!
+if LNCP_LERC:
+    BaseIndexID = "OBJECTID_1"
+else:
+    BaseIndexID = "OBJECTID"
+NewIndexID = "OBJECTID"
+
 new_ID = new_tag + "_OBJID"
 base_ID = base_tag + "_OBJID"
 new_area = new_tag + "_Area"
@@ -204,7 +220,7 @@ xy_tol = "0.001 Meters"
 
 # Which sections of code do we want to run? For de-bugging or updating - no point repeating sections already completed.
 sp_base = True               # Convert input base map to single part
-clip_new = False              # Clip new features to exact boundary of region
+clip_new = True              # Clip new features to exact boundary of region
 snap_new_features = True      # No need to snap if input features are consistent with base map geometry
 tabulate_intersections = True
 make_joint_shapes = True
@@ -291,16 +307,16 @@ for gdb in gdbs:
     if tabulate_intersections == True:
 
         # Save ObjectID to separate field as this will be used later (also area, just for info). Check first to see if new fields already added.
-        print("   Saving new feature ObjectIDs and areas")
+        print("   Saving new feature Index IDs and areas")
         MyFunctions.check_and_add_field("New_snap_clean", new_ID, "LONG", 0)
-        arcpy.CalculateField_management("New_snap_clean", new_ID, '!OBJECTID!', "PYTHON_9.3")
+        arcpy.CalculateField_management("New_snap_clean", new_ID, "!" + NewIndexID + "!", "PYTHON_9.3")
 
         MyFunctions.check_and_add_field("New_snap_clean", new_area, "FLOAT", 0)
         arcpy.CalculateField_management("New_snap_clean", new_area, '!Shape_Area!', "PYTHON_9.3")
 
-        print("   Saving base map ObjectIDs and areas")
+        print("   Saving base map Index IDs and areas")
         MyFunctions.check_and_add_field(Base_map, base_ID, "LONG", 0)
-        arcpy.CalculateField_management(Base_map, base_ID, '!OBJECTID!', "PYTHON_9.3")
+        arcpy.CalculateField_management(Base_map, base_ID, "!" + BaseIndexID + "!", "PYTHON_9.3")
 
         MyFunctions.check_and_add_field(Base_map, base_area, "FLOAT", 0)
         arcpy.CalculateField_management(Base_map, base_area, '!Shape_Area!', "PYTHON_9.3")

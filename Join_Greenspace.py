@@ -28,7 +28,8 @@ arcpy.env.XYTolerance = "0.001 Meters"
 region = "Arc"
 # region = "Oxon"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
-method = "CROME_PHI"
+# method = "CROME_PHI"
+method = "LERC"
 # method = "HLU"
 
 # Folder containing multiple OS Greenspace shapefile tiles to be joined together
@@ -44,7 +45,7 @@ if region == "Oxon" and method == "HLU":
     boundary = "Oxfordshire"
     Hab_field = "Interpreted_habitat"
 elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
-    work_folder = r"D:\cenv0389\OxCamArc\LADs"
+    work_folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData"
     arcpy.env.workspace = work_folder
     if region == "Arc":
         gdbs = arcpy.ListWorkspaces("*", "FileGDB")
@@ -52,15 +53,32 @@ elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
         # gdbs = []
         # gdbs.append(os.path.join(work_folder, "AylesburyVale.gdb"))
         # gdbs.append(os.path.join(work_folder, "Chiltern.gdb"))
+        #
+        if method == "LERC":
+            Base_map_name = "LERC_ALC_Desig"
+            TOID_field = "Toid"
+            Base_Index_field = "OBJECTID_1"
+            DescGroup = "DescGroup"
+        else:
+            Base_map_name = "OSMM_CR_PHI_ALC_Desig"
+            TOID_field = "TOID"
+            Base_Index_field = "OBJECTID"
+            DescGroup = "DescriptiveGroup"
 
     elif region == "Oxon":
         gdbs = []
         LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
         for LAD in LADs:
             gdbs.append(os.path.join(work_folder, LAD))
-    Base_map_name = "OSMM_CR_PHI_ALC_Desig"
+        Base_map_name = "OSMM_CR_PHI_ALC_Desig"
+        TOID_field = "TOID"
+        Base_Index_field = "OBJECTID"
+        DescGroup = "DescriptiveGroup"
+
     boundary = "boundary"
     Hab_field = "Interpreted_habitat"
+
+OpenGS_Index_field = "OBJECTID"
 
 # Which parts of the code do we want to run? For debugging or updating
 merge_GS_files = False
@@ -70,6 +88,9 @@ join_OSGS = True
 clip_openGS = True
 join_openGS = True
 interpret_GS = True
+
+# Temporary fix as Interpreted habitat field was too short for LERC data
+FixHab = True
 
 # Loop through all the OSGS tiles in the OSGS folder and merge into a single file
 if merge_GS_files:
@@ -100,6 +121,9 @@ for gdb in gdbs:
     Base_map = Base_map_name + "_GS"
     print ("    " + Base_map + " has " + str(arcpy.GetCount_management(Base_map_name)) + " rows")
 
+    if FixHab:
+        MyFunctions.check_and_add_field(Base_map, "Interpreted_habitat", "TEXT", 100)
+
     if clip_GS_files:
         print("    Clipping OSGS for " + gdb_name)
         arcpy.Clip_analysis(OSGS, boundary, "OSGS")
@@ -111,14 +135,14 @@ for gdb in gdbs:
         MyFunctions.check_and_add_field(Base_map, "OSGS_priFunc", "TEXT", 40)
         MyFunctions.check_and_add_field(Base_map, "OSGS_secFunc", "TEXT", 40)
 
-        # Remove first 4 letters from TOID ('osgb')
+        # Remove first 4 letters from TOID ('osgb') in OSGS layer
         MyFunctions.check_and_add_field("OSGS", "TOID_trim", "TEXT", 20)
         arcpy.CalculateField_management("OSGS", "TOID_trim", "!toid![4:]", "PYTHON_9.3")
 
         # Now join the field
         print ("      Joining OSGS table to base map")
         arcpy.MakeFeatureLayer_management(Base_map, "join_lyr")
-        arcpy.AddJoin_management("join_lyr", "TOID", "OSGS", "TOID_trim")
+        arcpy.AddJoin_management("join_lyr", TOID_field, "OSGS", "TOID_trim")
 
         # Copy over prifunc and secfunc
         print ("      Copying primary and secondary GS functions to base map")
@@ -132,13 +156,13 @@ for gdb in gdbs:
         # Note - there is a lookup table to match OS openGS to OSMM GS, but only about a quarter of the OS OpenGS codes
         # seem to have a matching TOID in the lookup table. Maybe versions do not match due to OSMM updates?
         print ("    Joining Open GS.")
-        print("      Copying OBJECTID for base map")
+        print("      Copying Index field for base map")
         MyFunctions.check_and_add_field(Base_map, "BaseID_GS", "LONG", 0)
-        arcpy.CalculateField_management(Base_map, "BaseID_GS", "!OBJECTID!", "PYTHON_9.3")
+        arcpy.CalculateField_management(Base_map, "BaseID_GS", "!" + Base_Index_field + "!", "PYTHON_9.3")
 
         print("      Copying OBJECTID for Open_GS")
         MyFunctions.check_and_add_field("OS_Open_GS", "GSID", "LONG", 0)
-        arcpy.CalculateField_management("OS_Open_GS", "GSID", "!OBJECTID!", "PYTHON_9.3")
+        arcpy.CalculateField_management("OS_Open_GS", "GSID", "!" + OpenGS_Index_field + "!", "PYTHON_9.3")
 
         if clip_openGS:
             print("      Clipping out OS open GS not already covered by OSGS (i.e. leaving just rural areas)")
@@ -202,7 +226,7 @@ for gdb in gdbs:
         MyFunctions.select_and_copy(Base_map, Hab_field, expression,"'Golf course'")
 
         # Correct 'Amenity - Residential Or Business' to 'Amenity - Transport' where Rail occurs in DescriptiveGroup (this is an OSGS error)
-        expression = "GreenSpace = 'Amenity - Residential Or Business' AND DescriptiveGroup LIKE '%Rail%'"
+        expression = "GreenSpace = 'Amenity - Residential Or Business' AND " + DescGroup + " LIKE '%Rail%'"
         MyFunctions.select_and_copy(Base_map, "GreenSpace", expression, "'Amenity - Transport'")
 
         # Replace 'Natural surface' with 'Amenity grassland' - but not for transport (roadside and railside) as not all of this is usable.

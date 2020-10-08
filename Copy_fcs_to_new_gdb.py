@@ -1,18 +1,18 @@
 # Copies a feature class from a series of gdbs in one folder to a single gdb
 # ---------------------------------------------------------------------------
 #
-import time, arcpy, os, MyFunctions
+import time, arcpy, os
 
 print(''.join(["## Started on : ", time.ctime()]))
 
 arcpy.env.overwriteOutput = True  # Overwrites files
 
 # name of folder where the individual gdbs are stored
-folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData"
+folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_FreeData"
 arcpy.env.workspace = folder
 
 # name of gdb to copy the individual feature classes into
-out_gdb = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData_LADs.gdb"
+out_gdb = r"D:\cenv0389\OxCamArc\NatCap_Arc_FreeData_LADs.gdb"
 
 # Wildcard template for feature class to copy over
 fc_template = "NatCap*"

@@ -40,14 +40,20 @@ def delete_fields(in_file, needed_fields, out_file):
         print ("      No fields need to be deleted from " + out_file)
     return
 
-def tidy_fields(in_file):
+def tidy_fields(in_file, delete_1):
     # Delete un-needed FID and OBJID fields and duplicate fields ending in _1
     Fields = arcpy.ListFields(in_file)
     fieldNameList = []
     for field in Fields:
-        if ("FID" in field.name or "OBJID" in field.name or "BaseID" in field.name or "_1" in field.name or "_Relationship" in field.name
-            or "_Area" in field.name or field.name == "Shape_Leng") and not field.required:
-            fieldNameList.append(field.name)
+        # Flag 'delete_1' indicates whether to delete fields containing "_1" or not
+        if delete_1:
+            if ("FID" in field.name or "OBJID" in field.name or "BaseID" in field.name or "_1" in field.name or "_Relationship" in field.name
+                or "_Area" in field.name or field.name == "Shape_Leng") and not field.required:
+                fieldNameList.append(field.name)
+        else:
+            if ("FID" in field.name or "OBJID" in field.name or "BaseID" in field.name or "_Relationship" in field.name
+                or "_Area" in field.name or field.name == "Shape_Leng") and not field.required:
+                fieldNameList.append(field.name)
     print ("      Deleting unnecessary fields in " + in_file + ": " + ', '.join(fieldNameList))
     print ("      Started on " + time.ctime() + ". May take several hours for large files. It is much quicker to select needed fields"
                                                " in ArcMap and then export.")
@@ -74,7 +80,8 @@ def check_and_add_field(in_table, in_field, type, len):
                     arcpy.AddField_management(in_table, in_field, type, field_length=len)
                     arcpy.CalculateField_management(in_table, in_field, "!" + in_field + "_temp!", "PYTHON_9.3")
                     arcpy.DeleteField_management(in_table, in_field + "_temp")
-                    arcpy.DeleteField_management(in_table, in_field)
+                    # Not sure what this line was doing here as it deletes the new field! Commented out.
+                    # arcpy.DeleteField_management(in_table, in_field)
                 else:
                     print ("    Duplicate field will be overwritten")
                     return

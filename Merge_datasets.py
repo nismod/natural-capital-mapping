@@ -11,8 +11,8 @@ arcpy.CheckOutExtension("Spatial")
 arcpy.env.overwriteOutput = True  # Overwrites files
 
 # merge_type = "UDM_scenarios"
-# merge_type = "Arc_LADs"
-merge_type = "Arc_non_matching"
+merge_type = "Arc_LADs"
+# merge_type = "Arc_non_matching"
 
 if merge_type == "Arc_LADs":
     folder = r"D:\cenv0389\OxCamArc"
@@ -21,10 +21,10 @@ if merge_type == "Arc_LADs":
     info_table = os.path.join(folder, "Arc_LADs_sort.shp")
     counties_included = ["Bedfordshire", "Buckinghamshire", "Cambridgeshire", "Northamptonshire", "Oxfordshire", "Peterborough"]
     type_field = "LAD"
-    in_gdb_folder = os.path.join(folder,"NatCap_Arc_PaidData")
-    out_gdb = os.path.join(folder, "NatCap_Arc_PaidData.gdb")
+    in_gdb_folder = os.path.join(folder,"NatCap_Arc_FreeData")
+    out_gdb = os.path.join(folder, "NatCap_Arc_FreeData.gdb")
     type_len = 30
-    out_fc = "NatCap_Arc_PaidData"
+    out_fc = "NatCap_Arc_FreeData"
 elif merge_type == "Arc_non_matching":
     # Different case as all feature classes to merge are in a single gdb, which is also the output gdb
     in_gdb = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData_LADs.gdb"
@@ -46,7 +46,7 @@ elif merge_type == "UDM_scenarios":
 
 # Do we want to add a field to distinguish the different datasets to be merged?
 # Note: For the non-matching datasets, type field isalready included so set add_type_field to false.
-add_type_field = False
+add_type_field = True
 delete_surplus_fields = False
 
 in_fcs = []
@@ -85,15 +85,15 @@ for fc in fcs:
             # *** Delete some surplus fields created by the last processing step - check field names
             print("Deleting surplus OBJECTID fields")
             # *** SPECIAL TEMPORARY CASE FOR EA LERC DATA: need to delete OBJECTID but not OBJECTID_1!
-            arcpy.DeleteField_management(in_fc, "OBJECTID")
-            arcpy.DeleteField_management(in_fc, "F22")
-            arcpy.DeleteField_management(in_fc, "F23")
-            arcpy.DeleteField_management(in_fc, "F24")
-            arcpy.DeleteField_management(in_fc, "F25")
-            # arcpy.DeleteField_management(in_fc, "OBJECTID_1")
-            arcpy.DeleteField_management(in_fc, "OBJECTID_12")
-            arcpy.DeleteField_management(in_fc, "OBJECTID_12_13")
-            arcpy.DeleteField_management(in_fc, "OBJECTID_12_13_14")
+            # arcpy.DeleteField_management(in_fc, "OBJECTID")
+            # arcpy.DeleteField_management(in_fc, "F22")
+            # arcpy.DeleteField_management(in_fc, "F23")
+            # arcpy.DeleteField_management(in_fc, "F24")
+            # arcpy.DeleteField_management(in_fc, "F25")
+            # # arcpy.DeleteField_management(in_fc, "OBJECTID_1")
+            # arcpy.DeleteField_management(in_fc, "OBJECTID_12")
+            # arcpy.DeleteField_management(in_fc, "OBJECTID_12_13")
+            # arcpy.DeleteField_management(in_fc, "OBJECTID_12_13_14")
         if add_type_field:
             print ("  Adding " + type_field + " field")
             MyFunctions.check_and_add_field(in_fc, type_field, "TEXT", type_len)
