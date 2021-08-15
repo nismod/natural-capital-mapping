@@ -42,14 +42,15 @@ arcpy.env.XYTolerance = "0.001 Meters"
 # The merge type simply identifies which block of pre-set parameters is selected from those listed below.
 # merge_type = "Oxon_OSMM_HLU"
 # merge_type = "Oxon_Designations"
-# merge_type = "Arc_CROME_PHI"
-merge_type = "Arc_Designations"
+# merge_type = "CROME_PHI"
+merge_type = "Designations"
 # merge_type = "Arc_access"
 
 # region = "Oxon"
-region = "Arc"
+# region = "Arc"
+region = "NP"
 # Special case for LNCP project with LERC data
-LNCP_LERC = True
+LNCP_LERC = False
 
 # *** ENTER PARAMETERS HERE. A number of pre-set parameter blocks have been set up for convenience.
 # -------------------------------------------------------------------------------------------------
@@ -65,14 +66,15 @@ if merge_type == "Oxon_OSMM_HLU":
     base_tag = "OSMM"
     new_tag = "HLU"
     # names of key fields in base map and new features
-    base_key = "Descriptive_Group"
+    base_key = "DescriptiveGroup"
     new_key = "PHASE1HAB"
     # Enter any other fields you want to be included in the Tabulate Intersection tables
     # WARNING Any fields named the same as any of these fields but with a suffix of "_1*" will be deleted as assumed to be duplicates.
-    base_TI_fields = ["TOID", "Descriptive_Term", "Make"]
+    base_TI_fields = ["TOID", "FID", "DescriptiveTerm", "Make"]
     new_TI_fields = ["POLYID", "S41HABITAT"]
     # Enter list of all fields in the base map that need to be kept
-    Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make"]
+    Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make",
+              "primary_key", "fid", "versiondate", "theme", "descriptivegroup", "descriptiveterm", "make"]
     # Significant area - polygons will be split if the intersect between base map and new features is larger than this area
     significant_size = 200
     # Distances to snap new feature edges and vertices to base map. If too high, get distortions; if too low get slivers and messy edges
@@ -90,12 +92,20 @@ elif merge_type == "Oxon_Designations":
     new_key = "Type"
     base_TI_fields = []
     new_TI_fields = ["Name"]
-    Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "POLYID", "PHASE1HAB", "S41HABITAT", "S41HAB2",
+    Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make",
+              "primary_key", "fid", "versiondate", "theme", "descriptivegroup", "descriptiveterm", "make",
+              "POLYID", "PHASE1HAB", "S41HABITAT", "S41HAB2",
               "SITEREF", "COPYRIGHT", "VERSION", "OSMM_hab", "HLU_hab", "Interpreted_habitat", "CROME_desc", "CROME_simple", "ALC_GRADE"]
     significant_size = 500
     snap_env = [[Base_map_name, "EDGE", "0.5 Meters"], [Base_map_name, "VERTEX", "0.5 Meters"]]
-elif merge_type == "Arc_CROME_PHI":
-    folder = r"D:\cenv0389\OxCamArc\LADs"
+elif merge_type == "CROME_PHI":
+    if region == "Arc" or region == "Oxon":
+        folder = r"D:\cenv0389\OxCamArc\LADs"
+    elif region == "NP":
+        folder = r"M:\urban_development_natural_capital"
+    else:
+        print "Region not found"
+        exit()
     arcpy.env.workspace = folder
     if region == "Arc":
         # gdbs = arcpy.ListWorkspaces("*", "FileGDB")
@@ -106,6 +116,9 @@ elif merge_type == "Arc_CROME_PHI":
         gdbs.append(os.path.join(folder, "SouthOxfordshire.gdb"))
         gdbs.append(os.path.join(folder, "Oxford.gdb"))
         gdbs.append(os.path.join(folder, "Wycombe.gdb"))
+
+    elif region == "NP":
+        gdbs = ["Leeds.gdb"]
 
     elif region == "Oxon":
         gdbs = []
@@ -121,12 +134,16 @@ elif merge_type == "Arc_CROME_PHI":
     new_key = "PHI"
     base_TI_fields = ["TOID"]
     new_TI_fields = ["WPP", "OMHD"]
-    Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab", "Interpreted_habitat",
-              "CROME_desc", "CROME_simple"]
+    Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make",
+              "primary_key", "fid", "versiondate", "theme", "descriptivegroup", "descriptiveterm", "make",
+              "OSMM_hab", "Interpreted_habitat", "CROME_desc", "CROME_simple"]
     significant_size = 200
     snap_env = [[Base_map_name, "VERTEX", "0.5 Meters"], [Base_map_name, "EDGE", "1 Meters"], [Base_map_name, "VERTEX", "1 Meters"]]
-elif merge_type == "Arc_Designations":
-    folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData"
+elif merge_type == "Designations":
+    if region == "Arc":
+        folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData"
+    elif region == "NP":
+        folder = r"M:\urban_development_natural_capital"
     arcpy.env.workspace = folder
     if region == "Arc":
         gdbs = arcpy.ListWorkspaces("*", "FileGDB")
@@ -137,24 +154,30 @@ elif merge_type == "Arc_Designations":
         # gdbs.append(os.path.join(folder, "SouthOxfordshire.gdb"))
         # gdbs.append(os.path.join(folder, "Oxford.gdb"))
         # gdbs.append(os.path.join(folder, "Wycombe.gdb"))
+    elif region == "NP":
+        gdbs = ["Leeds.gdb"]
     elif region == "Oxon":
         gdbs = []
         LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
         for LAD in LADs:
             gdbs.append(os.path.join(folder, LAD))
-    New_in = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Union_Designations.gdb\Designations_tidy"
+    if region == "Oxon" or region == "Arc":
+        New_in = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Union_Designations.gdb\Designations_tidy"
+    elif region == "NP":
+        New_in = r"D:\cenv0389\UK_data\Designations\Union_Designations.gdb\Designations_tidy"
     New_features = "Designations"
     if LNCP_LERC:
         Base_map_name = "LERC_ALC"
         Output_fc = "LERC_ALC_Desig"
         Needed = ["Toid", "DescGroup", "DescTerm", "make", "GI_type", "LWS_p", "AccessGI", "LCM_type", "GI_Type_Final",
-                  "Accessible", "Ph1code", "Ph1code_1", "Ph1code_12", "HabNmPLUS", "Ph1ColBestFit", "HabType2",
+                  "Accessible", "Ph1code", "Ph1code_1", "Ph1code_12", "HabNmPLUS_1", "HabBroad_1", "Ph1ColBestFit", "HabType2_1",
                   "Interpreted_habitat", "ALC_GRADE"]
     else:
         Base_map_name = "OSMM_CR_PHI_ALC"
         Output_fc = "OSMM_CR_PHI_ALC_Desig"
-        Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab", "CROME_desc", "CROME_simple",
-                  "PHI", "WPP", "OMHD", "Interpreted_habitat", "ALC_GRADE"]
+        Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make",
+                  "primary_key", "fid", "versiondate", "theme", "descriptivegroup", "descriptiveterm", "make",
+                  "OSMM_hab", "CROME_desc", "CROME_simple", "PHI", "WPP", "OMHD", "Interpreted_habitat", "ALC_GRADE"]
     base_tag = "Base"
     new_tag = "Desig"
     base_key = "Interpreted_habitat"
@@ -163,6 +186,7 @@ elif merge_type == "Arc_Designations":
     new_TI_fields = ["Name"]
     significant_size = 500
     snap_env = [[Base_map_name, "EDGE", "0.5 Meters"], [Base_map_name, "VERTEX", "0.5 Meters"]]
+
 elif merge_type == "Arc_access":
     # Not used: by default, the public access layer is just intersected in Public_access.py instead of being merged properly.
     folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc"
@@ -219,11 +243,11 @@ split_overlap = 0.95
 xy_tol = "0.001 Meters"
 
 # Which sections of code do we want to run? For de-bugging or updating - no point repeating sections already completed.
-sp_base = True               # Convert input base map to single part
-clip_new = True              # Clip new features to exact boundary of region
-snap_new_features = True      # No need to snap if input features are consistent with base map geometry
-tabulate_intersections = True
-make_joint_shapes = True
+sp_base = False               # Convert input base map to single part
+clip_new = False              # Clip new features to exact boundary of region
+snap_new_features = False      # No need to snap if input features are consistent with base map geometry
+tabulate_intersections = False
+make_joint_shapes = False
 join_new_attributes = True
 
 # Main code
@@ -471,11 +495,11 @@ def relationship(overlap_area, percent_overlap, ignore_low, ignore_high, signifi
         arcpy.Erase_analysis(Base_map, "Joint_spatial_clip_union_clean", "Joint_spatial_erase", cluster_tolerance=xy_tol)
         arcpy.Merge_management(["Joint_spatial_erase", "Joint_spatial_clip_union_clean"], "Joint_spatial_merge")
 
-        print("   Converting to single part")
-        arcpy.MultipartToSinglepart_management("Joint_spatial_merge","Joint_spatial_merge_sp")
+        arcpy.CopyFeatures_management("Joint_spatial_merge", "Joint_spatial_merge_repair")
+        MyFunctions.check_and_repair("Joint_spatial_merge_repair")
 
-        arcpy.CopyFeatures_management("Joint_spatial_merge_sp", "Joint_spatial_merge_sp_repair")
-        MyFunctions.check_and_repair("Joint_spatial_merge_sp_repair")
+        print("   Converting to single part")
+        arcpy.MultipartToSinglepart_management("Joint_spatial_merge_repair","Joint_spatial_merge_repair_sp")
 
         print(''.join(["   ## Joint geometry file created on : ", time.ctime()]))
 
@@ -487,8 +511,8 @@ def relationship(overlap_area, percent_overlap, ignore_low, ignore_high, signifi
         print("   Transferring attribute data from new features to joint layer, for non-split polygons")
 
         # Make a copy of the output joint file to work with, sorted by size. The rows to be joined will be extracted from this layer
-        # and joined to the new features, then merged back in.
-        arcpy.Sort_management("Joint_spatial_merge_sp_repair", "Joint_sort", [["Shape_Area", "DESCENDING"]])
+        # and joined to the new features, then merged back in. ** This line was commented out, maybe from previous debugging.
+        arcpy.Sort_management("Joint_spatial_merge_repair_sp", "Joint_sort", [["Shape_Area", "DESCENDING"]])
 
         # Get missing new feature IDs for the polygons that have not been split, i.e. the rows with an entry
         # in the TI tables that have not already had a new feature ID transferred. Need to join to largest intersect area, to avoid slivers.

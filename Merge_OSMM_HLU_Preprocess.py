@@ -41,7 +41,7 @@ OSMM_Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make"]
 HLU_Needed = ["POLYID", "PHASE1HAB", "S41HABITAT", "S41HAB2", "SITEREF", "COPYRIGHT", "VERSION"]
 
 # What stages of the code do we want to run? Useful for debugging or updates
-clip_HLU = True
+clip_HLU = False
 clip_OSMM = False
 delete_not_needed_fields_OSMM = False
 delete_not_needed_fields_HLU = True

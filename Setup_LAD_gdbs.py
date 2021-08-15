@@ -16,12 +16,19 @@ arcpy.env.qualifiedFieldNames = False    # Joined fields will be exported withou
 arcpy.env.XYTolerance = "0.001 Meters"
 
 # region = "Oxon"
-region = "Arc"
+# region = "Arc"
+region = "NP"
 # Which method are we using - Phase 1 habitat data or LCM and PHI?
 # method = "HLU"
 method = "LCM_PHI"
 
-if method == "LCM_PHI":
+if region == "NP":
+    folder = r"M:\urban_development_natural_capital"
+    data_gdb = os.path.join(folder, "Data.gdb")
+    LAD_table = os.path.join(data_gdb, "NP_LADs")
+    LADs_included = ["Leeds"]
+
+elif method == "LCM_PHI":
     folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc"
     data_gdb = os.path.join(folder, "Data\Data.gdb")
     LAD_table = os.path.join(data_gdb, "Arc_LADs")
@@ -53,9 +60,9 @@ needed_fields = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make",
 
 # Which stages of the code do we want to run? Depends on method - also can be useful for debugging or updates.
 if method == "LCM_PHI":
-    prep_PHI = False
-    setup_LCM = True
-    setup_PHI = True
+    prep_PHI = True
+    setup_LCM = False
+    setup_PHI = False
     setup_HLU = False    # Always false for the LCM_PHI method
 elif method == "HLU":
     prep_PHI = False     # Always false for the HLU method
@@ -66,7 +73,7 @@ else:
     print("ERROR: Invalid region")
     exit()
 
-setup_LAD_gdbs = True
+setup_LAD_gdbs = False
 create_gdb = False
 copy_OSMM = False
 setup_boundary = False
@@ -76,12 +83,12 @@ arcpy.env.workspace = data_gdb
 if prep_PHI:
     print ("Preparing PHI datasets")
     # main PHI dataset
-    arcpy.Dissolve_management("PHI", "PHI_diss_over10m2", "Main_habit", multi_part="SINGLE_PART")
-    MyFunctions.delete_by_size("PHI_diss_over10m2", 10)
-    # Copy 'Main_habit' into a new field called 'PHI' (for neatness)
-    MyFunctions.check_and_add_field("PHI_diss_over10m2", "PHI", "TEXT", 100)
-    arcpy.CalculateField_management("PHI_diss_over10m2", "PHI", "!Main_habit!", "PYTHON_9.3")
-    arcpy.DeleteField_management("PHI_diss_over10m2", "Main_habit")
+    # arcpy.Dissolve_management("PHI", "PHI_diss_over10m2", "Main_habit", multi_part="SINGLE_PART")
+    # MyFunctions.delete_by_size("PHI_diss_over10m2", 10)
+    # # Copy 'Main_habit' into a new field called 'PHI' (for neatness)
+    # MyFunctions.check_and_add_field("PHI_diss_over10m2", "PHI", "TEXT", 100)
+    # arcpy.CalculateField_management("PHI_diss_over10m2", "PHI", "!Main_habit!", "PYTHON_9.3")
+    # arcpy.DeleteField_management("PHI_diss_over10m2", "Main_habit")
     # Wood pasture and parkland with scattered trees
     arcpy.Dissolve_management("WoodPastureAndParkland", "WPP_diss_over10m2", "PRIHABTXT", multi_part="SINGLE_PART")
     MyFunctions.delete_by_size("WPP_diss_over10m2", 10)

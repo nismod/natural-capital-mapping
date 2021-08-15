@@ -8,11 +8,11 @@ print(''.join(["## Started on : ", time.ctime()]))
 arcpy.env.overwriteOutput = True  # Overwrites files
 
 # name of folder where the individual gdbs are stored
-folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_FreeData"
+folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData"
 arcpy.env.workspace = folder
 
 # name of gdb to copy the individual feature classes into
-out_gdb = r"D:\cenv0389\OxCamArc\NatCap_Arc_FreeData_LADs.gdb"
+out_gdb = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData_LADs.gdb"
 
 # Wildcard template for feature class to copy over
 fc_template = "NatCap*"

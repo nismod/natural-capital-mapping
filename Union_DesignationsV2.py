@@ -5,6 +5,7 @@
 #-------------------------------------------------------------------------------------------------------------------------------
 
 import time, os, arcpy
+
 import MyFunctions
 
 print(''.join(["## Started on : ", time.ctime()]))
@@ -12,26 +13,30 @@ print(''.join(["## Started on : ", time.ctime()]))
 arcpy.CheckOutExtension("Spatial")
 arcpy.env.overwriteOutput = True  # Overwrites files
 
-region = "Arc"
+# region = "Arc"
 # region = "Oxon"
+region = "NP"
 
 if region == "Oxon":
     in_folder = r"D:\cenv0389\Oxon_GIS\Designations\UnionInputs"
     Union_gdb = r"D:\cenv0389\Oxon_GIS\Designations\Union_Designations.gdb"
-    desc_len = 254
-    desc_field = True
     habitat_field = True
 elif region == "Arc":
     in_folder = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data"
     Union_gdb = os.path.join(in_folder, "Union_Designations.gdb")
-    desc_len = 254
-    desc_field = True
     habitat_field = True
+elif region == "NP":
+    in_folder = r"D:\cenv0389\UK_data\Designations"
+    Union_gdb = os.path.join(in_folder, "Union_Designations.gdb")
+    boundary = r"M:\urban_development_natural_capital\data.gdb\NP_boundary"
+    habitat_field = False
 
 # Note: could read in actual field lengths from the info table (or find them in a loop), but I have checked them separately
 # to determine optimum values as some do not need to be so long.
+desc_len = 254
+desc_field = True
 start_len = 40    # Green Belt name
-name_len = 80
+name_len = 150
 hab_len = 80
 
 In_gdb_name = "DesignationInputs.gdb"
@@ -40,18 +45,26 @@ InfoTable = os.path.join(In_gdb, "DesignationFiles")
 
 # Which stages of the code do we want to run? Useful for debugging or updates.
 copy_inputs = False
-sort_info_table = True
-copy_to_new_fcs = True
-dissolve = True
-union_GB = True
+clip_inputs1 = False
+sort_info_table = False
+copy_to_new_fcs = False
+clip_inputs2 = False
+dissolve = False
+union_GB = False
+Setup_union_file = False
+union_files = False
 
 if copy_inputs:
     # Copy the original shapefiles into the input geodatabase
     arcpy.env.workspace = in_folder
     for InFile in arcpy.ListFeatureClasses():
-        print "Copying " + InFile + " to " + In_gdb_name
         InFileName = os.path.splitext(InFile)[0]
-        arcpy.CopyFeatures_management(InFile, os.path.join(In_gdb, InFileName))
+        if clip_inputs1:
+            print "Copying and clipping " + InFile + " to " + In_gdb_name
+            arcpy.Clip_analysis(InFile, boundary,os.path.join(In_gdb, InFileName))
+        else:
+            print "Copying " + InFile + " to " + In_gdb_name
+            arcpy.CopyFeatures_management(InFile, os.path.join(In_gdb, InFileName))
 
 if sort_info_table:
     # Sort the table in order of 'UnionOrder', so that the first table to union is at the top, and TableOrder (order for the fields)
@@ -83,7 +96,10 @@ for row in cursor:
     if copy_to_new_fcs:
         arcpy.env.workspace = In_gdb
         out_fc = os.path.join(Union_gdb, NewFile)
-        arcpy.CopyFeatures_management(DesFile, out_fc)
+        if clip_inputs2:
+            arcpy.Clip_analysis(DesFile,boundary,out_fc)
+        else:
+            arcpy.CopyFeatures_management(DesFile, out_fc)
 
         #   Now we are working with the new files in the Union gdb
         arcpy.env.workspace = Union_gdb
@@ -123,6 +139,7 @@ for row in cursor:
     if dissolve:
         print ("Dissolving...")
         arcpy.Dissolve_management(NewFile, NewFile + "_diss", fields, multi_part="SINGLE_PART")
+        MyFunctions.check_and_repair(NewFile + "_diss")
 
     if ShortName == "GB":
         if union_GB:
@@ -139,37 +156,43 @@ for row in cursor:
     else:
         unionInFiles.append(NewFile + "_diss")
 
-# Add new fields to first dataset to be unioned.  Use Green Belt because that is the most accurate
-# Note: set the field length to accommodate the longest input, otherwise truncation characters cause
-# problems with 'calculate field' later on
-starting_file = "GB_input_diss_union"
-# First add the overall type, name, description and habitat fields
-MyFunctions.check_and_add_field(starting_file, "Type", "TEXT", start_len)
-MyFunctions.check_and_add_field(starting_file, "Name", "TEXT", name_len)
-if desc_field:
-    MyFunctions.check_and_add_field(starting_file, "Description", "TEXT", desc_len)
-if habitat_field:
-    MyFunctions.check_and_add_field(starting_file, "Habitat", "TEXT", hab_len)
+if Setup_union_file:
+    print "Setting up union file"
+    # Add new fields to first dataset to be unioned.  Use Green Belt because that is the most accurate
+    # Note: set the field length to accommodate the longest input, otherwise truncation characters cause
+    # problems with 'calculate field' later on
+    starting_file = "GB_input_diss_union"
+    # First add the overall type, name, description and habitat fields
+    MyFunctions.check_and_add_field(starting_file, "Type", "TEXT", start_len)
+    MyFunctions.check_and_add_field(starting_file, "Name", "TEXT", name_len)
+    if desc_field:
+        MyFunctions.check_and_add_field(starting_file, "Description", "TEXT", desc_len)
+    if habitat_field:
+        MyFunctions.check_and_add_field(starting_file, "Habitat", "TEXT", hab_len)
 
-# Add the Green Belt fields
-MyFunctions.check_and_add_field(starting_file, "GreenBelt", "SHORT", 0)
+    # Add the Green Belt fields
+    MyFunctions.check_and_add_field(starting_file, "GreenBelt", "SHORT", 0)
 
-# Move Green Belt name field to after the other fields, for tidiness, by copying to a temporary field first and then deleting
-MyFunctions.check_and_add_field(starting_file, "GB_name_temp", "TEXT", start_len)
-arcpy.CalculateField_management(starting_file, "GB_name_temp", "!GB_name!", "PYTHON_9.3")
-arcpy.DeleteField_management(starting_file, "GB_name")
-MyFunctions.check_and_add_field(starting_file, "GB_name", "TEXT", name_len)
-arcpy.CalculateField_management(starting_file, "GB_name", "!GB_name_temp!", "PYTHON_9.3")
-arcpy.DeleteField_management(starting_file, "GB_name_temp")
+    # Move Green Belt name field to after the other fields, for tidiness, by copying to a temporary field first and then deleting
+    MyFunctions.check_and_add_field(starting_file, "GB_name_temp", "TEXT", start_len)
+    arcpy.CalculateField_management(starting_file, "GB_name_temp", "!GB_name!", "PYTHON_9.3")
+    arcpy.DeleteField_management(starting_file, "GB_name")
+    MyFunctions.check_and_add_field(starting_file, "GB_name", "TEXT", name_len)
+    arcpy.CalculateField_management(starting_file, "GB_name", "!GB_name_temp!", "PYTHON_9.3")
+    arcpy.DeleteField_management(starting_file, "GB_name_temp")
 
 # Note: tried creating correct fields in starting dataset first, then merging before unioning in order to get tidy field order 
-# and avoid duplicate fields. But this did not work as it created duplicate shapes instead on combining attributes for each polygon.
+# and avoid duplicate fields. But this did not work as it created duplicate shapes instead of combining attributes for each polygon.
 # So revert to unioning, then correct field order afterwards if necessary (as fields can get out of order for no reason).
-print ("Unioning: \n" + '\n'.join(unionInFiles))
-arcpy.Union_analysis(unionInFiles, "Desig_union", "ALL", 0.1, "NO_GAPS")
+#For some reason this did not work when I tried doing it as a standalone stage so I ended up doing it in ArcMap. Maybe workspace
+# was wrong, so i have put it before this step to see if it helps in future
+arcpy.env.workspace = Union_gdb
+if union_files:
+    print ("Unioning: \n" + '\n'.join(unionInFiles))
+    arcpy.Union_analysis(unionInFiles, "Desig_union", "ALL", 0.1, "NO_GAPS")
 
 # Now copy the fields for the other designation types into the right order
-arcpy.env.workspace = Union_gdb
+# arcpy.env.workspace = Union_gdb   # moved above
 cursor = arcpy.SearchCursor(os.path.join(In_gdb, "DesignationFiles_TableSort"))
 
 for row in cursor:

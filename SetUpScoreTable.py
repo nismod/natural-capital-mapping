@@ -20,7 +20,8 @@ region = "Arc"
 # region = "Oxon"
 # region = "Blenheim"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
-method = "CROME_PHI"
+# method = "CROME_PHI"
+method = "LERC"
 # method = "HLU"
 
 if (region == "Oxon" or region == "Blenheim") and method == "HLU":
@@ -52,43 +53,53 @@ if (region == "Oxon" or region == "Blenheim") and method == "HLU":
                       "LGS", "MillenGn", "DoorstepGn", "NT", "CountryPk", "GreenBelt", "AONB", "SchMon", "WHS", "HistPkGdn"]
 
 elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
-    folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_FreeData"
+    if method == "LERC":
+        folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData"
+        Base_map = "LERC_ALC_Desig_GS_PA"
+        # del_fields = ["FeatureCode", "Version", "VersionDate", "CalculatedAreaValue", "PhysicalLevel"]
+        del_fields = ["OBJECTID", "OBJECTID_12", "Shape_Length_1", "OBJECTID_12_13", "toid_1"]
+    elif method == "CROME_PHI":
+        folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_FreeData"
+        Base_map = "OSMM_CR_PHI_ALC_Desig_GS_PA"
+        del_fields = ["OBJECTID_1", "FID_ALC_di", "Shape_Leng", "ORIG_FID", "Base_Area", "Base_Relationship", "ORIG_FID_1", "Desig_OBJID",
+                      "Desig_Area", "Base_Relationship_1", "Desig_OBJID_1", "BaseID_GS", "FID_Natural_features",
+                      "FID_Public_access_erase_sp",
+                      "ORIG_FID_12" ]
     arcpy.env.workspace = folder
     # LAD gdbs
     if region == "Arc":
         gdbs = []
         gdbs = arcpy.ListWorkspaces("*", "FileGDB")
         # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
-        # gdbs.append(os.path.join(folder, "AylesburyVale.gdb"))
-        # gdbs.append(os.path.join(folder, "Chiltern.gdb"))
+        # gdbs.append(os.path.join(folder, "SouthCambridgeshire.gdb"))
+        # gdbs.append(os.path.join(folder, "SouthNorthamptonshire.gdb"))
+        # gdbs.append(os.path.join(folder, "SouthOxfordshire.gdb"))
+        # gdbs.append(os.path.join(folder, "ValeofWhiteHorse.gdb"))
+        # gdbs.append(os.path.join(folder, "Wellingborough.gdb"))
+        # gdbs.append(os.path.join(folder, "WestOxfordshire.gdb"))
+        # gdbs.append(os.path.join(folder, "Wycombe.gdb"))
+
     elif region == "Oxon":
         gdbs = []
         LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
         for LAD in LADs:
             gdbs.append(os.path.join(folder, LAD))
     hab_field = "Interpreted_habitat"
-    del_fields = ["FeatureCode", "Version", "VersionDate", "CalculatedAreaValue", "PhysicalLevel"]
-    # del_fields = ["OBJECTID", "OBJECTID_12", "Shape_Length_1", "OBJECTID_12_13", "toid_1"]
-    # del_fields = ["OBJECTID_1", "FID_ALC_di", "Shape_Leng", "ORIG_FID", "Base_Area", "Base_Relationship", "ORIG_FID_1", "Desig_OBJID",
-    #               "Desig_Area", "Base_Relationship_1", "Desig_OBJID_1", "BaseID_GS", "FID_Natural_features", "FID_Public_access_erase_sp",
-    #               "ORIG_FID_12" ]
     Matrix = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Matrix.gdb\Matrix"
     ALC_multipliers = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Matrix.gdb\ALC_multipliers"
-    Base_map = "OSMM_CR_PHI_ALC_Desig_GS_PA"
-    # Base_map = "LERC_ALC_Desig_GS_PA"
     nature_fields = "!SAC! + !SPA! + !Ramsar! + !IBA! + !RSPB! + !SSSI! + !NNR! + !LNR! + !AncientWood!"
     culture_fields = "!MillenGn! + !DoorstepGn! + !NT! + !CountryPk! + !GreenBelt! + !AONB! + !SchMon! + !WHS! + !HistPkGdn!"
     education_fields = nature_fields + " + !CountryPk! + !NT! + !SchMon! + !WHS! + !HistPkGdn!"
+    all_des_fields = ["SAC", "SPA", "Ramsar", "IBA", "RSPB", "SSSI", "NNR", "LNR", "AncientWood",
+                      "MillenGn", "DoorstepGn", "NT", "CountryPk", "GreenBelt", "AONB", "SchMon", "WHS", "HistPkGdn"]
 
 historic_data = True
-# # Temporary fix because the extra historical designations have been added manually to Blenheim, so the other designations for these rows
-# # can be nulls
-# if region == "Blenheim":
-#     null_to_zero = True
-# else:
-null_to_zero = False
-# Special case for Arc LERC data because LWS is coded as a separate field
-LERC_LWS = False
+null_to_zero = False    # Only needed if any rows containing designations have some NULL values - should not happen normallly
+# Special case: set to true for Arc LERC data because LWS is coded as a separate field
+if method == "LERC":
+    LERC_LWS = True
+else:
+    LERC_LWS = False
 
 # Multiplier for aesthetic value if area is in an AONB
 AONB_multiplier = 1.1
@@ -190,7 +201,7 @@ for gdb in gdbs:
     # -------------------------------------------------------------------------------------------------------
     if other_cultural:
         # Add new fields and populate with number of nature and cultural designations
-        # Replace null values with zeros
+        # Replace null values with zeros - not usually needed as all rows containing designations should not contain nulls
         if null_to_zero:
             print ("Replacing nulls with zeros in designation indices, before adding")
             for des_field in all_des_fields:
@@ -211,6 +222,9 @@ for gdb in gdbs:
 
         # Special case for LERC LWS - add extra designation if proportion of polygon overlapping LWS site is >0.5
         if LERC_LWS:
+            print("Setting up LWS designation score for LERC data")
+            MyFunctions.select_and_copy(NatCap_scores, "NatureDesig", "NatureDesig IS NULL", 0)
+            MyFunctions.select_and_copy(NatCap_scores, "EdDesig", "EdDesig IS NULL", 0)
             MyFunctions.select_and_copy(NatCap_scores, "NatureDesig","LWS_p >= 0.5", "!NatureDesig! + 1")
             MyFunctions.select_and_copy(NatCap_scores, "EdDesig","LWS_p >= 0.5", "!EdDesig! + 1")
 

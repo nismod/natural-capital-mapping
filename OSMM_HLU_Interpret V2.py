@@ -21,18 +21,20 @@ arcpy.env.overwriteOutput = True  # Overwrites files
 
 # *** Enter parameters here
 # -------------------------
-region = "Arc"
+# region = "Arc"
 # region = "Oxon"
 # region = "Blenheim"
+region = "NP"
 
-method = "CROME_PHI"
+# method = "CROME_PHI"
 # method = "HLU"
+method = "OSMM_only"
 
 if region == "Oxon" and method == "HLU":
     # Operate in the Oxon_county folder
     folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data"
     gdbs = [os.path.join(folder, "Merge_OSMM_HLU_CR_ALC.gdb")]
- #  LAD_table = os.path.join(folder, "Data.gdb", "Oxon_LADs")
+# LAD_table = os.path.join(folder, "Data.gdb", "Oxon_LADs")
     in_file_name = "OSMM_HLU"
     Hab_field = "PHASE1HAB"
     BAP_field = "S41HABITAT"
@@ -64,6 +66,26 @@ elif method == "CROME_PHI":
     select_HLU_or_OSMM = False
     interpret_BAP = False
 
+elif method == "OSMM_only":
+    if region == "Oxon":
+        folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data"
+        gdbs = ["OSMM_Aug2020.gdb"]
+        in_file_name = "OSMM_Oxon_Aug2020_clip"
+        Hab_field = "Interpreted_habitat"
+        LADs_included = ["Oxfordshire"]
+    elif region == "NP":
+        folder = r"M:\urban_development_natural_capital"
+        gdbs = ["Leeds.gdb"]
+        in_file_name = "OSMM"
+        Hab_field = "Interpreted_habitat"
+        LADs_included = ["Leeds"]
+    # We only want to run delete_landform and simplify_OSMM.
+    delete_landform = True
+    simplify_OSMM = True
+    simplify_HLU = False
+    select_HLU_or_OSMM = False
+    interpret_BAP = False
+
 else:
     print("ERROR: you cannot combine region " + region + " with method " + method)
     exit()
@@ -76,6 +98,7 @@ undefined_or_original = "original"
 LADs = []
 if region == "Oxon":
     LADs = ["Oxfordshire"]
+
 elif region == "Arc":
     for LAD in arcpy.SearchCursor(LAD_table):
         if LAD.getValue("county") in LADs_included:
@@ -85,10 +108,13 @@ elif region == "Arc":
 elif region == "Blenheim":
     LADs = ["Blenheim"]
 
+elif region == "NP":
+    LADs = ["Leeds"]
+
 print("LADs to process: " + "\n ".join(LADs))
 
 for gdb in gdbs:
-   if (region == "Oxon" and method == "HLU") or (os.path.split(gdb)[1])[:-4] in LADs:
+   if (region == "Oxon" and (method == "HLU" or method == "OSMM_only")) or (os.path.split(gdb)[1])[:-4] in LADs:
         arcpy.env.workspace = gdb
         print(''.join(["## Started interpreting habitats for ", gdb, " ", in_file_name, " on : ", time.ctime()]))
         in_file = os.path.join(folder, gdb, in_file_name)
@@ -118,7 +144,7 @@ def Simplify_OSMM(OSMM_Group, OSMM_Term, OSMM_Make):
         elif OSMM_Group == "Road Or Track":
             if OSMM_Term is None:
                return "Road"
-            elif OSMM_Term in ["Track","Traffic Calming"]:
+            elif OSMM_Term in ["Track", "Traffic Calming", ""]:
                return "Road"
         elif "Path" in OSMM_Group:
             return "Path: manmade"

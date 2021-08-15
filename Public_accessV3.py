@@ -22,8 +22,9 @@ arcpy.env.XYTolerance = "0.001 Meters"
 
 # *** Enter parameters
 # --------------------
-region = "Arc"
+# region = "Arc"
 # region = "Oxon"
+region = "NP"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
 method = "CROME_PHI"
 # method = "LERC"
@@ -42,8 +43,13 @@ if region == "Oxon" and method == "HLU":
     DescTerm = "DescriptiveTerm"
     delete_1 = True
 
-elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
-    folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_FreeData"
+elif region == "Arc" or region == "NP" or (region == "Oxon" and method == "CROME_PHI"):
+    if region == "NP":
+        folder = r"M:\urban_development_natural_capital"
+        region_boundary = os.path.join(folder, "Data.gdb\NP_boundary")
+    else:
+        folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_FreeData"
+        region_boundary = os.path.join(folder, "Arc_outline.shp")
     arcpy.env.workspace = folder
     if region == "Arc":
         gdbs = arcpy.ListWorkspaces("*", "FileGDB")
@@ -52,13 +58,17 @@ elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
         # gdbs.append(os.path.join(folder, "AylesburyVale.gdb"))
         # gdbs.append(os.path.join(folder, "Chiltern.gdb"))
         # gdbs.append(os.path.join(folder, "SouthOxfordshire.gdb"))
+        area_tag = "Arc"
+    elif region == "NP":
+        gdbs = ["Leeds.gdb"]
+        area_tag = "NP"
     elif region == "Oxon":
         gdbs = []
         LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
         for LAD in LADs:
             gdbs.append(os.path.join(folder, LAD))
     boundary = "boundary"
-    region_boundary = os.path.join(folder, "Arc_outline.shp")
+
     if method == "LERC":
         base_map = "LERC_ALC_Desig_GS"
         # Name of OSMM fields used for interpretation
@@ -73,30 +83,36 @@ elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
     else:
         base_map = "OSMM_CR_PHI_ALC_Desig_GS"
         # Name of OSMM fields used for interpretation
-        MakeField = "Make"
-        DescGroup = "DescriptiveGroup"
-        DescTerm = "DescriptiveTerm"
+        if region == "NP":
+            MakeField = "make"
+            DescGroup = "descriptivegroup"
+            DescTerm = "descriptiveterm"
+        else:
+            MakeField = "Make"
+            DescGroup = "DescriptiveGroup"
+            DescTerm = "DescriptiveTerm"
         delete_1 = True
         # Feature classes to keep - the others will be deleted if you select 'tidy_workspace' = true
-        keep_fcs = ["boundary", "Designations", "LCM_arable", "LCM_improved_grassland", "OS_Open_GS", "OS_Open_GS_clip", "OSGS",
+        keep_fcs = ["ALC_diss_Union", "boundary", "Designations", "LCM_arable", "LCM_improved_grassland",
+                    "OS_Open_GS", "OS_Open_GS_clip", "OSGS",
                     "OSMM", "OSMM_CROME", "OSMM_CROME_PHI", "OSMM_CR_PHI_ALC", "OSMM_CR_PHI_ALC_Desig",
                     "OSMM_CR_PHI_ALC_Desig_GS", "OSMM_CR_PHI_ALC_Desig_GS_PA", "PHI", "Public_access"]
-    area_tag = "Arc"
     hab_field = "Interpreted_habitat"
 
 # Source of public access data and gdb where public access layer will be created
 if region == "Oxon":
     data_gdb = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Public_access.gdb"
-    des_list = ['CountryPk', 'NT', 'NNR', 'LNR', 'DoorstepGn', 'MillenGn', 'RSPB']
-    des_list_expression = "(((CountryPk + NT + NNR + LNR + MillenGn + DoorstepGn + RSPB) = 0) OR " \
-                          "(CountryPk IS NULL AND NT IS NULL AND NNR IS NULL AND LNR IS NULL AND MillenGn IS NULL AND DoorstepGn IS NULL" \
-                          " AND RSPB IS NULL))"
+
 elif region == "Arc":
+    data_gdb = r"M:\urban_development_natural_capital\Public_access.gdb"
+
+elif region == "NP":
     data_gdb = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Public_access.gdb"
-    des_list = ['CountryPk', 'NT', 'NNR', 'LNR', 'DoorstepGn', 'MillenGn', 'RSPB']
-    des_list_expression = "(((CountryPk + NT + NNR + LNR + MillenGn + DoorstepGn + RSPB) = 0) OR " \
-                          "(CountryPk IS NULL AND NT IS NULL AND NNR IS NULL AND LNR IS NULL AND MillenGn IS NULL AND DoorstepGn IS " \
-                          "NULL AND RSPB IS NULL))"
+
+des_list = ['CountryPk', 'NT', 'NNR', 'LNR', 'DoorstepGn', 'MillenGn', 'RSPB']
+des_list_expression = "(((CountryPk + NT + NNR + LNR + MillenGn + DoorstepGn + RSPB) = 0) OR " \
+                      "(CountryPk IS NULL AND NT IS NULL AND NNR IS NULL AND LNR IS NULL AND MillenGn IS NULL AND DoorstepGn IS " \
+                      "NULL AND RSPB IS NULL))"
 
 # Table containing info for each input layer - user needs to set it up. Note: we also use OS Greenspace, OS Open Greenspace and
 # various designations (e.g. nature reserves), but these are already merged into the base map so do not need to be listed in the info table.
@@ -110,16 +126,15 @@ buffer_distance = "50 Meters"
 dissolve_paths = True
 
 # Which stages of the process do we want to run? Useful for debugging or updates
-create_access_layer = False
-clip_region = False
+create_access_layer = True
+clip_region = True
 buffer_paths = True
 merge_paths = True
-clip_PA_into_LAD_gdb = False    # Do not use this if the public access layer is made in the same gdb
+clip_PA_into_LAD_gdb = True    # Do not use this if the public access layer is made in the same gdb
 extract_relevant_polygons = True
 intersect_access = True
 sp_and_repair = True
 interpret_access = True
-correct = True
 tidy_fields = True
 if method == "CROME_PHI" or method == "LERC":
     tidy_workspace = True # DO NOT USE THIS FOR OXON HLU method!! It is not set up yet.
@@ -203,7 +218,7 @@ if create_access_layer:
                         print("Buffering " + in_file)
                         arcpy.Buffer_analysis(in_file, in_file + "_buffer", buffer_distance, dissolve_option="NONE")
                     in_file = in_file + "_buffer"
-                # MyFunctions.check_and_repair(in_file)
+                MyFunctions.check_and_repair(in_file)
 
             print("Adding Type field")
             MyFunctions.check_and_add_field(in_file, "PAType", "TEXT", 50)
@@ -456,7 +471,7 @@ for gdb in gdbs:
             arcpy.CalculateField_management("school_lyr", "AccessMult", "!" + AccessTable_name + ".AccessMult!", "PYTHON_9.3")
             arcpy.RemoveJoin_management("school_lyr", AccessTable_name)
         arcpy.Delete_management("school_lyr")
-        
+
         # Add in full accessibility for rivers, lakes, reservoirs, weirs and canals. Correction made 4 Oct 2020.
         arcpy.MakeFeatureLayer_management(base_map + "_PA", "water_lyr")
         expression = DescTerm + " IN ('Watercourse', 'Static Water', 'Canal', 'Weir', 'Reservoir')"

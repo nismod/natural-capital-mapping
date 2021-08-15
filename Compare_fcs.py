@@ -28,8 +28,8 @@ out_gdb = r"D:\cenv0389\OxCamArc\Comparison.gdb"
 # Location of comparison files that will be created by the first part of the code, that splits the input comparison dataset into chunks
 # *** NOTE:
 # *** At the moment these are in the main gdb but better to put them in out_gdb next time the first part of the script is run
-# in_compare_gdb = out_gdb
-in_compare_gdb = main_gdb
+in_compare_gdb = out_gdb
+# in_compare_gdb = main_gdb
 
 # Wildcard template for input main feature classes
 fc_template = "NatCap*"
@@ -118,7 +118,7 @@ for fc in in_fcs:
         for comp_field_short in comp_fields_short:
             i = i + 1
             MyFunctions.check_and_add_field(compare_fc, comp_field_short + "_comp", "SHORT", "")
-            # Populate with zeros initially so we don't get problems trying to ad up NULLS later
+            # Populate with zeros initially so we don't get problems trying to add up NULLS later
             arcpy.CalculateField_management(compare_fc, comp_field_short + "_comp", 0, "PYTHON_9.3")
             # Now set matching rows to 1
             expression = comp_fields[i - 1] + " = " + comp_fields_new[i - 1]

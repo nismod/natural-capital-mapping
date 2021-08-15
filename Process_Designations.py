@@ -10,11 +10,14 @@ arcpy.CheckOutExtension("Spatial")
 arcpy.env.overwriteOutput = True  # Overwrites files
 
 # region = "Oxon"
-region = "Arc"
+# region = "Arc"
+region = "NP"
 # Which parts of the code do we want to run? useful for debugging or updates.
 # Flag for bypassing the first part when restarting code after the manual inspection of gaps vs slivers
 first_part = False
-elim_slivers = True
+check_identical = False
+second_part = False
+elim_slivers = False
 
 if region == "Arc":
     Union_gdb = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Union_Designations.gdb"
@@ -22,6 +25,9 @@ if region == "Arc":
 elif region == "Oxon":
     Union_gdb = r"D:\cenv0389\Oxon_GIS\Designations\Union_Designations.gdb"
     road_verge = True
+elif region == "NP":
+    Union_gdb = r"D:\cenv0389\UK_data\Designations\Union_Designations.gdb"
+    road_verge = False
 
 arcpy.env.workspace = Union_gdb
 InfoTable = "DesignationFiles"
@@ -44,6 +50,13 @@ if first_part:
 
     arcpy.FindIdentical_management("Desig_union_repair_sp", "FindIdentical", ["Shape"], output_record_option="ONLY_DUPLICATES")
     print("Deleting identical features. These are recorded in FindIdentical table - please check that the deletions are OK.")
+    if check_identical:
+        # Over 8000 identical shapes so no time to check them individually.
+        print "Exiting so that you can check the identical polygons. When finished, set check_identical and first_part to False and restart."
+        exit()
+
+if second_part:
+    print "Deleting identical shapes"
     arcpy.CopyFeatures_management("Desig_union_repair_sp", "Desig_union_repair_sp_delid")
     arcpy.DeleteIdentical_management("Desig_union_repair_sp_delid", ["Shape"])
 
@@ -69,7 +82,7 @@ if first_part:
 
     # Eliminate sliver gaps under 500m2. Tell the user they have the option to improve this step by manual inspection of the larger gaps
     print("Option: you may inspect the Desig_union_repair_sp_delid file. Select Type='sliver'. Inspect all these and delete any that"
-          " are real gaps, not slivers. Set 'first_part' to 'False' and restart the code. This will improve the final shapes.")
+          " are real gaps, not slivers. Set 'first_part' and 'second_part' to 'False' and restart the code. This will improve the final shapes.")
     expression = "Type = 'Gap' AND Shape_Area > 500 AND Shape_area < 2500"
     MyFunctions.select_and_copy("Desig_union_repair_sp_delid", "Type", expression, "'sliver'")
 

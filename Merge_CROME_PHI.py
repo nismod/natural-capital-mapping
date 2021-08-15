@@ -19,7 +19,8 @@ arcpy.env.qualifiedFieldNames = False    # Joined fields will be exported withou
 arcpy.env.XYTolerance = "0.001 Meters"
 
 # region = "Oxon"
-region = "Arc"
+# region = "Arc"
+region = "NP"
 
 # method = "HLU"
 method = "CROME_PHI"
@@ -35,6 +36,11 @@ if method == "CROME_PHI":
         LADs_included = ["Oxfordshire"]
         data_gdb = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Data.gdb"
         CROME_data = os.path.join(data_gdb, "CROME_2019_Arc_Dissolve")
+    elif region == "NP":
+        folder = r"M:\urban_development_natural_capital"
+        LADs_included = ["Leeds"]
+        data_gdb = r"M:\urban_development_natural_capital\Data.gdb"
+        CROME_data = os.path.join(data_gdb, "CROME_2020_WestYorkshire_Dissolve")
     Hab_field = "Interpreted_habitat"
     LAD_table = os.path.join(data_gdb, "Arc_LADs")
 elif region == "Oxon" and method == "HLU":
@@ -51,10 +57,11 @@ else:
 in_map_name = "OSMM"
 out_map_name = "OSMM_CROME"
 LAD_names = []
-needed_fields = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab"]
+needed_fields = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab",
+                 "primary_key", "fid", "versiondate", "theme", "descriptivegroup", "descriptiveterm", "make",]
 
 # Which stages of the code do we want to run? Change step = 1 to step = 2 after running Merge_into_base_map to merge OSMM_CROME with PHI
-step = 1
+step = 2
 if step == 1:
     add_interpreted_habitat = True   # ONLY for Arc version that uses only OSMM, CROME and PHI etc
     merge_CROME = True
@@ -66,22 +73,20 @@ elif step == 2:
 
 arcpy.env.workspace = data_gdb
 
-LADs = arcpy.SearchCursor(os.path.join(data_gdb, LAD_table))
-for LAD in LADs:
-    LAD_full_name = LAD.getValue("desc_")
-    LAD_county = LAD.getValue("county")
-    if LAD_county in LADs_included:
-        LAD_name = LAD_full_name.replace(" ", "")
-        LAD_names.append(LAD_name)
+# LADs = arcpy.SearchCursor(os.path.join(data_gdb, LAD_table))
+# for LAD in LADs:
+#     LAD_full_name = LAD.getValue("desc_")
+#     LAD_county = LAD.getValue("county")
+#     if LAD_county in LADs_included:
+#         LAD_name = LAD_full_name.replace(" ", "")
+#         LAD_names.append(LAD_name)
 # Or use this line to repeat for selected LADs only...
-# LAD_names = ["Wycombe"]
+LAD_names = ["Leeds"]
 
 # Now process each LAD gdb
 
 # Add crop type from CROME map, but only for agricultural land. This is probably better data then LCM and is freely available.
-# This assumes we are adding CROME after adding LCM (so the Interpreted habitat field is already added and populated in the process_LCM
-# step above), but in fact it is probably best just to use CROME (once we have tested vs LCM), so need to modify this step to include
-# adding the interpreted habitat field
+
 if merge_CROME:
     for LAD in LAD_names:
         print ("Processing " + LAD)

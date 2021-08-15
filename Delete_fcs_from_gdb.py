@@ -8,14 +8,21 @@ arcpy.CheckOutExtension("Spatial")
 
 # Set up parameters
 # Geodatabase(s) to tidy up
-gdbs = [r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData_LADs.gdb"]
+# gdbs = [r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData_LADs.gdb"]
+gdbs = [r"D:\cenv0389\Oxon_GIS\OxCamArc\NaturalCapital\NatCapArc_raster.gdb"]
 
 # Feature classes to keep - the others will be deleted if they match the delete template and do not match the keep template
-keep_fcs = ["Paid_vs_Free_Non_matching"]
-keep_templates = ["Arc", "NatCap", "Water"]
+# keep_fcs = ["Paid_vs_Free_Non_matching"]
+# keep_templates = ["Arc", "NatCap", "Water"]
+keep_fcs = []
+keep_templates = []
+# Delete rasters or feature classes?
+type = "raster"
+# type = "fc"
 
 # Feature classes to delete
-delete_templates = ["_compare", "_PaidVsFree"]
+delete_templates = ["_Paid"]
+# delete_templates = ["Halo1km_", "NatCap_Halo_", "Ox_Urban_1k_halo_no", "OP2050", "MRCF"]
 
 # Flag to either test this function first or do the actual deletions.
 # Do not set to Delete until you have checked the list of items to delete
@@ -31,7 +38,10 @@ for gdb in gdbs:
         print("Started deleting surplus feature classes from " + gdb + " on " + time.ctime())
     arcpy.env.workspace = gdb
     delete_fcs = []
-    fcs = arcpy.ListFeatureClasses("*")
+    if type == "fcs":
+        fcs = arcpy.ListFeatureClasses("*")
+    elif type == "raster":
+        fcs = arcpy.ListRasters("*")
     for fc in fcs:
         print ("Checking " + fc)
         keep = "Unknown"
@@ -47,17 +57,21 @@ for gdb in gdbs:
                     if keep_template in fc:
                         print (fc + " matches keep template " + keep_template + " and will be kept")
                         keep = "Keep"
-                    else:
+                    # else:
                         # print(fc + " does not match keep template " + keep_template)
-                        # Check to see if it matches a delete template
-                        for delete_template in delete_templates:
-                            if keep == "Unknown":
-                                if delete_template in fc:
-                                    keep = "Delete"
-                                    delete_fcs.append(fc)
-                                    print(fc + " matches delete template " + delete_template + " and will be deleted from " + gdb)
-                                # else:
-                                    # print(fc + " does not match delete template " + delete_template)
+
+            if keep == "Unknown":
+                # Check to see if it matches a delete template
+                for delete_template in delete_templates:
+                    # print ("Checking delete template " + delete_template)
+                    if keep == "Unknown":
+                        # print ("Checking delete template " + delete_template)
+                        if delete_template in fc:
+                            keep = "Delete"
+                            delete_fcs.append(fc)
+                            print(fc + " matches delete template " + delete_template + " and will be deleted from " + gdb)
+                        # else:
+                            # print(fc + " does not match delete template " + delete_template)
         if keep == "Unknown":
             print(fc + " is not flagged for keeping or deleting and will be kept")
 

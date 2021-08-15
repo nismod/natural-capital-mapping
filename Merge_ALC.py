@@ -11,8 +11,9 @@ print(''.join(["## Started on : ", time.ctime()]))
 arcpy.CheckOutExtension("Spatial")
 arcpy.env.overwriteOutput = True  # Overwrites files
 
-region = "Arc"
+# region = "Arc"
 # region = "Oxon"
+region = "NP"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
 method = "CROME_PHI"
 # method = "HLU"
@@ -24,12 +25,18 @@ if region == "Oxon" and method == "HLU":
     out_name = "OSMM_HLU_CR_ALC"
     ALC_data = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Merge_OSMM_HLU_CR_ALC.gdb\ALC_Union"
 elif method == "CROME_PHI":
-    folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData"
+    if region == "Arc":
+        folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData"
+    elif region == "NP":
+        folder = r"M:\urban_development_natural_capital"
+    else:
+        print "Invalid region"
+        exit()
     arcpy.env.workspace = folder
-    # base_map_name = "OSMM_CROME_PHI"
-    base_map_name = "LERC"
-    # out_name = "OSMM_CR_PHI_ALC"
-    out_name = "LERC_ALC"
+    base_map_name = "OSMM_CROME_PHI"
+    # base_map_name = "LERC"
+    out_name = "OSMM_CR_PHI_ALC"
+    # out_name = "LERC_ALC"
     if region == "Arc":
         gdbs = []
         gdbs = arcpy.ListWorkspaces("*", "FileGDB")
@@ -37,6 +44,13 @@ elif method == "CROME_PHI":
         #gdbs.append(os.path.join(folder, "AylesburyVale.gdb"))
         #gdbs.append(os.path.join(folder, "Chiltern.gdb"))
         ALC_data = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Data.gdb\ALC_diss_union"
+    elif region == "NP":
+        gdbs = ["Leeds.gdb"]
+        # gdbs = arcpy.ListWorkspaces("*", "FileGDB")
+        # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
+        #gdbs.append(os.path.join(folder, "AylesburyVale.gdb"))
+        #gdbs.append(os.path.join(folder, "Chiltern.gdb"))
+        ALC_data = r"M:\urban_development_natural_capital\Data.gdb\ALC_diss_union"
     elif region == "Oxon":
         gdbs = []
         LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
