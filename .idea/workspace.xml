@@ -22,7 +22,7 @@
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="terminal" />
+    <property name="settings.editor.selected.configurable" value="vcs.Git" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -41,7 +41,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.Join_Greenspace">
+  <component name="RunManager" selected="Python.OSMM_prep">
     <configuration name="Join_Greenspace" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="natural-capital-mapping" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -63,7 +63,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Merge_into_Base_Map_V5b" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="OSMM_prep" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="natural-capital-mapping" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -75,7 +75,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Merge_into_Base_Map_V5b.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/OSMM_prep.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -84,7 +84,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="OSGS_prep" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="Public_accessV3" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="natural-capital-mapping" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -96,7 +96,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/OSGS_prep.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Public_accessV3.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -105,7 +105,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Process_Designations" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="SetUpScoreTable" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="natural-capital-mapping" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -117,7 +117,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Process_Designations.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SetUpScoreTable.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -126,7 +126,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="Union_DesignationsV2" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="Setup_LAD_gdbs" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="natural-capital-mapping" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -138,7 +138,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Union_DesignationsV2.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Setup_LAD_gdbs.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -148,19 +148,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.Merge_into_Base_Map_V5b" />
-      <item itemvalue="Python.Union_DesignationsV2" />
-      <item itemvalue="Python.Process_Designations" />
-      <item itemvalue="Python.OSGS_prep" />
       <item itemvalue="Python.Join_Greenspace" />
+      <item itemvalue="Python.Public_accessV3" />
+      <item itemvalue="Python.SetUpScoreTable" />
+      <item itemvalue="Python.Setup_LAD_gdbs" />
+      <item itemvalue="Python.OSMM_prep" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.OSMM_prep" />
+        <item itemvalue="Python.Setup_LAD_gdbs" />
+        <item itemvalue="Python.SetUpScoreTable" />
+        <item itemvalue="Python.Public_accessV3" />
         <item itemvalue="Python.Join_Greenspace" />
-        <item itemvalue="Python.OSGS_prep" />
-        <item itemvalue="Python.Merge_into_Base_Map_V5b" />
-        <item itemvalue="Python.Process_Designations" />
-        <item itemvalue="Python.Union_DesignationsV2" />
       </list>
     </recent_temporary>
   </component>

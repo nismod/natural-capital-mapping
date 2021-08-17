@@ -1,5 +1,5 @@
-# Sets up one geodatabase for each LAD, clips and copies in the input files for OSMM, LAD boundary, and either LCM and PHI
-# or Phase 1 habitat (HLU). Can be applied either to Oxfordshire or the other LADs in the Arc.
+# Sets up one geodatabase for each LAD, clips and copies in the input files for OSMM, LAD boundary, and either CROME (formerly used LCM)
+# and PHI or Phase 1 habitat (HLU). Can be applied either to Oxfordshire or the other LADs in the Arc.
 # -----------------------------------------------------------------------------------------------------------------
 
 import time
@@ -20,18 +20,31 @@ arcpy.env.XYTolerance = "0.001 Meters"
 region = "NP"
 # Which method are we using - Phase 1 habitat data or LCM and PHI?
 # method = "HLU"
-method = "LCM_PHI"
+method = "CROME_PHI"
 
 if region == "NP":
     folder = r"M:\urban_development_natural_capital"
+    LAD_folder = r"M:\urban_development_natural_capital\LADs"
     data_gdb = os.path.join(folder, "Data.gdb")
-    LAD_table = os.path.join(data_gdb, "NP_LADs")
-    LADs_included = ["Leeds"]
+    LAD_table = os.path.join(data_gdb, "LADs")
+    # LADs_included = ["Northumberland", "Allerdale", "Carlisle", "Newcastle upon Tyne", "North Tyneside", "South Tyneside", "Sunderland",
+    #                  "Gateshead", "County Durham", "Copeland", "Darlington", "Stockton-on-Tees", "Hartlepool", "Middlesbrough",
+    #                  "Redcar and Cleveland", "Middlesborough" ]
+    # Use either counties or LADs as the list to include by commenting out the appropriate line in the code
+    LADs_included = [ "Richmondshire"]
+    counties_included = ["Northumberland", "Tyne_and_Wear", "Durham", "Cumbria", "Lancashire",
+                         "North_Yorkshire", "South_Yorkshire", "East_Yorkshire", "West_Yorkshire",
+                         "Lincolnshire", "Greater_Manchester", "Merseyside", "Cheshire"]
+    needed_fields = ["fid", "primary_key", "versiondate", "descriptivegroup", "descriptiveterm", "make"]
+    LAD_name_field = "LAD_name_simple"
+    County_field = "County"
 
-elif method == "LCM_PHI":
+elif method == "CROME_PHI":
     folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc"
     data_gdb = os.path.join(folder, "Data\Data.gdb")
     LAD_table = os.path.join(data_gdb, "Arc_LADs")
+    # arable = os.path.join(data_gdb, "LCM_arable")
+    # improved = os.path.join(data_gdb, "LCM_improved_grassland")
     if region == "Arc":
         LADs_included = ["Bedfordshire", "Buckinghamshire", "Cambridgeshire", "Northamptonshire"]
     elif region == "Oxon":
@@ -39,6 +52,9 @@ elif method == "LCM_PHI":
     else:
         print("ERROR: Invalid region")
         exit()
+    needed_fields = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab"]
+    LAD_name_field = "_desc"
+    County_field = "county"
 
 elif region == "Oxon" and method == "HLU":
     # Caution - OSMM for Oxon has already been copied to the LAD gdbs and deleted from data.gdb, so need to replace it for updates
@@ -47,23 +63,22 @@ elif region == "Oxon" and method == "HLU":
     LAD_table = os.path.join(data_gdb, "Oxon_LADs")
     HLU_data = os.path.join(data_gdb, "HLU")
     LADs_included = ["Oxfordshire"]
+    needed_fields = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab"]
+    LAD_name_field = "_desc"
+    County_field = "county"
 
 else:
     print("ERROR: you cannot currently use the HLU method with the whole Arc region")
     exit()
 
-arable = os.path.join(data_gdb, "LCM_arable")
-improved = os.path.join(data_gdb, "LCM_improved_grassland")
-
 LAD_names = []
-needed_fields = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab"]
 
 # Which stages of the code do we want to run? Depends on method - also can be useful for debugging or updates.
-if method == "LCM_PHI":
-    prep_PHI = True
-    setup_LCM = False
-    setup_PHI = False
+if method == "CROME_PHI":
+    prep_PHI = False
+    setup_PHI = True
     setup_HLU = False    # Always false for the LCM_PHI method
+    setup_LCM = False
 elif method == "HLU":
     prep_PHI = False     # Always false for the HLU method
     setup_LCM = False    # Always false for the HLU method
@@ -73,22 +88,22 @@ else:
     print("ERROR: Invalid region")
     exit()
 
-setup_LAD_gdbs = False
-create_gdb = False
+setup_LAD_gdbs = True
+create_gdb = True
 copy_OSMM = False
-setup_boundary = False
+setup_boundary = True
 
 arcpy.env.workspace = data_gdb
 
 if prep_PHI:
     print ("Preparing PHI datasets")
     # main PHI dataset
-    # arcpy.Dissolve_management("PHI", "PHI_diss_over10m2", "Main_habit", multi_part="SINGLE_PART")
-    # MyFunctions.delete_by_size("PHI_diss_over10m2", 10)
-    # # Copy 'Main_habit' into a new field called 'PHI' (for neatness)
-    # MyFunctions.check_and_add_field("PHI_diss_over10m2", "PHI", "TEXT", 100)
-    # arcpy.CalculateField_management("PHI_diss_over10m2", "PHI", "!Main_habit!", "PYTHON_9.3")
-    # arcpy.DeleteField_management("PHI_diss_over10m2", "Main_habit")
+    arcpy.Dissolve_management("PHI", "PHI_diss_over10m2", "Main_habit", multi_part="SINGLE_PART")
+    MyFunctions.delete_by_size("PHI_diss_over10m2", 10)
+    # Copy 'Main_habit' into a new field called 'PHI' (for neatness)
+    MyFunctions.check_and_add_field("PHI_diss_over10m2", "PHI", "TEXT", 100)
+    arcpy.CalculateField_management("PHI_diss_over10m2", "PHI", "!Main_habit!", "PYTHON_9.3")
+    arcpy.DeleteField_management("PHI_diss_over10m2", "Main_habit")
     # Wood pasture and parkland with scattered trees
     arcpy.Dissolve_management("WoodPastureAndParkland", "WPP_diss_over10m2", "PRIHABTXT", multi_part="SINGLE_PART")
     MyFunctions.delete_by_size("WPP_diss_over10m2", 10)
@@ -118,9 +133,10 @@ if prep_PHI:
 if setup_LAD_gdbs:
     LADs = arcpy.SearchCursor(LAD_table)
     for LAD in LADs:
-        LAD_full_name = LAD.getValue("desc_")
-        LAD_county = LAD.getValue("county")
-        if LAD_county in LADs_included:
+        LAD_full_name = LAD.getValue(LAD_name_field)
+        LAD_county = LAD.getValue(County_field)
+        # if LAD_county in counties_included and LAD_full_name <> "Leeds":
+        if LAD_full_name in LADs_included:
             LAD_name = LAD_full_name.replace(" ", "")
             LAD_names.append(LAD_name)
 
@@ -129,9 +145,9 @@ if setup_LAD_gdbs:
 
             if create_gdb:
                 print ("  Creating new geodatabase for " + LAD_name)
-                arcpy.CreateFileGDB_management(folder, LAD_name)
+                arcpy.CreateFileGDB_management(LAD_folder, LAD_name)
 
-            LAD_gdb = os.path.join(folder, LAD_name + ".gdb")
+            LAD_gdb = os.path.join(LAD_folder, LAD_name + ".gdb")
 
             if copy_OSMM:
                 print("  Copying OSMM for " + LAD_name + " to new geodatabase")
@@ -141,7 +157,7 @@ if setup_LAD_gdbs:
             if setup_boundary:
                 print ("  Creating boundary for " + LAD_name)
                 arcpy.MakeFeatureLayer_management(LAD_table, "LAD_lyr")
-                arcpy.SelectLayerByAttribute_management("LAD_lyr", where_clause="desc_ = '" + LAD_full_name + "'")
+                arcpy.SelectLayerByAttribute_management("LAD_lyr", where_clause= LAD_name_field + " = '" + LAD_full_name + "'")
                 arcpy.CopyFeatures_management("LAD_lyr", os.path.join(LAD_gdb, "boundary"))
                 arcpy.Delete_management("LAD_lyr")
 
@@ -155,11 +171,13 @@ if setup_LAD_gdbs:
                 out_file = os.path.join(LAD_gdb, "LCM_improved_grassland")
                 arcpy.Clip_analysis("LCM_improved_grassland", boundary, out_file)
                 MyFunctions.check_and_repair(out_file)
+
             if setup_PHI:
                 print ("  Clipping PHI to LAD boundary")
                 out_file = os.path.join(LAD_gdb, "PHI")
                 arcpy.Clip_analysis("PHI_union", boundary, out_file)
                 MyFunctions.check_and_repair(out_file)
+
             if setup_HLU:
                 print ("  Clipping HLU to LAD boundary")
                 out_file = os.path.join(LAD_gdb, "HLU")

@@ -60,7 +60,7 @@ elif region == "Arc" or region == "NP" or (region == "Oxon" and method == "CROME
         # gdbs.append(os.path.join(folder, "SouthOxfordshire.gdb"))
         area_tag = "Arc"
     elif region == "NP":
-        gdbs = ["Leeds.gdb"]
+        gdbs = ["M:\urban_development_natural_capital\Leeds.gdb"]
         area_tag = "NP"
     elif region == "Oxon":
         gdbs = []
@@ -104,10 +104,12 @@ if region == "Oxon":
     data_gdb = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Public_access.gdb"
 
 elif region == "Arc":
-    data_gdb = r"M:\urban_development_natural_capital\Public_access.gdb"
+    data_gdb = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Public_access.gdb"
 
 elif region == "NP":
-    data_gdb = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Public_access.gdb"
+    data_gdb = r"M:\urban_development_natural_capital\Public_access.gdb"
+    # Do not delete fid field at end (when all other surplus fields are deleted) as this is now the new name for TOID
+    protected_fields = ["fid"]
 
 des_list = ['CountryPk', 'NT', 'NNR', 'LNR', 'DoorstepGn', 'MillenGn', 'RSPB']
 des_list_expression = "(((CountryPk + NT + NNR + LNR + MillenGn + DoorstepGn + RSPB) = 0) OR " \
@@ -126,14 +128,15 @@ buffer_distance = "50 Meters"
 dissolve_paths = True
 
 # Which stages of the process do we want to run? Useful for debugging or updates
-create_access_layer = True
+create_access_layer = False
+prep_OSM_paths = True
 clip_region = True
 buffer_paths = True
 merge_paths = True
-clip_PA_into_LAD_gdb = True    # Do not use this if the public access layer is made in the same gdb
-extract_relevant_polygons = True
-intersect_access = True
-sp_and_repair = True
+clip_PA_into_LAD_gdb = False    # Do not use this if the public access layer is made in the same gdb
+extract_relevant_polygons = False
+intersect_access = False
+sp_and_repair = False
 interpret_access = True
 tidy_fields = True
 if method == "CROME_PHI" or method == "LERC":
@@ -181,6 +184,7 @@ if create_access_layer:
                     if area_tag <> "":
                         in_file = in_file + "_" + area_tag
                     InPaths.append(in_file)
+                    print "Merging paths"
             arcpy.Merge_management(InPaths, "Paths_merge")
             print("Buffering and dissolving merged paths")
             arcpy.Buffer_analysis("Paths_merge", "Paths_merge_buffer", buffer_distance, dissolve_option="ALL")
@@ -277,8 +281,14 @@ if create_access_layer:
     # Erase any paths that are within the accessible areas or private (military) areas, to reduce the complexity of the merged shapes
     print ("Erasing paths within areas")
     arcpy.Merge_management(["Access_areas_merge", "OSM_military"], "Access_areas_to_erase")
+    print "  Buffering and dissolving areas to erase (to remove internal slivers and simplify shapes)"
+    arcpy.Buffer_analysis("Access_areas_to_erase", "Access_areas_to_erase_buff_diss", "1 Meters", dissolve_option="ALL")
+    print "  Converting to single part"
+    arcpy.MultipartToSinglepart_management("Access_areas_to_erase_buff_diss", "Access_areas_to_erase_buff_diss_sp")
+    MyFunctions.check_and_repair("Access_areas_to_erase_buff_diss_sp")
+    print "  Erasing..."
     try:
-        arcpy.Erase_analysis("Paths_merge_buffer_sp", "Access_areas_to_erase", "Access_paths_erase")
+        arcpy.Erase_analysis("Paths_merge_buffer_sp", "Access_areas_to_erase_buff_diss_sp", "Access_paths_erase")
     except:
         print("Erase failed but will probably work manually in ArcGIS. Please try this and then restart, commenting out previous steps")
         exit()
@@ -490,7 +500,7 @@ for gdb in gdbs:
         # CAUTION: this deletes any field containing "_1" (if delete_1 is True) as well as those containing OBJID,
         # FID, BaseID, _Area, _Relationship
         print("Tidying up surplus attributes")
-        MyFunctions.tidy_fields(base_map + "_PA", delete_1)
+        MyFunctions.tidy_fields(base_map + "_PA", delete_1, protected_fields)
 
     if tidy_workspace and (method == "CROME_PHI" or method == "LERC"):   # Not set up yet for Oxon gdb used for HLU method
         print("Tidying workspace")

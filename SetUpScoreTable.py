@@ -16,12 +16,13 @@ arcpy.CheckOutExtension("Spatial")
 arcpy.env.overwriteOutput = True  # Overwrites files
 arcpy.env.qualifiedFieldNames = False
 
-region = "Arc"
+# region = "Arc"
 # region = "Oxon"
 # region = "Blenheim"
+region = "NP"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
-# method = "CROME_PHI"
-method = "LERC"
+method = "CROME_PHI"
+# method = "LERC"
 # method = "HLU"
 
 if (region == "Oxon" or region == "Blenheim") and method == "HLU":
@@ -52,19 +53,25 @@ if (region == "Oxon" or region == "Blenheim") and method == "HLU":
     all_des_fields = ["SAC", "RSPB", "SSSI", "NNR", "LNR", "LWS", "Prop_LWS", "AncientWood", "RdVergeNR",
                       "LGS", "MillenGn", "DoorstepGn", "NT", "CountryPk", "GreenBelt", "AONB", "SchMon", "WHS", "HistPkGdn"]
 
-elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
+elif region == "Arc" or region == "NP" or (region == "Oxon" and method == "CROME_PHI"):
     if method == "LERC":
         folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData"
         Base_map = "LERC_ALC_Desig_GS_PA"
         # del_fields = ["FeatureCode", "Version", "VersionDate", "CalculatedAreaValue", "PhysicalLevel"]
         del_fields = ["OBJECTID", "OBJECTID_12", "Shape_Length_1", "OBJECTID_12_13", "toid_1"]
     elif method == "CROME_PHI":
-        folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_FreeData"
+        if region == "Arc" or region == "Oxon":
+            folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_FreeData"
+            del_fields = ["OBJECTID_1", "FID_ALC_di", "Shape_Leng", "ORIG_FID", "Base_Area", "Base_Relationship", "ORIG_FID_1",
+                          "Desig_OBJID","Desig_Area", "Base_Relationship_1", "Desig_OBJID_1", "BaseID_GS", "FID_Natural_features",
+                          "FID_Public_access_erase_sp", "ORIG_FID_12"]
+        elif region == "NP":
+            folder = r"M:\urban_development_natural_capital"
+            del_fields = ["OBJECTID_1", "FID_ALC_di", "Shape_Leng", "ORIG_FID", "Base_Area", "Base_Relationship", "ORIG_FID_1",
+                          "Desig_OBJID","Desig_Area", "Base_Relationship_1", "Desig_OBJID_1", "BaseID_GS", "FID_Natural_features",
+                          "FID_Public_access_erase_sp", "ORIG_FID_12"]
         Base_map = "OSMM_CR_PHI_ALC_Desig_GS_PA"
-        del_fields = ["OBJECTID_1", "FID_ALC_di", "Shape_Leng", "ORIG_FID", "Base_Area", "Base_Relationship", "ORIG_FID_1", "Desig_OBJID",
-                      "Desig_Area", "Base_Relationship_1", "Desig_OBJID_1", "BaseID_GS", "FID_Natural_features",
-                      "FID_Public_access_erase_sp",
-                      "ORIG_FID_12" ]
+
     arcpy.env.workspace = folder
     # LAD gdbs
     if region == "Arc":
@@ -73,11 +80,8 @@ elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
         # Or comment out previous line and use this format (one row per gdb) if repeating certain gdbs only
         # gdbs.append(os.path.join(folder, "SouthCambridgeshire.gdb"))
         # gdbs.append(os.path.join(folder, "SouthNorthamptonshire.gdb"))
-        # gdbs.append(os.path.join(folder, "SouthOxfordshire.gdb"))
-        # gdbs.append(os.path.join(folder, "ValeofWhiteHorse.gdb"))
-        # gdbs.append(os.path.join(folder, "Wellingborough.gdb"))
-        # gdbs.append(os.path.join(folder, "WestOxfordshire.gdb"))
-        # gdbs.append(os.path.join(folder, "Wycombe.gdb"))
+    elif region == "NP":
+        gdbs = [os.path.join(folder,"Leeds.gdb")]
 
     elif region == "Oxon":
         gdbs = []
@@ -92,9 +96,16 @@ elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
     education_fields = nature_fields + " + !CountryPk! + !NT! + !SchMon! + !WHS! + !HistPkGdn!"
     all_des_fields = ["SAC", "SPA", "Ramsar", "IBA", "RSPB", "SSSI", "NNR", "LNR", "AncientWood",
                       "MillenGn", "DoorstepGn", "NT", "CountryPk", "GreenBelt", "AONB", "SchMon", "WHS", "HistPkGdn"]
+    if region == "NP":
+        nature_fields = nature_fields + " + !PropRamsar! "
+        culture_fields = culture_fields + " + !ConservationArea! + !HeritageCoast! "
+        education_fields = nature_fields + " + !CountryPk! + !NT! + !SchMon! + !WHS! + !HistPkGdn!"
+        all_des_fields = ["SAC", "SPA", "Ramsar", "PropRamsar", "IBA", "RSPB", "SSSI", "NNR", "LNR", "AncientWood",
+                          "MillenGn", "DoorstepGn", "NT", "CountryPk", "GreenBelt", "AONB", "SchMon", "WHS", "HistPkGdn",
+                          "ConservationArea", "HeritageCoast"]
 
 historic_data = True
-null_to_zero = False    # Only needed if any rows containing designations have some NULL values - should not happen normallly
+null_to_zero = False    # Only needed if any rows containing designations have some NULL values - should not happen normally
 # Special case: set to true for Arc LERC data because LWS is coded as a separate field
 if method == "LERC":
     LERC_LWS = True
@@ -107,10 +118,10 @@ Max_des_mult = 1.2
 Max_food_mult = 3.03
 
 # Which stages of the script do we want to run? (Useful for debugging or for updating only certain scores)
-tidy_fields = True
-join_tables = True
-food_scores = True
-aesthetic_scores = True
+tidy_fields = False
+join_tables = False
+food_scores = False
+aesthetic_scores = False
 other_cultural = True
 public_access_multiplier = True
 calc_averages = True
@@ -120,7 +131,7 @@ for gdb in gdbs:
     arcpy.env.workspace = gdb
     numrows = arcpy.GetCount_management(os.path.join(gdb, Base_map))
     print (''.join(["### Started processing ", gdb, " on ", time.ctime(), ": ", str(numrows), " rows"]))
-    if region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
+    if region == "Arc" or region == "NP" or (region == "Oxon" and method == "CROME_PHI"):
         path, file = os.path.split(gdb)
         area_name = file[:-4]
         # Tidy up surplus fields in input table

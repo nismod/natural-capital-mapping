@@ -25,7 +25,7 @@ region = "Arc"
 # method = "HLU"
 method = "CROME_LCM_PHI"
 
-if method == "CROMELCM_PHI":
+if method == "CROME_LCM_PHI":
     folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc"
     if region == "Arc":
         LADs_included = ["Bedfordshire", "Buckinghamshire", "Cambridgeshire", "Northamptonshire"]

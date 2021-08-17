@@ -37,7 +37,7 @@ if method == "CROME_PHI":
         data_gdb = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Data.gdb"
         CROME_data = os.path.join(data_gdb, "CROME_2019_Arc_Dissolve")
     elif region == "NP":
-        folder = r"M:\urban_development_natural_capital"
+        folder = r"M:\urban_development_natural_capital\LADs"
         LADs_included = ["Leeds"]
         data_gdb = r"M:\urban_development_natural_capital\Data.gdb"
         CROME_data = os.path.join(data_gdb, "CROME_2020_WestYorkshire_Dissolve")

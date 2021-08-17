@@ -32,8 +32,6 @@ region = "NP"
 method = "CROME_PHI"
 # method = "LERC"
 # method = "HLU"
-# *** Temporary fix for LERC data only as Interpreted habitat field was too short for LERC data
-# FixHab = True
 
 # Folder containing multiple OS Greenspace shapefile tiles to be joined together
 # OSGS_folder = r"D:\cenv0389\Oxon_GIS\OxCamArc\OSGS"
@@ -57,11 +55,13 @@ if region == "Oxon" and method == "HLU":
     Hab_field = "Interpreted_habitat"
 elif region == "NP":
     work_folder = r"M:\urban_development_natural_capital"
-    gdbs = [r"M:\urban_development_natural_capital\"Leeds.gdb"]
+    gdbs = [r"M:\urban_development_natural_capital\Leeds.gdb"]
     Base_map_name = "OSMM_CR_PHI_ALC_Desig"
     boundary = "boundary"
     Hab_field = "Interpreted_habitat"
     TOID_field = "fid"
+    Base_Index_field = "OBJECTID"
+    DescGroup = "descriptivegroup"
 elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
     work_folder = r"D:\cenv0389\OxCamArc\NatCap_Arc_PaidData"
     arcpy.env.workspace = work_folder
@@ -99,15 +99,15 @@ elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
 OpenGS_Index_field = "OBJECTID"
 
 # Which parts of the code do we want to run? For debugging or updating
-merge_GS_files = True
-prep_openGS = True
-clip_OSGS = True
-clip_openGS = True
-copy_base_map = True
+merge_GS_files = False
+prep_openGS = False
+clip_OSGS = False
+clip_openGS = False
+copy_base_map = False
 # Need to trim off "osgb" from beginning of toid? Don't need to do this with most recent version of OSGS
 trim_toid = False
-join_OSGS = True
-clip_openGS = True
+join_OSGS = False
+clip_openGS2 = True
 join_openGS = True
 interpret_GS = True
 
@@ -197,7 +197,7 @@ for gdb in gdbs:
         MyFunctions.check_and_add_field("OS_Open_GS", "GSID", "LONG", 0)
         arcpy.CalculateField_management("OS_Open_GS", "GSID", "!" + OpenGS_Index_field + "!", "PYTHON_9.3")
 
-        if clip_openGS:
+        if clip_openGS2:
             print("      Clipping out OS open GS not already covered by OSGS (i.e. leaving just rural areas)")
             # First dissolve OSGS to get a simple area for clipping
             arcpy.Dissolve_management("OSGS", "OSGS_dissolve")
