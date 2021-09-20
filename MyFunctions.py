@@ -47,8 +47,9 @@ def tidy_fields(in_file, delete_1, protected_fields):
     for field in Fields:
         # Flag 'delete_1' indicates whether to delete fields containing "_1" or not
         if delete_1:
-            if ("FID" in field.name or "OBJID" in field.name or "BaseID" in field.name or "_1" in field.name or "_Relationship" in field.name
-                or "_Area" in field.name or field.name == "Shape_Leng") and field.name not in protected_fields and not field.required:
+            if ("_FID" in field.name or "FID_" in field.name or "_OBJID" in field.name or "BaseID_" in field.name or "_1" in field.name
+                or "_Relationship" in field.name or "_Area" in field.name
+                or field.name == "Shape_Leng") and field.name not in protected_fields and not field.required:
                 fieldNameList.append(field.name)
         else:
             if ("FID" in field.name or "OBJID" in field.name or "BaseID" in field.name or "_Relationship" in field.name
@@ -100,7 +101,7 @@ def check_and_add_field(in_table, in_field, type, len):
         arcpy.AddField_management(in_table, in_field, type, field_length=len)
     else:
         arcpy.AddField_management(in_table, in_field, type)
-    # print ("      New field " + in_field + " added successfully to " + in_table)
+    print ("      New field " + in_field + " added successfully to " + in_table)
     return
 
 def delete_by_size (in_table, size):

@@ -60,7 +60,25 @@ elif region == "Arc" or region == "NP" or (region == "Oxon" and method == "CROME
         # gdbs.append(os.path.join(folder, "SouthOxfordshire.gdb"))
         area_tag = "Arc"
     elif region == "NP":
-        gdbs = ["M:\urban_development_natural_capital\Leeds.gdb"]
+        # Remember Leeds not in the list below because already done
+        # "Allerdale.gdb", "Barnsley.gdb", "Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
+        #  "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb", "Carlisle.gdb",
+        # "Cheshire East.gdb", "Cheshire West and Chester.gdb", "Chorley.gdb", "Copeland.gdb", "County Durham.gdb",
+        # "Craven.gdb", "Darlington.gdb", "Doncaster.gdb",
+        # "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb",
+        # "Halton.gdb", "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb",
+        # "Lancaster.gdb", "Liverpool.gdb", "Manchester.gdb", "Middlesbrough.gdb", "Newcastle upon Tyne.gdb",
+        # "North East Lincolnshire.gdb", "North Lincolnshire.gdb", "Northumberland.gdb", "North Tyneside.gdb", "Oldham.gdb",
+        #  "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
+        #                      "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
+        #                      "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
+        #                      "South Tyneside.gdb", "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb",
+        #                      "Tameside.gdb", "Trafford.gdb", "Wakefield.gdb", "Warrington.gdb", "West Lancashire.gdb",
+        #                      "Wigan.gdb", "Wirral.gdb", "Wyre.gdb", "York.gdb"
+        gdb_names = [ "Kirklees.gdb"]
+        gdbs = []
+        for gdb_name in gdb_names:
+            gdbs.append(os.path.join(r"M:\urban_development_natural_capital\LADs", gdb_name.replace(" ", "")))
         area_tag = "NP"
     elif region == "Oxon":
         gdbs = []
@@ -129,20 +147,25 @@ dissolve_paths = True
 
 # Which stages of the process do we want to run? Useful for debugging or updates
 create_access_layer = False
+# These four stages will only be run if create_access_layer is True
 prep_OSM_paths = True
 clip_region = True
 buffer_paths = True
 merge_paths = True
+
 clip_PA_into_LAD_gdb = False    # Do not use this if the public access layer is made in the same gdb
 extract_relevant_polygons = False
 intersect_access = False
-sp_and_repair = False
+# *** note there is currently a temporary correction in the code here that needs to be removed in due course!
+NT_correction = True  # CORRECTION for Northern Powerhouse only
+sp_and_repair = True
 interpret_access = True
 tidy_fields = True
-if method == "CROME_PHI" or method == "LERC":
-    tidy_workspace = True # DO NOT USE THIS FOR OXON HLU method!! It is not set up yet.
-else:
-    tidy_workspace = False
+# Recommend not using tidy_workspace here but using the separate code Delete_fcs_from_gdb instead - it is safer!
+# if method == "CROME_PHI" or method == "LERC":
+#     tidy_workspace = False # DO NOT USE THIS FOR OXON HLU method!! It is not set up yet.
+# else:
+#     tidy_workspace = False
 
 # *** End of parameter entry
 # --------------------------
@@ -371,7 +394,7 @@ for gdb in gdbs:
         arcpy.MakeFeatureLayer_management(base_map, "sel_lyr")
         # There was an error here: Amenity grassland had an underscore between the words so would not have been excluded as intended.
         # Fixed on 1/10/2020. This will have affected all the work done for Blenheim and EA Arc, and updated Oxon map sent to
-        # Nick and Mel end Sept 2020. Makes no difference? Because it simply added either Open or Path
+        # Nick and Mel end Sept 2020. But makes no difference? Because it simply added either Open or Path
         # to amenity grassland not in Greenspace (rather than leaving it out), which is later over-ridden to Open for all amenity grassland.
         expression = hab_field + " NOT IN ('Garden', 'Amenity grassland') AND " + MakeField + " <> 'Manmade' AND " \
                                  "(GreenSpace IS NULL OR GreenSpace = '') AND " + des_list_expression
@@ -403,6 +426,19 @@ for gdb in gdbs:
         arcpy.Erase_analysis(base_map, base_map + "_isect", base_map + "_isect_erase", cluster_tolerance="0.001 Meters" )
         arcpy.Merge_management([base_map + "_isect_erase", base_map + "_isect"], base_map + "_merge")
         print("    Merge completed on : " + time.ctime())
+
+    # *** TEMPORARY Correction for NP because access field was omitted accidentally when I made the designations layer
+    # if NT_correction and region == "NP":
+    #     # select NT polygons and spatially join to a dataset containing only the NT access description
+    #     print "    Correcting by adding in missing NT access field"
+    #     arcpy.MakeFeatureLayer_management(base_map + "_merge", "NT_lyr")
+    #     arcpy.SelectLayerByAttribute_management("NT_lyr", where_clause="NT = 1")
+    #     arcpy.SpatialJoin_analysis("NT_lyr", os.path.join(data_gdb, "NT_access"), "NT_access")
+    #     # delete the NT features from the original file and then append the new spatially joined rows back in
+    #     arcpy.DeleteFeatures_management("NT_lyr")
+    #     arcpy.Delete_management("NT_lyr")
+    #     MyFunctions.check_and_add_field(base_map + "_merge", "NT_desc", "TEXT", 20)
+    #     arcpy.Append_management("NT_access", base_map + "_merge", "NO_TEST")
 
     if sp_and_repair:
         # Sort by shape so it displays faster
@@ -454,6 +490,7 @@ for gdb in gdbs:
         # Green spaces (from OS green space and OS open green space) - correct for Rail in OSGS Amenity residential
         # Exclude National Trust as that has better information on access, so we don't want to overwrite it
         # Also exclude arable land (added 4/10/2020 at end of EA work) otherwise incorrect OSGS 'Amenity' over-rides habitat type
+        print "      Interpreting green space"
         arcpy.MakeFeatureLayer_management(base_map + "_PA", "sel_lyr4")
         expression = hab_field + " NOT IN ('Arable', 'Arable and scattered trees', 'Arable fields, horticulture and temporary grass') "
         expression = expression + "AND GreenSpace IS NOT NULL AND GreenSpace <> '' "
@@ -470,6 +507,7 @@ for gdb in gdbs:
         arcpy.Delete_management("sel_lyr4")
 
         # Correction for school grounds from OSGS because playing fields were omitted (this will omit non-urban schools not in OSGS)
+        print "      Interpreting schools"
         arcpy.MakeFeatureLayer_management(base_map + "_PA", "school_lyr")
         arcpy.SelectLayerByAttribute_management("school_lyr", where_clause="OSGS_priFunc = 'School Grounds'")
         if arcpy.GetCount_management("school_lyr") > 0:
@@ -483,6 +521,7 @@ for gdb in gdbs:
         arcpy.Delete_management("school_lyr")
 
         # Add in full accessibility for rivers, lakes, reservoirs, weirs and canals. Correction made 4 Oct 2020.
+        print "      Interpreting water"
         arcpy.MakeFeatureLayer_management(base_map + "_PA", "water_lyr")
         expression = DescTerm + " IN ('Watercourse', 'Static Water', 'Canal', 'Weir', 'Reservoir')"
         arcpy.SelectLayerByAttribute_management("water_lyr", where_clause=expression)
@@ -497,23 +536,24 @@ for gdb in gdbs:
         arcpy.Delete_management("water_lyr")
 
     if tidy_fields:
-        # CAUTION: this deletes any field containing "_1" (if delete_1 is True) as well as those containing OBJID,
-        # FID, BaseID, _Area, _Relationship
+        # CAUTION: this deletes any field containing "_1" (if delete_1 is True) as well as those containing _OBJID,
+        # FID_, _FID, BaseID_, _Area, _Relationship unless in list of protected fields
         print("Tidying up surplus attributes")
         MyFunctions.tidy_fields(base_map + "_PA", delete_1, protected_fields)
 
-    if tidy_workspace and (method == "CROME_PHI" or method == "LERC"):   # Not set up yet for Oxon gdb used for HLU method
-        print("Tidying workspace")
-        fcs = arcpy.ListFeatureClasses("*")
-        delete_fcs = []
-        for fc in fcs:
-            if fc not in keep_fcs and "NatCap_" not in fc:
-                delete_fcs.append (fc)
-                # print("Deleting " + fc + " from " + gdb)
-                if len(delete_fcs) > 0:
-                    arcpy.Delete_management (fc)
-        if len(delete_fcs) > 0:
-            print("   Deleted intermediate feature classes: " + ', '.join(delete_fcs))
+    # Recommend using the separate code Delete_fcs_from_gdb instead - it is safer!
+    # if tidy_workspace and (method == "CROME_PHI" or method == "LERC"):   # Not set up yet for Oxon gdb used for HLU method
+    #     print("Tidying workspace")
+    #     fcs = arcpy.ListFeatureClasses("*")
+    #     delete_fcs = []
+    #     for fc in fcs:
+    #         if fc not in keep_fcs and "NatCap_" not in fc:
+    #             delete_fcs.append (fc)
+    #             # print("Deleting " + fc + " from " + gdb)
+    #             if len(delete_fcs) > 0:
+    #                 arcpy.Delete_management (fc)
+    #     if len(delete_fcs) > 0:
+    #         print("   Deleted intermediate feature classes: " + ', '.join(delete_fcs))
 
     print(''.join(["Completed " + gdb + " on : ", time.ctime()]))
 exit()

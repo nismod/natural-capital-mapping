@@ -28,21 +28,46 @@ method = "CROME_PHI"
 if method == "CROME_PHI":
     if region == "Arc":
         folder = r"D:\cenv0389\OxCamArc\LADs"
-        LADs_included = ["Bedfordshire", "Buckinghamshire", "Cambridgeshire", "Northamptonshire", "Oxfordshire", "Peterborough"]
+        Counties_included = ["Bedfordshire", "Buckinghamshire", "Cambridgeshire", "Northamptonshire", "Oxfordshire", "Peterborough"]
         data_gdb = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Data.gdb"
         CROME_data = os.path.join(data_gdb, "CROME_2019_Arc_Dissolve")
+        OSMM_Term = "DescriptiveTerm"
+        OSMM_Group = "DescriptiveGroup"
+        OSMM_Make = "Make"
     elif region == "Oxon":
         folder = r"D:\cenv0389\Oxon_GIS\Oxon_county"
-        LADs_included = ["Oxfordshire"]
+        Counties_included = ["Oxfordshire"]
         data_gdb = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Data.gdb"
         CROME_data = os.path.join(data_gdb, "CROME_2019_Arc_Dissolve")
+        OSMM_Term = "DescriptiveTerm"
+        OSMM_Group = "DescriptiveGroup"
+        OSMM_Make = "Make"
     elif region == "NP":
         folder = r"M:\urban_development_natural_capital\LADs"
-        LADs_included = ["Leeds"]
+        # CROME_North dataset (done)
+        # LADs_included = ["Northumberland", "Newcastle upon Tyne", "North Tyneside", "South Tyneside",
+        #                  "Sunderland",  "Gateshead", "County Durham", "Darlington", "Stockton-on-Tees", "Hartlepool",
+        #                  "Middlesbrough", "Redcar and Cleveland", "Carlisle", "Allerdale", "Eden"]
+        # CROME_West dataset (done)
+        # LADs_included = ["Blackburn with Darwen", "Blackpool", "Bolton", "Burnley", "Bury", "Calderdale", "Cheshire East",
+        #                  "Cheshire West and Chester", "Chorley", "Fylde", "Halton", "Hyndburn", "Kirklees", "Knowsley",
+        #                  "Liverpool", "Manchester", "Oldham", "Preston", "Rochdale", "Rossendale","Salford", "South Ribble"]
+        # CROME_North_West dataset (done)
+        # LADs_included = ["Barrow-in-Furness", "Bradford", "Copeland", "Craven", "Lancaster", "Pendle", "Ribble Valley",
+        #                  "South Lakeland", "Wyre"]
+        # CROME_East dataset (done) Add back  "Leeds" , , if re-doing
+        # LADs_included = ["Barnsley", "Doncaster", "East Riding of Yorkshire", "North East Lincolnshire", "North Lincolnshire",
+        #                  "Richmondshire", "Rotherham",  "Scarborough",
+        #                  "Selby", "Sheffield", "Wakefield", "York", "Hambleton", "Harrogate", "Ryedale", "South Ribble", "Sefton",
+        #                  "Stockport", "St Helens", "Tameside", "Trafford", "Warrington", "Wigan", "Wirral", "West Lancashire" ]
+        LADs_included = ["Copeland"]
         data_gdb = r"M:\urban_development_natural_capital\Data.gdb"
-        CROME_data = os.path.join(data_gdb, "CROME_2020_WestYorkshire_Dissolve")
+        CROME_data = os.path.join(data_gdb, "CROME_North_West_diss")
+        OSMM_Term = "descriptiveterm"
+        OSMM_Group = "descriptivegroup"
+        OSMM_Make = "make"
     Hab_field = "Interpreted_habitat"
-    LAD_table = os.path.join(data_gdb, "Arc_LADs")
+    LAD_table = os.path.join(data_gdb, "LADs")
 elif region == "Oxon" and method == "HLU":
     # Operate in the Oxon_county folder
     folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\Oxon_county\Data"
@@ -58,7 +83,7 @@ in_map_name = "OSMM"
 out_map_name = "OSMM_CROME"
 LAD_names = []
 needed_fields = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab",
-                 "primary_key", "fid", "versiondate", "theme", "descriptivegroup", "descriptiveterm", "make",]
+                 "primary_key", "fid", "versiondate", "descriptivegroup", "descriptiveterm", "make"]
 
 # Which stages of the code do we want to run? Change step = 1 to step = 2 after running Merge_into_base_map to merge OSMM_CROME with PHI
 step = 2
@@ -76,23 +101,27 @@ arcpy.env.workspace = data_gdb
 # LADs = arcpy.SearchCursor(os.path.join(data_gdb, LAD_table))
 # for LAD in LADs:
 #     LAD_full_name = LAD.getValue("desc_")
-#     LAD_county = LAD.getValue("county")
-#     if LAD_county in LADs_included:
+#     County = LAD.getValue("county")
+#     if County in counties_included:
 #         LAD_name = LAD_full_name.replace(" ", "")
 #         LAD_names.append(LAD_name)
 # Or use this line to repeat for selected LADs only...
-LAD_names = ["Leeds"]
+LAD_names = LADs_included
 
 # Now process each LAD gdb
 
 # Add crop type from CROME map, but only for agricultural land. This is probably better data then LCM and is freely available.
 
 if merge_CROME:
+    i=0
     for LAD in LAD_names:
-        print ("Processing " + LAD)
-        arcpy.env.workspace = os.path.join(folder, LAD + ".gdb")
+        i=i+1
+        print ("Processing " + LAD + " which is number " + str(i) + " out of " + str(len(LAD_names)))
+        LAD_name = LAD.replace(" ", "")
+        arcpy.env.workspace = os.path.join(folder, LAD_name + ".gdb")
         in_map = in_map_name
         out_map = out_map_name
+
         print("  Copying " + in_map + " to " + out_map)
         arcpy.CopyFeatures_management(in_map, out_map)
 
@@ -122,12 +151,16 @@ if merge_CROME:
         # copied across even if we think we have selected and joined to the right rows.
         print("Deleting identical (smaller intersection) rows")
         arcpy.DeleteIdentical_management("CROME_TI_sort", ["OBJECTID_1"])
-        arcpy.MakeTableView_management("CROME_TI_sort", "CROME_lyr")
+
         # Adding fields for CROME data
+        out_map = "OSMM_CROME"
+        print ("Adding new fields for CROME data")
         MyFunctions.check_and_add_field(out_map, "CROME_desc", "TEXT", 50)
         MyFunctions.check_and_add_field(out_map, "CROME_simple", "TEXT", 50)
+
         # Join the intersected table to join in the largest intersection to each polygon
         print ("Joining CROME info for base map polygons")
+        arcpy.MakeTableView_management("CROME_TI_sort", "CROME_lyr")
         arcpy.AddJoin_management("ag_lyr", "BaseID_CROME", "CROME_lyr", "BaseID_CROME", "KEEP_ALL")
         # Select only agricultural CROME polygons and intersections where there is >30% overlap
         # Data will only be copied for the selected polygons
@@ -170,14 +203,18 @@ if merge_CROME:
         print(''.join(["## Finished adding CROME data to " + LAD + " on : ", time.ctime()]))
 
 if interpret_PHI:
+    i = 0
     for LAD in LAD_names:
-        arcpy.env.workspace = os.path.join(folder, LAD + ".gdb")
+        i=i+1
+        print ("Processing " + LAD + " which is number " + str(i) + " out of " + str(len(LAD_names)))
+        LAD_name = LAD.replace(" ", "")
+        arcpy.env.workspace = os.path.join(folder, LAD_name + ".gdb")
         print("Interpreting " + LAD)
         out_map = out_map_name + "_PHI"
 
         # Copy PHI habitat across, but not for manmade, gardens, water, unidentified PHI, grazing marsh, wood pasture or
         # OMHD (all dealt with later)
-        expression = "Make = 'Natural' AND DescriptiveGroup NOT LIKE '%water%' AND DescriptiveGroup NOT LIKE '%Water%'"
+        expression = OSMM_Make + " = 'Natural' AND " + OSMM_Group + " NOT LIKE '%water%' AND " + OSMM_Group + " NOT LIKE '%Water%'"
         expression = expression +  " AND OSMM_hab <> 'Roadside: unknown surface' AND OSMM_hab <> 'Track' AND OSMM_hab <> 'Standing water' "
         expression = expression +  " AND PHI IS NOT NULL AND PHI <> '' AND PHI NOT LIKE 'No main%' AND "
         expression = expression +  "PHI NOT LIKE 'Wood-pasture%' AND PHI NOT LIKE 'Open Mosaic%' AND PHI NOT LIKE '%grazing marsh'"
@@ -189,26 +226,39 @@ if interpret_PHI:
 
         # Other corrections / consolidations
         MyFunctions.select_and_copy(out_map, Hab_field, Hab_field + " = 'Deciduous woodland'", "'Woodland: broadleaved, semi-natural'")
-        expression3 = "(PHI LIKE '%grazing marsh%' AND " + Hab_field + " LIKE '%grass%') OR " \
+
+        expression3 = "(PHI LIKE '%grazing marsh%' AND (" + Hab_field + " LIKE '%grass%' AND " + Hab_field + " NOT LIKE '%scattered%')) OR " \
                       + Hab_field + " LIKE 'Purple moor grass%'"
         MyFunctions.select_and_copy(out_map, Hab_field, expression3, "'Marshy grassland'")
+        expression3 = "PHI LIKE '%grazing marsh%' AND " + Hab_field + " LIKE '%grassland with scattered scrub'"
+        MyFunctions.select_and_copy(out_map, Hab_field, expression3, "'Marshy grassland with scattered scrub'")
+        expression3 = "PHI LIKE '%grazing marsh%' AND " + Hab_field + " LIKE '%grassland with scattered trees: broadleaved'"
+        MyFunctions.select_and_copy(out_map, Hab_field, expression3, "'Marshy grassland with scattered trees: broadleaved'")
+        expression3 = "PHI LIKE '%grazing marsh%' AND " + Hab_field + " LIKE '%grassland with scattered trees: mixed'"
+        MyFunctions.select_and_copy(out_map, Hab_field, expression3, "'Marshy grassland with scattered trees: mixed'")
+        expression3 = "PHI LIKE '%grazing marsh%' AND " + Hab_field + " LIKE '%grassland with scattered trees: coniferous'"
+        MyFunctions.select_and_copy(out_map, Hab_field, expression3, "'Marshy grassland with scattered trees: coniferous'")
+
+
         expression = Hab_field + " LIKE '%semi-improved grassland%' AND " + Hab_field + " <> 'Poor semi-improved grassland'"
         MyFunctions.select_and_copy(out_map, Hab_field, expression, "'Semi-natural grassland'")
         MyFunctions.select_and_copy(out_map, Hab_field, Hab_field + " LIKE '%meadow%'", "'Neutral grassland'")
         MyFunctions.select_and_copy(out_map, Hab_field, Hab_field + " = 'Traditional orchard'", "'Traditional orchards'")
         MyFunctions.select_and_copy(out_map, Hab_field, Hab_field + " LIKE '%alcareous%'", "'Calcareous grassland'")
-        MyFunctions.select_and_copy(out_map, Hab_field, Hab_field + " = 'Lowland heathland'", "'Heathland'")
+        MyFunctions.select_and_copy(out_map, Hab_field, Hab_field + " = 'Grass moorland'", "'Acid grassland'")
+        expression4 = " IN ('Lowland heathland', 'Upland heathland', 'Fragmented heath')"
+        MyFunctions.select_and_copy(out_map, Hab_field, Hab_field + expression4, "'Heathland'")
+        MyFunctions.select_and_copy(out_map, Hab_field, Hab_field + " = 'Mountain heaths and willow scrub'",
+                                    "'Heath with scattered trees: broadleaved'")
+        MyFunctions.select_and_copy(out_map, Hab_field, Hab_field + " IN ('Blanket bog', 'Lowland raised bog')", "'Bog'")
         MyFunctions.select_and_copy(out_map, Hab_field, Hab_field + " = 'Reedbeds'", "'Reedbed'")
+        MyFunctions.select_and_copy(out_map, Hab_field, Hab_field + " = 'Coastal saltmarsh'", "'Saltmarsh'")
+        MyFunctions.select_and_copy(out_map, Hab_field, Hab_field + " = 'Saline lagoons'", "'Coastal lagoons'")
+        MyFunctions.select_and_copy(out_map, Hab_field, Hab_field + " = 'Maritime cliff and slope'", "'Coastal rock'")
 
         # Copy over OMHD only if the habitat is fairly generic (OMHD dataset covers areas of mixed habitats)
         # Debatable whether 'Quarry or spoil' should be included. Previously only included if inactive, but inspection
         # shows vegetation on many supposedly active sites.
-        # Temporary correction to reflect new changes in interpretation script
-        MyFunctions.select_and_copy(out_map, Hab_field, "DescriptiveTerm LIKE 'Landfill (Inactive)%'", "'Landfill: disused'")
-        MyFunctions.select_and_copy(out_map, Hab_field, "DescriptiveTerm LIKE 'Mineral Workings (Inactive)%'", "'Quarry or spoil: disused'")
-        MyFunctions.select_and_copy(out_map, Hab_field, "DescriptiveTerm LIKE 'Spoil Heap (Inactive)%'", "'Quarry or spoil: disused'")
-        MyFunctions.select_and_copy(out_map, Hab_field, "DescriptiveTerm LIKE 'Slag Heap (Inactive)%'", "'Quarry or spoil: disused'")
-
         expression5 = "(OMHD IS NOT NULL AND OMHD <> '') AND (" + Hab_field + " IN ('Arable', 'Agricultural land'," \
                       " 'Improved grassland', 'Natural surface', 'Cultivated/disturbed land', 'Bare ground', 'Landfill: disused'," \
                       "'Quarry or spoil: disused', 'Quarry or spoil', 'Sealed surface'))"

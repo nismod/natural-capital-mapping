@@ -34,7 +34,7 @@ LAD_gdb = r"D:\cenv0389\OxCamArc\OSMM_update.gdb"
 LAD_gdb_folder = r"M:\urban_development_natural_capital\LADs"
 
 # new_fc = "OSMM_Oxon_Aug2020"
-new_fc = "OSMM_North_NP"
+new_fc = "OSMM_Overlaps"
 OSMM_fc = new_fc
 
 LAD_table = r"M:\urban_development_natural_capital\data.gdb\LADs"
@@ -43,13 +43,14 @@ County_name_field = "County"
 # LADs_included = ["Northumberland", "Allerdale", "Carlisle", "Newcastle upon Tyne", "North Tyneside", "South Tyneside", "Sunderland",
 #                 "Gateshead", "County Durham", "Copeland", "Darlington", "Stockton-on-Tees", "Hartlepool", "Middlesbrough",
 #                 "Redcar and Cleveland"]
-LADs_included = ["Northumberland", "Carlisle", "Copeland", "Hartlepool", "Allerdale"]
 # LADs_included = ["Pendle", "Burnley", "Rossendale", "Rochdale", "Manchester", "Trafford", "Salford", "Bury", "Hyndburn",
 #                  "Ribble Valley", "Lancaster", "Wyre", "Barrow-in-Furness", "Blackpool", "Fylde", "Preston",
-#                  "South Ribble", "Blackburn with Darwen". "Chorley", "Wigan", "West Lancashire", "Bolton", "Warrington",
+#                  "South Ribble", "Blackburn with Darwen", "Chorley", "Wigan", "West Lancashire", "Bolton", "Warrington",
 #                  "Halton", "St Helens", "Knowsley", "Liverpool", "Wirral", "Sefton", "Cheshire West and Chester"]
 # LADs_included = ["North Lincolnshire", "North East Lincolnshire", "East Riding of Yorkshire", "York", "Selby", "Wakefield",
 #                  "Barnsley", "Doncaster", "Rotherham", "Sheffield"]
+LADs_included = [ "Oldham", "Cheshire East", "Stockport", "Tameside", "Pendle", "Craven",
+                 "South Lakeland", "Eden", "Scarborough", "Richmondshire", "Harrogate", "Ryedale", "Hambleton"]
 
 # boundary = r"D:\cenv0389\Oxon_GIS\GIS_data\Oxfordshire.shp"
 boundary = r"M:\urban_development_natural_capital\data.gdb\NP_boundary"
@@ -96,16 +97,20 @@ if split_LADs:
     LADs = arcpy.SearchCursor(LAD_table)
 
     arcpy.env.workspace = OSMM_out_gdb
-
+    i=0
     for LAD in LADs:
         LAD_full_name = LAD.getValue(LAD_name_field)
         if LAD_full_name in LADs_included:
-            LAD_name = LAD_full_name.replace(" ","")
+            i=i+1
+            print "Processing LAD number " + str(i) + " out of " + str(len(LADs_included))
+            LAD_name = LAD_full_name.replace(" ", "")
             LAD_names.append(LAD_name)
 
             print("Clipping OSMM for " + LAD_name)
             arcpy.MakeFeatureLayer_management(LAD_table, "LAD_lyr")
             arcpy.SelectLayerByAttribute_management("LAD_lyr", where_clause= LAD_name_field + "= '" + LAD_full_name + "'")
+            arcpy.MakeFeatureLayer_management(OSMM_fc, "OSMM_lyr")
+            arcpy.SelectLayerByLocation_management("OSMM_lyr", "INTERSECT", "LAD_lyr")
             if separate_LAD_gdbs:
                 # Option for copying direct to LAD gdb
                 out_file = os.path.join(LAD_gdb_folder, LAD_name + ".gdb", "OSMM")
@@ -113,8 +118,9 @@ if split_LADs:
                 # Option for copying to a single folder
                 out_file = os.path.join(LAD_gdb, "OSMM_" + LAD_name)
 
-            arcpy.Clip_analysis(OSMM_fc, "LAD_lyr", out_file)
-            arcpy.Delete_management("sel_lyr")
+            arcpy.Clip_analysis("OSMM_lyr", "LAD_lyr", out_file)
+            arcpy.Delete_management("LAD_lyr")
+            arcpy.Delete_management("OSMM_lyr")
 
             if delete_overlaps:
                 print "Deleting overlaps"

@@ -81,15 +81,33 @@ elif region == "Arc" or region == "NP" or (region == "Oxon" and method == "CROME
         # gdbs.append(os.path.join(folder, "SouthCambridgeshire.gdb"))
         # gdbs.append(os.path.join(folder, "SouthNorthamptonshire.gdb"))
     elif region == "NP":
-        gdbs = [os.path.join(folder,"Leeds.gdb")]
+        LADs = [ "Barrow-in-Furness.gdb", "Allerdale.gdb", "Barnsley.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
+                "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb", "Carlisle.gdb",
+                "Cheshire East.gdb", "Cheshire West and Chester.gdb", "Chorley.gdb", "Copeland.gdb", "County Durham.gdb",
+                "Craven.gdb", "Darlington.gdb", "Doncaster.gdb",
+                "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb",
+                "Halton.gdb", "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb",
+                "Lancaster.gdb", "Liverpool.gdb", "Manchester.gdb", "Middlesbrough.gdb", "Newcastle upon Tyne.gdb",
+                "North East Lincolnshire.gdb", "North Lincolnshire.gdb", "Northumberland.gdb", "North Tyneside.gdb", "Oldham.gdb",
+                "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
+                "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
+                "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
+                "South Tyneside.gdb", "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb",
+                "Tameside.gdb", "Trafford.gdb", "Wakefield.gdb", "Warrington.gdb", "West Lancashire.gdb",
+                "Wigan.gdb", "Wirral.gdb", "Wyre.gdb", "York.gdb"]
+        gdbs = []
+        for gdb_name in LADs:
+            gdbs.append(os.path.join(r"M:\urban_development_natural_capital\LADs", gdb_name.replace(" ", "")))
+        Matrix = r"M:\urban_development_natural_capital\Data.gdb\Matrix"
 
     elif region == "Oxon":
         gdbs = []
         LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
         for LAD in LADs:
             gdbs.append(os.path.join(folder, LAD))
+        Matrix = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Matrix.gdb\Matrix"
     hab_field = "Interpreted_habitat"
-    Matrix = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Matrix.gdb\Matrix"
+
     ALC_multipliers = r"D:\cenv0389\Oxon_GIS\OxCamArc\Data\Matrix.gdb\ALC_multipliers"
     nature_fields = "!SAC! + !SPA! + !Ramsar! + !IBA! + !RSPB! + !SSSI! + !NNR! + !LNR! + !AncientWood!"
     culture_fields = "!MillenGn! + !DoorstepGn! + !NT! + !CountryPk! + !GreenBelt! + !AONB! + !SchMon! + !WHS! + !HistPkGdn!"
@@ -115,13 +133,14 @@ else:
 # Multiplier for aesthetic value if area is in an AONB
 AONB_multiplier = 1.1
 Max_des_mult = 1.2
-Max_food_mult = 3.03
+Max_food_mult = 2.4
 
 # Which stages of the script do we want to run? (Useful for debugging or for updating only certain scores)
 tidy_fields = False
-join_tables = False
-food_scores = False
-aesthetic_scores = False
+NP_correction = True # Temp correction
+join_tables = True
+food_scores = True
+aesthetic_scores = True
 other_cultural = True
 public_access_multiplier = True
 calc_averages = True
@@ -139,8 +158,11 @@ for gdb in gdbs:
             print("Deleting surplus fields ")
             arcpy.DeleteField_management(Base_map, del_fields)
 
+        if NP_correction:
+            arcpy.CalculateField_management(Base_map, hab_field, "!Interpreted_habitat_temp!", "PYTHON_9.3")
+
     print ("Area is " + area_name)
-    NatCap_scores = "NatCap_" + area_name
+    NatCap_scores = "NatCap_" + area_name.replace("-", "")
 
     # Join base map to scores
     # -----------------------

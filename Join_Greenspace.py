@@ -55,7 +55,26 @@ if region == "Oxon" and method == "HLU":
     Hab_field = "Interpreted_habitat"
 elif region == "NP":
     work_folder = r"M:\urban_development_natural_capital"
-    gdbs = [r"M:\urban_development_natural_capital\Leeds.gdb"]
+    gdb_names = ["Allerdale.gdb", "Barnsley.gdb", "Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
+                 "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb",  "Carlisle.gdb", "Cheshire East.gdb",
+                 "Cheshire West and Chester.gdb", "Chorley.gdb", "Copeland.gdb", "County Durham.gdb", "Craven.gdb", "Darlington.gdb",
+                 "Doncaster.gdb",  "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb", "Halton.gdb",
+                 "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb",
+                 "Lancaster.gdb", "Liverpool.gdb",
+                 "Manchester.gdb", "Middlesbrough.gdb", "Newcastle upon Tyne.gdb", "North East Lincolnshire.gdb",
+                 "North Lincolnshire.gdb", "Northumberland.gdb",
+                 "North Tyneside.gdb", "Oldham.gdb", "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
+                 "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
+                 "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
+                 "South Tyneside.gdb",
+                 "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb", "Tameside.gdb",
+                 "Northumberland.gdb", "Trafford.gdb",
+                 "Wakefield.gdb", "Warrington.gdb",  "West Lancashire.gdb",
+                 "Wigan.gdb", "Wirral.gdb", "Wyre.gdb", "York.gdb"]
+    # gdb_names = [ "Allerdale.gdb"]
+    gdbs = []
+    for gdb_name in gdb_names:
+        gdbs.append(os.path.join(r"M:\urban_development_natural_capital\LADs",  gdb_name.replace(" ", "")))
     Base_map_name = "OSMM_CR_PHI_ALC_Desig"
     boundary = "boundary"
     Hab_field = "Interpreted_habitat"
@@ -107,8 +126,8 @@ copy_base_map = False
 # Need to trim off "osgb" from beginning of toid? Don't need to do this with most recent version of OSGS
 trim_toid = False
 join_OSGS = False
-clip_openGS2 = True
-join_openGS = True
+clip_openGS2 = False
+join_openGS = False
 interpret_GS = True
 
 # Loop through all the OSGS tiles in the OSGS folder and merge into a single file
@@ -141,22 +160,27 @@ if prep_openGS:
     arcpy.Union_analysis([["OS_Open_GS_sort", 1]], OS_openGS, "ALL")
     arcpy.DeleteIdentical_management(OS_openGS, ["Shape"])
 
+i = 0
 for gdb in gdbs:
+    i = i + 1
     arcpy.env.workspace = gdb
-    print (''.join(["### Started processing ", gdb, " on : ", time.ctime()]))
+    print (''.join(["### Started processing ", gdb, " on : ", time.ctime()]) + " This is number " + str(i) + " out of " + str(len(gdbs)))
     gdb_name = gdb[:-4]
     if copy_base_map:
         print("    Making copy of base map")
         arcpy.CopyFeatures_management(Base_map_name, Base_map_name + "_GS")
     Base_map = Base_map_name + "_GS"
+
     print ("    " + Base_map + " has " + str(arcpy.GetCount_management(Base_map_name)) + " rows")
 
     if clip_OSGS:
         print("    Clipping OSGS for " + gdb_name)
         arcpy.Clip_analysis(OSGS, boundary, "OSGS")
+        print (str(arcpy.GetCount_management("OSGS")) + " rows in OSGS")
     if clip_openGS:
         print("    Clipping OS open GS for " + gdb_name)
         arcpy.Clip_analysis(os.path.join(Open_GS_gdb, OS_openGS), boundary, "OS_Open_GS")
+        print (str(arcpy.GetCount_management("OS_Open_GS")) + " rows in OS Open_GS")
 
     if join_OSGS:
         print("    Joining OSGS data")
@@ -252,18 +276,25 @@ for gdb in gdbs:
         # Modify base map habitats for allotments, playing fields, play spaces etc - but only generic areas (not paths, woods, water etc)
         print("    Interpreting habitats with GS")
         generic_natural = "(" + Hab_field + " IN ('Agricultural land', 'Natural surface', 'Amenity grassland', 'Cultivated/disturbed land')"
-        generic_natural = generic_natural + " OR " + Hab_field + " LIKE 'Arable%' OR " + Hab_field + " LIKE 'Improved grass%')"
-        expression = generic_natural + " AND GreenSpace = 'Allotments Or Community Growing Spaces'"
+        generic_natural = generic_natural + " OR " + Hab_field + " LIKE 'Arable%' OR " + Hab_field + " LIKE 'Improved grass%'"
+        # Two alternative 'generic natural' definitions, with or without parkland with scattered trees (which is a generic PHI definition)
+        # which we want to keep separate for golf courses, cemeteries or religious grounds but not for other types of green space,
+        # i.e. there can be patches of parkland with scattered trees within a golf course or cemetery but not within a tennis court, etc.
+        # However sometimes this rule does not hold, e.g. there could be a churchyard or cemetery within a large area
+        # identified as parkland from PHI. We can't distinguish which is correct.
+        generic_natural_1 = generic_natural + ")"
+        generic_natural_2 = generic_natural + " OR " + Hab_field + " LIKE 'Parkland%')"
+        expression = generic_natural_2 + " AND GreenSpace = 'Allotments Or Community Growing Spaces'"
         MyFunctions.select_and_copy(Base_map, Hab_field, expression,  "'Allotments, city farm, community garden'")
 
-        expression = generic_natural + " AND GreenSpace IN ('Playing Field', 'Other Sports Facility', 'Play Space', 'Tennis Court', " \
-                                       "'Bowling Green')"
+        expression = generic_natural_2 + " AND GreenSpace IN ('Playing Field', 'Other Sports Facility', 'Play Space', 'Tennis Court', " \
+                                         "'Bowling Green')"
         MyFunctions.select_and_copy(Base_map, Hab_field, expression, "'Natural sports facility, recreation ground or playground'")
 
-        expression = generic_natural + " AND (GreenSpace = 'Cemetery' OR GreenSpace = 'Religious Grounds')"
+        expression = generic_natural_1 + " AND (GreenSpace = 'Cemetery' OR GreenSpace = 'Religious Grounds')"
         MyFunctions.select_and_copy(Base_map, Hab_field, expression,"'Cemeteries and churchyards'")
 
-        expression = generic_natural + " AND GreenSpace = 'Golf Course'"
+        expression = generic_natural_1 + " AND GreenSpace = 'Golf Course'"
         MyFunctions.select_and_copy(Base_map, Hab_field, expression,"'Golf course'")
 
         # Correct 'Amenity - Residential Or Business' to 'Amenity - Transport' where Rail occurs in DescriptiveGroup (this is an OSGS error)
@@ -272,7 +303,7 @@ for gdb in gdbs:
 
         # Replace 'Natural surface' with 'Amenity grassland' - but not for transport (roadside and railside) as not all of this is usable.
         # Also not for 'arable' or 'improved grassland' because some OSGS 'Amenity' is actually farmland around urban areas
-        expression = Hab_field + " = 'Natural surface' AND GreenSpace = 'Amenity - Residential Or Business'"
+        expression = Hab_field + " = 'Natural surface' AND GreenSpace IN ('Amenity - Residential Or Business', 'Public Park Or Garden')"
         MyFunctions.select_and_copy(Base_map, Hab_field, expression,"'Amenity grassland'")
 
         # We do not copy over Amenity - Transport because that should be already identified as Road verge from OSMM

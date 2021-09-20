@@ -74,13 +74,31 @@ elif method == "OSMM_only":
         Hab_field = "Interpreted_habitat"
         LADs_included = ["Oxfordshire"]
     elif region == "NP":
-        folder = r"M:\urban_development_natural_capital"
-        gdbs = ["Leeds.gdb"]
-        in_file_name = "OSMM"
+        folder = r"M:\urban_development_natural_capital\LADs"
+        arcpy.env.workspace = folder
+        LAD_names = ["Allerdale.gdb", "Barnsley.gdb", "Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
+                     "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb", "Carlisle.gdb",
+                     "Cheshire East.gdb", "Cheshire West and Chester.gdb", "Chorley.gdb", "Copeland.gdb", "County Durham.gdb",
+                     "Craven.gdb", "Darlington.gdb", "Doncaster.gdb", "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb",
+                     "Halton.gdb", "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb",
+                     "Lancaster.gdb", "Liverpool.gdb", "Manchester.gdb", "Middlesbrough.gdb", "Newcastle upon Tyne.gdb",
+                     "North East Lincolnshire.gdb", "North Lincolnshire.gdb", "Northumberland.gdb", "North Tyneside.gdb", "Oldham.gdb",
+                     "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
+                     "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
+                     "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
+                     "South Tyneside.gdb", "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb",
+                     "Tameside.gdb", "Trafford.gdb", "Wakefield.gdb", "Warrington.gdb", "West Lancashire.gdb", "Wigan.gdb", "Wirral.gdb",
+                     "Wyre.gdb", "York.gdb"]
+        gdbs = []
+        for LAD_name in LAD_names:
+            gdbs.append(os.path.join(folder, LAD_name.replace(" ", "")))
+        # in_file_name = "OSMM"
+        in_file_name = "OSMM_CR_PHI_ALC_Desig_GS_PA"
         Hab_field = "Interpreted_habitat"
-        LADs_included = ["Leeds"]
+
     # We only want to run delete_landform and simplify_OSMM.
-    delete_landform = True
+    delete_landform = False
+    add_OSMM_hab = False
     simplify_OSMM = True
     simplify_HLU = False
     select_HLU_or_OSMM = False
@@ -91,8 +109,10 @@ else:
     exit()
 
 # If OSMM is "undefined" this usually means the area is under development or scheduled for development. Choose whether to map as
-# "undefined" or as the current / original habitat pre-development
-undefined_or_original = "original"
+# "undefined" or as the current / original habitat pre-development. Up till now including NP we have used original but in future best to
+# use undefined - in fact should maybe change this for NP as well, though bit late now!!!
+# undefined_or_original = "original"
+undefined_or_original = "undefined"
 
 # Check the county from the table of LADs, to identify the list of LADs to process
 LADs = []
@@ -109,12 +129,24 @@ elif region == "Blenheim":
     LADs = ["Blenheim"]
 
 elif region == "NP":
-    LADs = ["Leeds"]
+    LADs = LAD_names
+
+if region == "NP":
+    OSMM_Term = "descriptiveterm"
+    OSMM_Group = "descriptivegroup"
+    OSMM_Make = "make"
+else:
+    OSMM_Term = "DescriptiveTerm"
+    OSMM_Group = "DescriptiveGroup"
+    OSMM_Make = "Make"
 
 print("LADs to process: " + "\n ".join(LADs))
 
+i=0
 for gdb in gdbs:
-   if (region == "Oxon" and (method == "HLU" or method == "OSMM_only")) or (os.path.split(gdb)[1])[:-4] in LADs:
+    if (region == "Oxon" and (method == "HLU" or method == "OSMM_only")) or (os.path.split(gdb)[1])[:-4] in LADs or region == "NP":
+        i = i + 1
+        print "Processing LAD " + str(i) + " out of " + str(len(LADs))
         arcpy.env.workspace = gdb
         print(''.join(["## Started interpreting habitats for ", gdb, " ", in_file_name, " on : ", time.ctime()]))
         in_file = os.path.join(folder, gdb, in_file_name)
@@ -130,8 +162,9 @@ for gdb in gdbs:
         # Simplify the OSMM habitats
         # --------------------------
         if simplify_OSMM:
-            print("Simplifying OSMM habitats")
-            MyFunctions.check_and_add_field(in_file, "OSMM_hab", "TEXT", 100)
+            print("  Simplifying OSMM habitats")
+            if add_OSMM_hab:
+                MyFunctions.check_and_add_field(in_file, "OSMM_hab", "TEXT", 100)
     
             codeblock = """
 def Simplify_OSMM(OSMM_Group, OSMM_Term, OSMM_Make):
@@ -182,24 +215,37 @@ def Simplify_OSMM(OSMM_Group, OSMM_Term, OSMM_Make):
         if OSMM_Term is None or OSMM_Term == "":     # Need this test before we start comparing OSMM_Term, otherwise it crashes
             if "Roadside" in OSMM_Group:
                 return "Road island / verge"
+            elif "tidal water" in OSMM_Group.lower():
+                return "Saltwater"
             elif "water" in OSMM_Group.lower():
                 return "Water"
             else:
                 return "Natural surface"
             
-        elif "water" in OSMM_Group.lower() or "Leat" in OSMM_Term:
-            if OSMM_Term in ["Canal","Canal Feeder"]:
+        elif "water" in OSMM_Group.lower() or "Leat" in OSMM_Term or OSMM_Term in ["Conduit","Spreads","Issues","Sink"]:
+            if OSMM_Term in ["Canal","Canal Feeder", "Conduit"]:
                 return "Canal"
             elif OSMM_Term in ["Reservoir","Drain"]:
                 return OSMM_Term.capitalize()
-            elif OSMM_Term in ["Static Water","Collects","Mill Leat","Mine Leat"]:
+            elif OSMM_Term in ["Static Water","Collects","Mill Leat","Mine Leat","Spreads","Sink"]:
                 return "Standing water"
-            elif OSMM_Term in ["Watercourse","Waterfall","Ford","Spring"]:
+            elif OSMM_Term in ["Watercourse","Waterfall","Ford","Spring","Issues"]:
                 return "Running water"
             elif "Trees" in OSMM_Term:
                 return "Wet woodland"
             elif "Reeds" in OSMM_Term:
                 return "Reedbed"
+            elif "Foreshore" in OSMM_Term:
+                if "Saltmarsh" in OSMM_Term:
+                    return "Saltmarsh"
+                elif (OSMM_Term[:4] == "Rock" or OSMM_Term[:8] == "Boulders") and "Sand" not in OSMM_Term and "Mud" not in OSMM_Term:
+                    return "Coastal rock"
+                elif OSMM_Term[:7] == "Shingle":
+                    return "Shingle"
+                elif OSMM_Term[:3] == "Mud":
+                    return "Mudflats"
+                else:
+                    return "Intertidal sediment"
             else:
                 return "Water"
         
@@ -219,23 +265,55 @@ def Simplify_OSMM(OSMM_Group, OSMM_Term, OSMM_Make):
                     wood = "broadleaved"
             else:
                 wood = "coniferous"
+            
+            if (wood == "broadleaved" and "Nonconiferous Trees (Scattered)" in OSMM_Term):
+                scattered_trees = True
+            elif (wood == "coniferous" and "Coniferous Trees (Scattered)" in OSMM_Term):
+                scattered_trees = True
+            elif (wood == "mixed" and ("Nonconiferous Trees (Scattered)" in OSMM_Term and "Coniferous Trees (Scattered)" in OSMM_Term)):
+                scattered_trees = True
+            else:
+                scattered_trees = False
 
-            if "cattered" in OSMM_Term or "Grass" in OSMM_Term or "Heath" in OSMM_Term or "Marsh" in OSMM_Term:
-                if "Rough Grassland" in OSMM_Term:
-                    return ("Parkland and scattered trees: " + wood)
-                elif "Heath" in OSMM_Term:
-                    return ("Heath with scattered trees: " + wood)
+            if scattered_trees == True or "Grass" in OSMM_Term or "Heath" in OSMM_Term or "Marsh" in OSMM_Term:
+                if "Heath" in OSMM_Term:
+                    if "Grass" in OSMM_Term:
+                        return ("Heath/grass mosaic with scattered trees: " + wood)
+                    else:
+                        return ("Heath with scattered trees: " + wood)
                 elif "Marsh" in OSMM_Term:
                     return ("Marsh with scattered trees: " + wood)
+                elif "Rough Grassland" in OSMM_Term:
+                    return ("Semi-natural grassland with scattered trees: " + wood)
+                elif ("Scrub" in OSMM_Term and "Scrub (Scattered)" not in OSMM_Term):
+                    return ("Scrub with scattered trees: " + wood)
+                elif "Scree" in OSMM_Term:
+                    return ("Scree with scattered trees: " + wood)
+                elif ("Rock" in OSMM_Term and "Rock (Scattered)" not in OSMM_Term):
+                    return ("Rock with scattered trees: " + wood)
                 else:
                     return ("Scattered trees: " + wood)
             else:
                 return ("Woodland: " + wood)
 
         elif "Scrub" in OSMM_Term:
-            if "cattered" in OSMM_Term or "Grass" in OSMM_Term:
-                if "Rough Grassland" in OSMM_Term:
-                    return ("Semi-natural grassland and scattered scrub")
+            if "Scrub (Scattered)" in OSMM_Term or "Grass" in OSMM_Term or "Heath" in OSMM_Term or "Marsh" in OSMM_Term:
+                if "Heath" in OSMM_Term:
+                    if "Grass" in OSMM_Term:
+                        return ("Heath/grass mosaic with scattered scrub")
+                    else:
+                        return ("Heath with scattered scrub")
+                elif "Marsh" in OSMM_Term:
+                    if OSMM_Term[:6] == "Scrub,":
+                        return ("Scrub with marsh")
+                    else:
+                        return ("Marsh with scattered scrub")
+                elif "Rough Grassland" in OSMM_Term:
+                    return ("Semi-natural grassland with scattered scrub")
+                elif "Scree" in OSMM_Term:
+                    return ("Scree with scattered scrub")
+                elif ("Rock" in OSMM_Term and "Rock (Scattered)" not in OSMM_Term):
+                    return ("Rock with scattered scrub")
                 else:
                     return "Scattered scrub"
             else:
@@ -244,19 +322,30 @@ def Simplify_OSMM(OSMM_Group, OSMM_Term, OSMM_Make):
         elif "Orchard" in OSMM_Term:
             return "Orchard"
         elif "Heath" in OSMM_Term:
-            return "Heathland"
+            if "Grass" in OSMM_Term:
+                return "Heath/grass mosaic"
+            else:
+                return "Heathland"
         elif "Marsh" in OSMM_Term:
             return "Fen, marsh and swamp"
-        elif OSMM_Term == "Saltmarsh":
+        elif OSMM_Term[:9] == "Saltmarsh":
             return "Saltmarsh"
-        elif OSMM_Term == "Mud":
+        elif OSMM_Term[:3] == "Mud":
             return "Mudflats"
-        elif OSMM_Term == "Rock":
-            return "Inland rock"
+        elif OSMM_Term[:7] == "Shingle":
+            return "Shingle"
+        elif OSMM_Term[:4] == "Sand":
+            return "Sand"
         elif "Grass" in OSMM_Term:
             return "Semi-natural grassland"
         elif  ("Mineral" in OSMM_Term or "Spoil" in OSMM_Term or "Slag" in OSMM_Term) and "Inactive" in OSMM_Term:
             return "Quarry or spoil: disused"
+        elif OSMM_Term[:4] == "Rock":
+            return "Rock"
+        elif OSMM_Term[:5] == "Scree":
+            return "Scree"
+        elif OSMM_Term[:8] == "Boulders":
+            return "Boulders"
 
         else:
             return OSMM_Term.capitalize()
@@ -267,8 +356,8 @@ def Simplify_OSMM(OSMM_Group, OSMM_Term, OSMM_Make):
         else:
             return "Undefined"
 """
-            arcpy.CalculateField_management(in_file, "OSMM_hab", "Simplify_OSMM(!DescriptiveGroup!, !DescriptiveTerm!, !Make!)",
-                                            "PYTHON_9.3", codeblock)
+            expression = "Simplify_OSMM(!" + OSMM_Group + "!, !" + OSMM_Term + "!, !" + OSMM_Make + "!)"
+            arcpy.CalculateField_management(in_file, "OSMM_hab", expression, "PYTHON_9.3", codeblock)
 
         # Simplify the HLU habitats
         #--------------------------
