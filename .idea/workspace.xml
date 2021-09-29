@@ -44,7 +44,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.SetUpScoreTable">
+  <component name="RunManager" selected="Python.Habitat_corrections">
     <configuration name="Habitat_corrections" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="natural-capital-mapping" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -159,9 +159,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.Habitat_corrections" />
         <item itemvalue="Python.SetUpScoreTable" />
         <item itemvalue="Python.Join_Greenspace" />
-        <item itemvalue="Python.Habitat_corrections" />
         <item itemvalue="Python.OSMM_HLU_Interpret V2" />
         <item itemvalue="Python.Public_accessV3" />
       </list>
