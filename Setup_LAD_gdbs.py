@@ -17,12 +17,13 @@ arcpy.env.XYTolerance = "0.001 Meters"
 
 # region = "Oxon"
 # region = "Arc"
-region = "NP"
+# region = "NP"
+region = "NP_Wales"
 # Which method are we using - Phase 1 habitat data or LCM and PHI?
 # method = "HLU"
 method = "CROME_PHI"
 
-if region == "NP":
+if region == "NP" or region == "NP_Wales":
     folder = r"M:\urban_development_natural_capital"
     LAD_folder = r"M:\urban_development_natural_capital\LADs"
     data_gdb = os.path.join(folder, "Data.gdb")
@@ -32,12 +33,19 @@ if region == "NP":
     #                  "Redcar and Cleveland", "Middlesborough" ]
     # Use either counties or LADs as the list to include by commenting out the appropriate line in the code
     LADs_included = [ "Richmondshire"]
-    counties_included = ["Northumberland", "Tyne_and_Wear", "Durham", "Cumbria", "Lancashire",
-                         "North_Yorkshire", "South_Yorkshire", "East_Yorkshire", "West_Yorkshire",
-                         "Lincolnshire", "Greater_Manchester", "Merseyside", "Cheshire"]
+    # counties_included = ["Northumberland", "Tyne_and_Wear", "Durham", "Cumbria", "Lancashire",
+    #                      "North_Yorkshire", "South_Yorkshire", "East_Yorkshire", "West_Yorkshire",
+    #                      "Lincolnshire", "Greater_Manchester", "Merseyside", "Cheshire"]
+    counties_included = ["Clwyd", "Gwynedd"]
     needed_fields = ["fid", "primary_key", "versiondate", "descriptivegroup", "descriptiveterm", "make"]
     LAD_name_field = "LAD_name_simple"
     County_field = "County"
+    if region == "NP":
+        PHI = "PHI"
+        PHI_hab_field = "Main_habit"
+    elif region == "NP_Wales":
+        PHI = "NRW_SensitiveHabitats"
+        PHI_hab_field = "Habitat_2"
 
 elif method == "CROME_PHI":
     folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\OxCamArc"
@@ -55,6 +63,8 @@ elif method == "CROME_PHI":
     needed_fields = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab"]
     LAD_name_field = "_desc"
     County_field = "county"
+    PHI = "PHI"
+    PHI_hab_field = "Main_habit"
 
 elif region == "Oxon" and method == "HLU":
     # Caution - OSMM for Oxon has already been copied to the LAD gdbs and deleted from data.gdb, so need to replace it for updates
@@ -66,6 +76,8 @@ elif region == "Oxon" and method == "HLU":
     needed_fields = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab"]
     LAD_name_field = "_desc"
     County_field = "county"
+    PHI = "PHI"
+    PHI_hab_field = "Main_habit"
 
 else:
     print("ERROR: you cannot currently use the HLU method with the whole Arc region")
@@ -75,10 +87,10 @@ LAD_names = []
 
 # Which stages of the code do we want to run? Depends on method - also can be useful for debugging or updates.
 if method == "CROME_PHI":
-    prep_PHI = False
+    prep_PHI = True
     setup_PHI = True
     setup_HLU = False    # Always false for the LCM_PHI method
-    setup_LCM = False
+    setup_LCM = False    # False if LCM not being used (default)
 elif method == "HLU":
     prep_PHI = False     # Always false for the HLU method
     setup_LCM = False    # Always false for the HLU method
@@ -90,7 +102,7 @@ else:
 
 setup_LAD_gdbs = True
 create_gdb = True
-copy_OSMM = False
+copy_OSMM = True
 setup_boundary = True
 
 arcpy.env.workspace = data_gdb
@@ -98,12 +110,12 @@ arcpy.env.workspace = data_gdb
 if prep_PHI:
     print ("Preparing PHI datasets")
     # main PHI dataset
-    arcpy.Dissolve_management("PHI", "PHI_diss_over10m2", "Main_habit", multi_part="SINGLE_PART")
+    arcpy.Dissolve_management(PHI, "PHI_diss_over10m2", PHI_hab_field, multi_part="SINGLE_PART")
     MyFunctions.delete_by_size("PHI_diss_over10m2", 10)
-    # Copy 'Main_habit' into a new field called 'PHI' (for neatness)
+    # Copy habitat into a new field called 'PHI' (for neatness)
     MyFunctions.check_and_add_field("PHI_diss_over10m2", "PHI", "TEXT", 100)
-    arcpy.CalculateField_management("PHI_diss_over10m2", "PHI", "!Main_habit!", "PYTHON_9.3")
-    arcpy.DeleteField_management("PHI_diss_over10m2", "Main_habit")
+    arcpy.CalculateField_management("PHI_diss_over10m2", "PHI", "!" + PHI_hab_field + "!", "PYTHON_9.3")
+    arcpy.DeleteField_management("PHI_diss_over10m2", PHI_hab_field)
     # Wood pasture and parkland with scattered trees
     arcpy.Dissolve_management("WoodPastureAndParkland", "WPP_diss_over10m2", "PRIHABTXT", multi_part="SINGLE_PART")
     MyFunctions.delete_by_size("WPP_diss_over10m2", 10)

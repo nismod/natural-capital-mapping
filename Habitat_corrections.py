@@ -25,9 +25,9 @@ arcpy.env.workspace = folder
 #              "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
 #              "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
 #              "South Tyneside.gdb", "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb",
-#              "Tameside.gdb", "Trafford.gdb", "Wakefield.gdb", "Warrington.gdb",
-LAD_names = ["West Lancashire.gdb", "Wigan.gdb", "Wirral.gdb",
-             "Wyre.gdb", "York.gdb"]
+#              "Tameside.gdb", "Trafford.gdb", "Wakefield.gdb", "Warrington.gdb", "West Lancashire.gdb", "Wigan.gdb", "Wirral.gdb",
+#              "Wyre.gdb", "York.gdb"
+LAD_names = ["Leeds.gdb"]
 gdbs = []
 for LAD_name in LAD_names:
     gdbs.append(os.path.join(folder, LAD_name.replace(" ", "")))

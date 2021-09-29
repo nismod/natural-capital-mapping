@@ -76,24 +76,25 @@ elif method == "OSMM_only":
     elif region == "NP":
         folder = r"M:\urban_development_natural_capital\LADs"
         arcpy.env.workspace = folder
-        LAD_names = ["Allerdale.gdb", "Barnsley.gdb", "Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
-                     "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb", "Carlisle.gdb",
-                     "Cheshire East.gdb", "Cheshire West and Chester.gdb", "Chorley.gdb", "Copeland.gdb", "County Durham.gdb",
-                     "Craven.gdb", "Darlington.gdb", "Doncaster.gdb", "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb",
-                     "Halton.gdb", "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb",
-                     "Lancaster.gdb", "Liverpool.gdb", "Manchester.gdb", "Middlesbrough.gdb", "Newcastle upon Tyne.gdb",
-                     "North East Lincolnshire.gdb", "North Lincolnshire.gdb", "Northumberland.gdb", "North Tyneside.gdb", "Oldham.gdb",
-                     "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
-                     "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
-                     "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
-                     "South Tyneside.gdb", "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb",
-                     "Tameside.gdb", "Trafford.gdb", "Wakefield.gdb", "Warrington.gdb", "West Lancashire.gdb", "Wigan.gdb", "Wirral.gdb",
-                     "Wyre.gdb", "York.gdb"]
+        # LAD_names = ["Allerdale.gdb", "Barnsley.gdb", "Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
+        #              "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb", "Carlisle.gdb",
+        #              "Cheshire East.gdb", "Cheshire West and Chester.gdb", "Chorley.gdb", "Copeland.gdb", "County Durham.gdb",
+        #              "Craven.gdb", "Darlington.gdb", "Doncaster.gdb", "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb",
+        #              "Halton.gdb", "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb",
+        #              "Lancaster.gdb", "Liverpool.gdb", "Manchester.gdb", "Middlesbrough.gdb", "Newcastle upon Tyne.gdb",
+        #              "North East Lincolnshire.gdb", "North Lincolnshire.gdb", "Northumberland.gdb", "North Tyneside.gdb", "Oldham.gdb",
+        #              "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
+        #              "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
+        #              "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
+        #              "South Tyneside.gdb", "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb",
+        #              "Tameside.gdb", "Trafford.gdb", "Wakefield.gdb", "Warrington.gdb", "West Lancashire.gdb", "Wigan.gdb", "Wirral.gdb",
+        #              "Wyre.gdb", "York.gdb"]
+        LAD_names = ["Leeds.gdb"]
         gdbs = []
         for LAD_name in LAD_names:
             gdbs.append(os.path.join(folder, LAD_name.replace(" ", "")))
-        # in_file_name = "OSMM"
-        in_file_name = "OSMM_CR_PHI_ALC_Desig_GS_PA"
+        in_file_name = "OSMM"
+        # in_file_name = "OSMM_CR_PHI_ALC_Desig_GS_PA"  # Used for late corrections
         Hab_field = "Interpreted_habitat"
 
     # We only want to run delete_landform and simplify_OSMM.
@@ -175,10 +176,7 @@ def Simplify_OSMM(OSMM_Group, OSMM_Term, OSMM_Make):
         elif OSMM_Group[:4] == "Rail" and (OSMM_Term is None or OSMM_Term == ""):
             return "Rail"
         elif OSMM_Group == "Road Or Track":
-            if OSMM_Term is None:
-               return "Road"
-            elif OSMM_Term in ["Track", "Traffic Calming", ""]:
-               return "Road"
+            return "Road"
         elif "Path" in OSMM_Group:
             return "Path: manmade"
         elif OSMM_Term is None or OSMM_Term == "":
@@ -222,7 +220,7 @@ def Simplify_OSMM(OSMM_Group, OSMM_Term, OSMM_Make):
             else:
                 return "Natural surface"
             
-        elif "water" in OSMM_Group.lower() or "Leat" in OSMM_Term or OSMM_Term in ["Conduit","Spreads","Issues","Sink"]:
+        elif "water" in OSMM_Group.lower() or "Leat" in OSMM_Term or OSMM_Term in ["Conduit","Spreads","Issues","Sink","Spring"]:
             if OSMM_Term in ["Canal","Canal Feeder", "Conduit"]:
                 return "Canal"
             elif OSMM_Term in ["Reservoir","Drain"]:
@@ -256,6 +254,8 @@ def Simplify_OSMM(OSMM_Group, OSMM_Term, OSMM_Make):
             return "Track"
         elif OSMM_Term in ["Bridge","Footbridge"]:
             return "Bridge: natural"
+        elif OSMM_Term == "Tank":
+            return "Sealed surface"
 
         elif "Trees" in OSMM_Term or "Coppice Or Osiers" in OSMM_Term:
             if "Nonconiferous" in OSMM_Term or "Coppice Or Osiers" in OSMM_Term:
@@ -346,6 +346,8 @@ def Simplify_OSMM(OSMM_Group, OSMM_Term, OSMM_Make):
             return "Scree"
         elif OSMM_Term[:8] == "Boulders":
             return "Boulders"
+        elif OSMM_Term == "Landfill (inactive)":
+            return "Landfill: disused"
 
         else:
             return OSMM_Term.capitalize()

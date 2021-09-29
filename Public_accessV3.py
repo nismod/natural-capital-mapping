@@ -75,7 +75,7 @@ elif region == "Arc" or region == "NP" or (region == "Oxon" and method == "CROME
         #                      "South Tyneside.gdb", "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb",
         #                      "Tameside.gdb", "Trafford.gdb", "Wakefield.gdb", "Warrington.gdb", "West Lancashire.gdb",
         #                      "Wigan.gdb", "Wirral.gdb", "Wyre.gdb", "York.gdb"
-        gdb_names = [ "Kirklees.gdb"]
+        gdb_names = ["East Riding of Yorkshire.gdb"]
         gdbs = []
         for gdb_name in gdb_names:
             gdbs.append(os.path.join(r"M:\urban_development_natural_capital\LADs", gdb_name.replace(" ", "")))
@@ -153,9 +153,9 @@ clip_region = True
 buffer_paths = True
 merge_paths = True
 
-clip_PA_into_LAD_gdb = False    # Do not use this if the public access layer is made in the same gdb
-extract_relevant_polygons = False
-intersect_access = False
+clip_PA_into_LAD_gdb = True    # Do not use this if the public access layer is made in the same gdb
+extract_relevant_polygons = True
+intersect_access = True
 # *** note there is currently a temporary correction in the code here that needs to be removed in due course!
 NT_correction = True  # CORRECTION for Northern Powerhouse only
 sp_and_repair = True

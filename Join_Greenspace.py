@@ -55,29 +55,35 @@ if region == "Oxon" and method == "HLU":
     Hab_field = "Interpreted_habitat"
 elif region == "NP":
     work_folder = r"M:\urban_development_natural_capital"
-    gdb_names = ["Allerdale.gdb", "Barnsley.gdb", "Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
-                 "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb",  "Carlisle.gdb", "Cheshire East.gdb",
-                 "Cheshire West and Chester.gdb", "Chorley.gdb", "Copeland.gdb", "County Durham.gdb", "Craven.gdb", "Darlington.gdb",
-                 "Doncaster.gdb",  "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb", "Halton.gdb",
-                 "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb",
-                 "Lancaster.gdb", "Liverpool.gdb",
-                 "Manchester.gdb", "Middlesbrough.gdb", "Newcastle upon Tyne.gdb", "North East Lincolnshire.gdb",
-                 "North Lincolnshire.gdb", "Northumberland.gdb",
-                 "North Tyneside.gdb", "Oldham.gdb", "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
-                 "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
-                 "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
-                 "South Tyneside.gdb",
-                 "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb", "Tameside.gdb",
-                 "Northumberland.gdb", "Trafford.gdb",
-                 "Wakefield.gdb", "Warrington.gdb",  "West Lancashire.gdb",
-                 "Wigan.gdb", "Wirral.gdb", "Wyre.gdb", "York.gdb"]
-    # gdb_names = [ "Allerdale.gdb"]
+    # gdb_names = ["Allerdale.gdb", "Barnsley.gdb", "Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
+    #              "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb",  "Carlisle.gdb", "Cheshire East.gdb",
+    #              "Cheshire West and Chester.gdb", "Chorley.gdb", "Copeland.gdb", "County Durham.gdb", "Craven.gdb", "Darlington.gdb",
+    #              "Doncaster.gdb",  "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb", "Halton.gdb",
+    #              "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb",
+    #              "Lancaster.gdb", "Liverpool.gdb",
+    #              "Manchester.gdb", "Middlesbrough.gdb", "Newcastle upon Tyne.gdb", "North East Lincolnshire.gdb",
+    #              "North Lincolnshire.gdb", "Northumberland.gdb",
+    #              "North Tyneside.gdb", "Oldham.gdb", "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
+    #              "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
+    #              "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
+    #              "South Tyneside.gdb",
+    #              "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb", "Tameside.gdb",
+    #              "Northumberland.gdb", "Trafford.gdb",
+    #              "Wakefield.gdb", "Warrington.gdb",  "West Lancashire.gdb",
+    #              "Wigan.gdb", "Wirral.gdb", "Wyre.gdb", "York.gdb"]
+    gdb_names = [ "Leeds.gdb"]
     gdbs = []
     for gdb_name in gdb_names:
         gdbs.append(os.path.join(r"M:\urban_development_natural_capital\LADs",  gdb_name.replace(" ", "")))
     Base_map_name = "OSMM_CR_PHI_ALC_Desig"
     boundary = "boundary"
-    Hab_field = "Interpreted_habitat"
+    # Flag if you only want to correct some habitat definitions that have been set up in OSMM_hab and then copied to a temporary habitat field
+    # using Habitat_corrections.py
+    correct_habitats = False
+    if correct_habitats:
+        Hab_field = "Interpreted_habitat_temp"
+    else:
+        Hab_field = "Interpreted_habitat"
     TOID_field = "fid"
     Base_Index_field = "OBJECTID"
     DescGroup = "descriptivegroup"
@@ -170,7 +176,8 @@ for gdb in gdbs:
         print("    Making copy of base map")
         arcpy.CopyFeatures_management(Base_map_name, Base_map_name + "_GS")
     Base_map = Base_map_name + "_GS"
-
+    if correct_habitats:
+        Base_map = Base_map_name + "_GS_PA"
     print ("    " + Base_map + " has " + str(arcpy.GetCount_management(Base_map_name)) + " rows")
 
     if clip_OSGS:
@@ -264,14 +271,15 @@ for gdb in gdbs:
 
     if interpret_GS:
         # Consolidate GS definitions from OSGS primary and secondary functions and OS openGS
-        print ("    Consolidating GS types")
-        MyFunctions.check_and_add_field(Base_map, "GreenSpace", "TEXT", 40)
-        arcpy.CalculateField_management(Base_map, "Greenspace", "!OSGS_priFunc!", "PYTHON_9.3")
+        if not correct_habitats:
+            print ("    Consolidating GS types")
+            MyFunctions.check_and_add_field(Base_map, "GreenSpace", "TEXT", 40)
+            arcpy.CalculateField_management(Base_map, "Greenspace", "!OSGS_priFunc!", "PYTHON_9.3")
 
-        # Where OSGS secondary functions exist, replace primary with secondary
-        MyFunctions.select_and_copy(Base_map, "GreenSpace", "OSGS_secFunc IS NOT NULL AND OSGS_secFunc <> ''", "!OSGS_secFunc!")
-        # Where OS openGS exists, copy it across
-        MyFunctions.select_and_copy(Base_map, "GreenSpace", "OpenGS_func IS NOT NULL AND OpenGS_func <>''", "!OpenGS_func!")
+            # Where OSGS secondary functions exist, replace primary with secondary
+            MyFunctions.select_and_copy(Base_map, "GreenSpace", "OSGS_secFunc IS NOT NULL AND OSGS_secFunc <> ''", "!OSGS_secFunc!")
+            # Where OS openGS exists, copy it across
+            MyFunctions.select_and_copy(Base_map, "GreenSpace", "OpenGS_func IS NOT NULL AND OpenGS_func <>''", "!OpenGS_func!")
 
         # Modify base map habitats for allotments, playing fields, play spaces etc - but only generic areas (not paths, woods, water etc)
         print("    Interpreting habitats with GS")
