@@ -24,7 +24,7 @@
   <component name="ProjectId" id="1aOElN2JiZjToBBZHw0FLx51r00" />
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/OSMM_prep.py" />
     <property name="settings.editor.selected.configurable" value="vcs.Git" />
   </component>
   <component name="RecentsManager">
@@ -44,28 +44,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.Habitat_corrections">
-    <configuration name="Habitat_corrections" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="natural-capital-mapping" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Habitat_corrections.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python.SetUpScoreTable">
     <configuration name="Join_Greenspace" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="natural-capital-mapping" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -87,7 +66,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="OSMM_HLU_Interpret V2" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="Merge_CROME" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="natural-capital-mapping" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -99,7 +78,28 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/OSMM_HLU_Interpret V2.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Merge_CROME.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Merge_into_Base_Map_V5b" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="natural-capital-mapping" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Merge_into_Base_Map_V5b.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -151,19 +151,19 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Python.Merge_CROME" />
+      <item itemvalue="Python.Merge_into_Base_Map_V5b" />
+      <item itemvalue="Python.Join_Greenspace" />
       <item itemvalue="Python.Public_accessV3" />
       <item itemvalue="Python.SetUpScoreTable" />
-      <item itemvalue="Python.OSMM_HLU_Interpret V2" />
-      <item itemvalue="Python.Habitat_corrections" />
-      <item itemvalue="Python.Join_Greenspace" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.Habitat_corrections" />
         <item itemvalue="Python.SetUpScoreTable" />
-        <item itemvalue="Python.Join_Greenspace" />
-        <item itemvalue="Python.OSMM_HLU_Interpret V2" />
         <item itemvalue="Python.Public_accessV3" />
+        <item itemvalue="Python.Join_Greenspace" />
+        <item itemvalue="Python.Merge_into_Base_Map_V5b" />
+        <item itemvalue="Python.Merge_CROME" />
       </list>
     </recent_temporary>
   </component>

@@ -1,10 +1,10 @@
 # Aim is to apply a multiplier to the natural capital scores to reflect the degree of public access
-# Challenge is that it is difficult to clip or intersect the complex public access layer with the large and
-# detailed OSMM-based base map - it takes days to run and then fails.
-# So here we extract a subset of the base map that excludes gardens and manmade features, to cut the processing load.
-# Create a public access layer from component datasets and set up a multiplier for recreation
+# First create a public access layer by merging various path and open area datasets and set up a multiplier for recreation.
+# For large areas this can be complex due to the path network. Several stages may need to be done manually in ArcGIS.
 # Intersect the public access layer with the subset and merge back into the base map
-# A separate multiplier can then be applied to all gardens to reflect their private value if required
+# It is difficult to clip or intersect the complex public access layer with the large and detailed OSMM-based base map
+# - it takes days to run and then fails. So here we extract a subset of the base map that excludes gardens and manmade features,
+# to cut the processing load. A separate multiplier can then be applied to all gardens to reflect their private value if required
 # -----------------------------------------------------------------------------------------------------------------
 
 import time
@@ -23,19 +23,19 @@ arcpy.env.XYTolerance = "0.001 Meters"
 # *** Enter parameters
 # --------------------
 # region = "Arc"
-# region = "Oxon"
-region = "NP"
+region = "Oxon"
+# region = "NP"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
-method = "CROME_PHI"
+# method = "CROME_PHI"
 # method = "LERC"
-# method = "HLU"
+method = "HLU"
 
 if region == "Oxon" and method == "HLU":
     gdbs = [r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Public_access.gdb"]
     region_boundary = "Oxfordshire"
     boundary = "Oxfordshire"
     base_map = "OSMM_HLU_CR_ALC_Des_GS"
-    area_tag = "Oxon"
+    area_tag = "_Oxon"
     hab_field = "Interpreted_habitat"
     # Name of OSMM fields used for interpretation
     MakeField = "Make"
@@ -58,28 +58,28 @@ elif region == "Arc" or region == "NP" or (region == "Oxon" and method == "CROME
         # gdbs.append(os.path.join(folder, "AylesburyVale.gdb"))
         # gdbs.append(os.path.join(folder, "Chiltern.gdb"))
         # gdbs.append(os.path.join(folder, "SouthOxfordshire.gdb"))
-        area_tag = "Arc"
+        area_tag = "_Arc"
     elif region == "NP":
-        # Remember Leeds not in the list below because already done
-        # "Allerdale.gdb", "Barnsley.gdb", "Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
-        #  "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb", "Carlisle.gdb",
-        # "Cheshire East.gdb", "Cheshire West and Chester.gdb", "Chorley.gdb", "Copeland.gdb", "County Durham.gdb",
-        # "Craven.gdb", "Darlington.gdb", "Doncaster.gdb",
-        # "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb",
+        # done "Allerdale.gdb", "Barnsley.gdb","Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
+        #                      "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb", "Carlisle.gdb",
+        #                      "Cheshire East.gdb","Cheshire West and Chester.gdb", "Chorley.gdb", "Copeland.gdb", "County Durham.gdb",
+        #                      "Craven.gdb", "Darlington.gdb", "Doncaster.gdb",
+        #                      "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb",
         # "Halton.gdb", "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb",
-        # "Lancaster.gdb", "Liverpool.gdb", "Manchester.gdb", "Middlesbrough.gdb", "Newcastle upon Tyne.gdb",
-        # "North East Lincolnshire.gdb", "North Lincolnshire.gdb", "Northumberland.gdb", "North Tyneside.gdb", "Oldham.gdb",
-        #  "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
+        #  "Lancaster.gdb", "Leeds.gdb", "Liverpool.gdb", "Manchester.gdb", "Middlesbrough.gdb", "Newcastle upon Tyne.gdb",
+        #                      "North East Lincolnshire.gdb", "North Lincolnshire.gdb", "Northumberland.gdb", "North Tyneside.gdb",
+        #                      "Oldham.gdb",
+        #                      "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
         #                      "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
         #                      "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
-        #                      "South Tyneside.gdb", "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb",
-        #                      "Tameside.gdb", "Trafford.gdb", "Wakefield.gdb", "Warrington.gdb", "West Lancashire.gdb",
+        #                      "South Tyneside.gdb", "St Helens.gdb",  "Warrington.gdb", "West Lancashire.gdb",
         #                      "Wigan.gdb", "Wirral.gdb", "Wyre.gdb", "York.gdb"
-        gdb_names = ["East Riding of Yorkshire.gdb"]
+        #
+        gdb_names = ["Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb", "Tameside.gdb", "Trafford.gdb", "Wakefield.gdb"]
         gdbs = []
         for gdb_name in gdb_names:
             gdbs.append(os.path.join(r"M:\urban_development_natural_capital\LADs", gdb_name.replace(" ", "")))
-        area_tag = "NP"
+        area_tag = "_NP"
     elif region == "Oxon":
         gdbs = []
         LADs = ["Cherwell.gdb", "Oxford.gdb", "SouthOxfordshire.gdb", "ValeofWhiteHorse.gdb", "WestOxfordshire.gdb"]
@@ -147,17 +147,19 @@ dissolve_paths = True
 
 # Which stages of the process do we want to run? Useful for debugging or updates
 create_access_layer = False
-# These four stages will only be run if create_access_layer is True
-prep_OSM_paths = True
-clip_region = True
-buffer_paths = True
-merge_paths = True
+# These five stages will only be run if create_access_layer is True
+prep_OSM_paths = False
+clip_region = False
+split_LADs_for_buffer = False
+buffer_paths = False
+merge_paths = False
+prep_inputs = False
 
-clip_PA_into_LAD_gdb = True    # Do not use this if the public access layer is made in the same gdb
+clip_PA_into_LAD_gdb = False    # Do not use this if the public access layer is made in the same gdb
 extract_relevant_polygons = True
 intersect_access = True
 # *** note there is currently a temporary correction in the code here that needs to be removed in due course!
-NT_correction = True  # CORRECTION for Northern Powerhouse only
+NT_correction = False  # CORRECTION for Northern Powerhouse only
 sp_and_repair = True
 interpret_access = True
 tidy_fields = True
@@ -203,14 +205,31 @@ if create_access_layer:
                     in_file = row.getValue("Filename")
                     if clip_region:
                         print("Clipping " + in_file)
-                        arcpy.Clip_analysis(in_file, region_boundary, in_file + "_" + area_tag)
+                        arcpy.Clip_analysis(in_file, region_boundary, in_file + area_tag)
                     if area_tag <> "":
-                        in_file = in_file + "_" + area_tag
+                        in_file = in_file + area_tag
                     InPaths.append(in_file)
-                    print "Merging paths"
+            print "Merging paths"
             arcpy.Merge_management(InPaths, "Paths_merge")
             print("Buffering and dissolving merged paths")
-            arcpy.Buffer_analysis("Paths_merge", "Paths_merge_buffer", buffer_distance, dissolve_option="ALL")
+            # If paths won't buffer, split by LAD and do separately
+            if split_LADs_for_buffer:
+                # Buffer paths separately for each LAD
+                for gdb in gdbs:
+                    arcpy.env.workspace = gdb
+                    numrows = arcpy.GetCount_management(os.path.join(gdb, base_map))
+                    print ("Buffering paths for " + gdb)
+                    print("   Clipping paths")
+                    arcpy.Clip_analysis(os.path.join(data_gdb,"Paths_merge"), boundary, "Paths_merge_clip")
+                    print "   Buffering paths"
+                    arcpy.Buffer_analysis("Paths_merge_clip", "Paths_merge_buffer", buffer_distance, dissolve_option="ALL")
+                    # Append to merged path dataset
+                    print "   Appending"
+                    arcpy.Append_management("Paths_merge_buffer", os.path.join(data_gdb,"Paths_merge_buffer_temp_append"))
+                arcpy.env.workspace = data_gdb
+                # If this crashes it may work manually in ArcGIS
+                print "Dissolving merged paths"
+                arcpy.Dissolve_management("Paths_merge_buffer_temp_append", "Paths_merge_buffer")
             # Add PAType
             print("Adding Type field")
             MyFunctions.check_and_add_field("Paths_merge_buffer", "PAType", "TEXT", 50)
@@ -218,59 +237,63 @@ if create_access_layer:
             arcpy.MultipartToSinglepart_management("Paths_merge_buffer", "Paths_merge_buffer_sp")
 
     # Now loop through the other areas (and paths if keeping separate) to set up the Type, Description and Name fields
-    cursor = arcpy.SearchCursor(InfoTable)
-    for row in cursor:
-        exit_flag = False
-        in_file = row.getValue("Filename")
-        ShortName = row.getValue("ShortName")
-        print("Processing " + ShortName)
-        Type = row.getValue("Type")
-        Path = row.getValue("Path")
-        NameField = row.getValue("NameField")
-        DescField = row.getValue("DescField")
+    if prep_inputs:
+        cursor = arcpy.SearchCursor(InfoTable)
+        for row in cursor:
+            exit_flag = False
+            in_file = row.getValue("Filename")
+            ShortName = row.getValue("ShortName")
+            print("Processing " + ShortName)
+            Type = row.getValue("Type")
+            Path = row.getValue("Path")
+            NameField = row.getValue("NameField")
+            DescField = row.getValue("DescField")
 
-        if Path == 1:
-            if dissolve_paths:
-                exit_flag = True
-            else:
-                exit_flag = False
-        if exit_flag == False:
-            if clip_region:
-                print("Clipping " + in_file)
-                arcpy.Clip_analysis(in_file, region_boundary, in_file + "_" + area_tag)
-            if area_tag <> "":
-                in_file = in_file + "_" + area_tag
+            if Path == 1:
+                if dissolve_paths:
+                    exit_flag = True
+                else:
+                    exit_flag = False
+            if exit_flag == False:
+                if clip_region:
+                    print("Clipping " + in_file)
+                    arcpy.Clip_analysis(in_file, region_boundary, in_file + area_tag)
+                if area_tag <> "":
+                    in_file = in_file + area_tag
                 if Path == 1:
                     if buffer_paths:
                         print("Buffering " + in_file)
                         arcpy.Buffer_analysis(in_file, in_file + "_buffer", buffer_distance, dissolve_option="NONE")
                     in_file = in_file + "_buffer"
+                    # Note paths previously dissolved won't get this check and repair step - may need to change
                 MyFunctions.check_and_repair(in_file)
 
-            print("Adding Type field")
-            MyFunctions.check_and_add_field(in_file, "PAType", "TEXT", 50)
-            arcpy.CalculateField_management(in_file, "PAType", "'" + Type + "'", "PYTHON_9.3")
+                print("Adding Type field")
+                MyFunctions.check_and_add_field(in_file, "PAType", "TEXT", 50)
+                arcpy.CalculateField_management(in_file, "PAType", "'" + Type + "'", "PYTHON_9.3")
 
-            if DescField:
-                if max_DescLen <= 40:
-                    max_DescLen = 40
-                print("Adding Description field")
-                MyFunctions.check_and_add_field(in_file, "PADescription", "TEXT", max_DescLen)
-                arcpy.CalculateField_management(in_file, "PADescription", "!" + DescField + "!", "PYTHON_9.3")
+                if DescField:
+                    if max_DescLen <= 40:
+                        max_DescLen = 40
+                    print("Adding Description field")
+                    MyFunctions.check_and_add_field(in_file, "PADescription", "TEXT", max_DescLen)
+                    arcpy.CalculateField_management(in_file, "PADescription", "!" + DescField + "!", "PYTHON_9.3")
 
-            if NameField:
-                print("Adding Name field")
-                MyFunctions.check_and_add_field(in_file, "PAName", "TEXT", max_NameLen)
-                arcpy.CalculateField_management(in_file, "PAName", "!" + NameField + "!", "PYTHON_9.3")
+                if NameField:
+                    print("Adding Name field")
+                    MyFunctions.check_and_add_field(in_file, "PAName", "TEXT", max_NameLen)
+                    arcpy.CalculateField_management(in_file, "PAName", "!" + NameField + "!", "PYTHON_9.3")
 
-            # Delete fields that are not needed
-            needed_fields = ["PAType", "PADescription", "PAName"]
-            MyFunctions.delete_fields(in_file, needed_fields, in_file + "_input")
+                # Delete fields that are not needed
+                needed_fields = ["PAType", "PADescription", "PAName"]
+                MyFunctions.delete_fields(in_file, needed_fields, in_file + "_input")
 
             if Path:
                 # If this is not the first path dataset, erase it from the others and then append. This way we should avoid overlaps,
                 # provided that paths have been dissolved (as delete_identical method may not work for very large and complex layers
                 # with lots of overlaps).
+                # 2/12/21 Think we need to add this line to increment ipath otherwise it is always zero!
+                ipath = ipath + 1
                 if ipath == 1:
                     arcpy.CopyFeatures_management(in_file + "_input", "Access_paths_merge_1")
                 elif ipath > 1:
@@ -281,7 +304,7 @@ if create_access_layer:
                         print("Erase failed - please try manually in ArcMap and then comment out this section and restart")
                         exit()
                     print ("Appending " + in_file + "_input to merged paths")
-                    arcpy.Append_management(["Access_paths_merge_1" + str(ipath)], in_file + "_input", "NO_TEST")
+                    arcpy.Append_management(["Access_paths_merge_" + str(ipath)], in_file + "_input", "NO_TEST")
             else:
                 # Check for any duplicate polygons
                 arcpy.FindIdentical_management(in_file + "_input", "Identical_" + in_file, ["Shape"], output_record_option="ONLY_DUPLICATES")
@@ -290,45 +313,46 @@ if create_access_layer:
                     print ("Warning - " + str(numrows) + " duplicate polygons found in " + in_file +
                            "_input. All but one of each shape will be deleted.")
                     arcpy.DeleteIdentical_management(in_file + "_input", ["Shape"])
-                InAreas.append(in_file + "_input")
+            InAreas.append(in_file + "_input")
 
-    print("Merging areas: " + ', '.join(InAreas))
-    arcpy.Merge_management(InAreas, "Access_areas_merge")
+        print("Merging areas: " + ', '.join(InAreas))
+        arcpy.Merge_management(InAreas, "Access_areas_merge")
 
-    # Need to convert merged paths to single part otherwise it crashes
-    print ("Converting merged paths to single part")
-    if not dissolve_paths:
-        arcpy.MultipartToSinglepart_management("Access_paths_merge_" + str(ipath), "Paths_merge_buffer_sp")
-    MyFunctions.check_and_repair("Paths_merge_buffer_sp")
+        # Need to convert merged paths to single part otherwise it crashes
+        print ("Converting merged paths to single part")
+        if not dissolve_paths:
+            arcpy.MultipartToSinglepart_management("Access_paths_merge_" + str(ipath), "Paths_merge_buffer_sp")
+        MyFunctions.check_and_repair("Paths_merge_buffer_sp")
 
-    # Erase any paths that are within the accessible areas or private (military) areas, to reduce the complexity of the merged shapes
-    print ("Erasing paths within areas")
-    arcpy.Merge_management(["Access_areas_merge", "OSM_military"], "Access_areas_to_erase")
-    print "  Buffering and dissolving areas to erase (to remove internal slivers and simplify shapes)"
-    arcpy.Buffer_analysis("Access_areas_to_erase", "Access_areas_to_erase_buff_diss", "1 Meters", dissolve_option="ALL")
-    print "  Converting to single part"
-    arcpy.MultipartToSinglepart_management("Access_areas_to_erase_buff_diss", "Access_areas_to_erase_buff_diss_sp")
-    MyFunctions.check_and_repair("Access_areas_to_erase_buff_diss_sp")
-    print "  Erasing..."
-    try:
-        arcpy.Erase_analysis("Paths_merge_buffer_sp", "Access_areas_to_erase_buff_diss_sp", "Access_paths_erase")
-    except:
-        print("Erase failed but will probably work manually in ArcGIS. Please try this and then restart, commenting out previous steps")
-        exit()
+    if prep_inputs:
+        # Erase any paths that are within the accessible areas or private (military) areas, to reduce the complexity of the merged shapes
+        print ("Erasing paths within areas")
+        arcpy.Merge_management(["Access_areas_merge", "OSM_military"], "Access_areas_to_erase")
+        print "  Buffering and dissolving areas to erase (to remove internal slivers and simplify shapes)"
+        arcpy.Buffer_analysis("Access_areas_to_erase", "Access_areas_to_erase_buff_diss", "1 Meters", dissolve_option="ALL")
+        print "  Converting to single part"
+        arcpy.MultipartToSinglepart_management("Access_areas_to_erase_buff_diss", "Access_areas_to_erase_buff_diss_sp")
+        MyFunctions.check_and_repair("Access_areas_to_erase_buff_diss_sp")
+        print "  Erasing..."
+        try:
+            arcpy.Erase_analysis("Paths_merge_buffer_sp", "Access_areas_to_erase_buff_diss_sp", "Access_paths_erase")
+        except:
+            print("Erase failed but will probably work manually in ArcGIS. Please try this and then restart, commenting out previous steps")
+            exit()
 
-    print ("Merging paths and areas")
-    arcpy.Merge_management(["Access_areas_merge", "Access_paths_erase"], "Access_merge")
-    print("After merge there are " + str(arcpy.GetCount_management("Access_merge")) + " rows")
+        print ("Merging paths and areas")
+        arcpy.Merge_management(["Access_areas_merge", "Access_paths_erase"], "Access_merge")
+        print("After merge there are " + str(arcpy.GetCount_management("Access_merge")) + " rows")
 
-    print ("Dissolving - retaining type, name and description")
-    arcpy.Dissolve_management("Access_merge", "Access_merge_diss", ["PAType", "PADescription", "PAName"], multi_part="SINGLE_PART")
-    print ("Unioning as first step to removing overlaps")
-    try:
-        arcpy.Union_analysis([["Access_merge_diss", 1]], "Access_merge_union", "NO_FID")
-    except:
-        print ("Union failed. Please do manually then comment out preceding steps and restart.")
-        exit()
-    print("After union there are " + str(arcpy.GetCount_management("Access_merge_union")) + " rows")
+        print ("Dissolving - retaining type, name and description")
+        arcpy.Dissolve_management("Access_merge", "Access_merge_diss", ["PAType", "PADescription", "PAName"], multi_part="SINGLE_PART")
+        print ("Unioning as first step to removing overlaps")
+        try:
+            arcpy.Union_analysis([["Access_merge_diss", 1]], "Access_merge_union", "NO_FID")
+        except:
+            print ("Union failed. Please do manually then comment out preceding steps and restart.")
+            exit()
+        print("After union there are " + str(arcpy.GetCount_management("Access_merge_union")) + " rows")
 
     # If description is blank, fill in with Type
     print ("Filling in missing Descriptions")
@@ -428,17 +452,17 @@ for gdb in gdbs:
         print("    Merge completed on : " + time.ctime())
 
     # *** TEMPORARY Correction for NP because access field was omitted accidentally when I made the designations layer
-    # if NT_correction and region == "NP":
-    #     # select NT polygons and spatially join to a dataset containing only the NT access description
-    #     print "    Correcting by adding in missing NT access field"
-    #     arcpy.MakeFeatureLayer_management(base_map + "_merge", "NT_lyr")
-    #     arcpy.SelectLayerByAttribute_management("NT_lyr", where_clause="NT = 1")
-    #     arcpy.SpatialJoin_analysis("NT_lyr", os.path.join(data_gdb, "NT_access"), "NT_access")
-    #     # delete the NT features from the original file and then append the new spatially joined rows back in
-    #     arcpy.DeleteFeatures_management("NT_lyr")
-    #     arcpy.Delete_management("NT_lyr")
-    #     MyFunctions.check_and_add_field(base_map + "_merge", "NT_desc", "TEXT", 20)
-    #     arcpy.Append_management("NT_access", base_map + "_merge", "NO_TEST")
+    if NT_correction and region == "NP":
+        # select NT polygons and spatially join to a dataset containing only the NT access description
+        print "    Correcting by adding in missing NT access field"
+        arcpy.MakeFeatureLayer_management(base_map + "_merge", "NT_lyr")
+        arcpy.SelectLayerByAttribute_management("NT_lyr", where_clause="NT = 1")
+        arcpy.SpatialJoin_analysis("NT_lyr", os.path.join(data_gdb, "NT_access"), "NT_access")
+        # delete the NT features from the original file and then append the new spatially joined rows back in
+        arcpy.DeleteFeatures_management("NT_lyr")
+        arcpy.Delete_management("NT_lyr")
+        MyFunctions.check_and_add_field(base_map + "_merge", "NT_desc", "TEXT", 20)
+        arcpy.Append_management("NT_access", base_map + "_merge", "NO_TEST")
 
     if sp_and_repair:
         # Sort by shape so it displays faster

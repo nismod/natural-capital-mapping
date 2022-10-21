@@ -17,13 +17,13 @@ arcpy.env.overwriteOutput = True  # Overwrites files
 arcpy.env.qualifiedFieldNames = False
 
 # region = "Arc"
-# region = "Oxon"
+region = "Oxon"
 # region = "Blenheim"
-region = "NP"
+# region = "NP"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
-method = "CROME_PHI"
+# method = "CROME_PHI"
 # method = "LERC"
-# method = "HLU"
+method = "HLU"
 
 if (region == "Oxon" or region == "Blenheim") and method == "HLU":
     folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\NaturalCapital"
@@ -81,23 +81,29 @@ elif region == "Arc" or region == "NP" or (region == "Oxon" and method == "CROME
         # gdbs.append(os.path.join(folder, "SouthCambridgeshire.gdb"))
         # gdbs.append(os.path.join(folder, "SouthNorthamptonshire.gdb"))
     elif region == "NP":
+
+        # Repeat without correction step  "Bradford.gdb", "Leeds.gdb","Northumberland.gdb", "Rossendale.gdb",  "Wakefield.gdb","Wirral.gdb",
+
         # done "Allerdale.gdb", "Barnsley.gdb", "Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
         #                 "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb", "Carlisle.gdb",
         #                 "Cheshire East.gdb", "Cheshire West and Chester.gdb", "Chorley.gdb",
-        #        "Copeland.gdb", "County Durham.gdb", "Craven.gdb", "Darlington.gdb", "Doncaster.gdb",
+        #                 "Copeland.gdb", "County Durham.gdb", "Craven.gdb", "Darlington.gdb", "Doncaster.gdb",
         #                 "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb",
-        #                 "Halton.gdb", "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb",
-        #                 "Knowsley.gdb",
-        #                 "Lancaster.gdb", "Liverpool.gdb", "Manchester.gdb", "Middlesbrough.gdb", "Newcastle upon Tyne.gdb",
-        #                 "North East Lincolnshire.gdb", "North Lincolnshire.gdb", "Northumberland.gdb", "North Tyneside.gdb", "Oldham.gdb",
+        #                 "Halton.gdb", "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb",
+        #                 "Lancaster.gdb", "Leeds.gdb", "Liverpool.gdb", "Manchester.gdb", "Middlesbrough.gdb", "Newcastle upon Tyne.gdb",
+        #                 "North East Lincolnshire.gdb", "North Lincolnshire.gdb",  "North Tyneside.gdb", "Oldham.gdb",
         #                 "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
-        #                 "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb",   "Ryedale.gdb", "Salford.gdb",
-        #                 "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb",
-        # "South Lakeland.gdb", "South Ribble.gdb",
-        # "South Tyneside.gdb", "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb",
-        # "Tameside.gdb", "Trafford.gdb", "Wakefield.gdb", "Warrington.gdb", "West Lancashire.gdb",
-        # "Wigan.gdb", "Wirral.gdb", "Wyre.gdb", "York.gdb"
-        LADs = [ "Leeds.gdb" ]
+        #                 "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
+        #                 "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
+        #                 "South Tyneside.gdb", "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb",
+        #                 "Tameside.gdb", "Trafford.gdb", "Warrington.gdb", "West Lancashire.gdb",
+        #                 "Wigan.gdb","Wyre.gdb", "York.gdb"
+
+        # Had to delete Nat Cap "Leeds.gdb", "Northumberland.gdb",
+        # Need to redo public access layer: Stockport to Wakefield
+
+        LADs = [ "Northumberland.gdb",  "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb",
+                 "Tameside.gdb", "Trafford.gdb", "Wakefield.gdb", "Wirral.gdb" ]
         gdbs = []
         for gdb_name in LADs:
             gdbs.append(os.path.join(r"M:\urban_development_natural_capital\LADs", gdb_name.replace(" ", "")))
@@ -139,6 +145,9 @@ Max_des_mult = 1.2
 Max_food_mult = 2.4
 
 # Which stages of the script do we want to run? (Useful for debugging or for updating only certain scores)
+# Temporary correction
+correct_habitats = False
+
 tidy_fields = False
 join_tables = True
 food_scores = True
@@ -162,6 +171,86 @@ for gdb in gdbs:
 
     print ("Area is " + area_name)
     NatCap_scores = "NatCap_" + area_name.replace("-", "")
+
+    if correct_habitats:
+        AccessTable_name = "AccessMultipliers"
+        AccessTable = r"M:\urban_development_natural_capital\Public_access.gdb\AccessMultipliers"
+
+        print "Correcting OMHD where there is a greenspace designation"
+        print "Allotments"
+        expression = "Interpreted_habitat_temp = 'Open mosaic habitats' AND GreenSpace = 'Allotments Or Community Growing Spaces'"
+        MyFunctions.select_and_copy("OSMM_CR_PHI_ALC_Desig_GS","Interpreted_habitat_temp", expression,"'Allotments, city farm, community garden'")
+        MyFunctions.select_and_copy("OSMM_CR_PHI_ALC_Desig_GS_PA","Interpreted_habitat_temp", expression,"'Allotments, city farm, community garden'")
+        print "Sport and play"
+        expression = "Interpreted_habitat_temp = 'Open mosaic habitats'"
+        expression = expression + " AND GreenSpace IN ('Playing Field', 'Other Sports Facility', 'Play Space', 'Tennis Court','Bowling Green')"
+        MyFunctions.select_and_copy("OSMM_CR_PHI_ALC_Desig_GS","Interpreted_habitat_temp", expression,"'Natural sports facility, recreation ground or playground'")
+        MyFunctions.select_and_copy("OSMM_CR_PHI_ALC_Desig_GS_PA","Interpreted_habitat_temp", expression,"'Natural sports facility, recreation ground or playground'")
+        print "Churchyards"
+        expression = "Interpreted_habitat_temp = 'Open mosaic habitats' AND (GreenSpace = 'Cemetery' OR GreenSpace = 'Religious Grounds')"
+        MyFunctions.select_and_copy("OSMM_CR_PHI_ALC_Desig_GS","Interpreted_habitat_temp", expression,"'Cemeteries and churchyards'")
+        MyFunctions.select_and_copy("OSMM_CR_PHI_ALC_Desig_GS_PA","Interpreted_habitat_temp", expression,"'Cemeteries and churchyards'")
+        print "Golf"
+        expression = "Interpreted_habitat_temp = 'Open mosaic habitats' AND GreenSpace = 'Golf Course'"
+        MyFunctions.select_and_copy("OSMM_CR_PHI_ALC_Desig_GS","Interpreted_habitat_temp", expression,"'Golf course'")
+        MyFunctions.select_and_copy("OSMM_CR_PHI_ALC_Desig_GS_PA","Interpreted_habitat_temp", expression,"'Golf course'")
+        print "Amenity"
+        expression = "Interpreted_habitat_temp = 'Open mosaic habitats' AND GreenSpace IN ('Amenity - Residential Or Business', 'Public Park Or Garden')"
+        MyFunctions.select_and_copy("OSMM_CR_PHI_ALC_Desig_GS","Interpreted_habitat_temp", expression,"'Amenity grassland'")
+        MyFunctions.select_and_copy("OSMM_CR_PHI_ALC_Desig_GS_PA","Interpreted_habitat_temp", expression,"'Amenity grassland'")
+
+        print "Correcting Public Access for new greenspace rows"
+        # Green spaces (from OS green space and OS open green space) - correct for Rail in OSGS Amenity residential
+        # Exclude National Trust as that has better information on access, so we don't want to overwrite it
+        # Also exclude arable land (added 4/10/2020 at end of EA work) otherwise incorrect OSGS 'Amenity' over-rides habitat type
+        arcpy.MakeFeatureLayer_management("OSMM_CR_PHI_ALC_Desig_GS_PA", "sel_lyr4")
+        expression = " Interpreted_habitat_temp NOT IN ('Arable', 'Arable and scattered trees', 'Arable fields, horticulture and temporary grass') "
+        expression = expression + "AND GreenSpace IS NOT NULL AND GreenSpace <> '' "
+        expression = expression + "AND descriptivegroup NOT LIKE '%Rail%' AND (NT IS NULL OR NT = 0)"
+        arcpy.SelectLayerByAttribute_management("sel_lyr4", where_clause=expression)
+        if arcpy.GetCount_management("sel_lyr4") > 0:
+            arcpy.CalculateField_management("sel_lyr4", "PAType", "!GreenSpace!", "PYTHON_9.3")
+            arcpy.CalculateField_management("sel_lyr4", "PADescription", "!GreenSpace!", "PYTHON_9.3")
+            arcpy.AddJoin_management("sel_lyr4", "PADescription", AccessTable, "Description", "KEEP_ALL")
+            arcpy.CalculateField_management("sel_lyr4", "Source", "'GreenSpace'", "PYTHON_9.3")
+            arcpy.CalculateField_management("sel_lyr4", "AccessType", "!" + AccessTable_name + ".AccessType!", "PYTHON_9.3")
+            arcpy.CalculateField_management("sel_lyr4", "AccessMult", "!" + AccessTable_name + ".AccessMult!", "PYTHON_9.3")
+            arcpy.RemoveJoin_management("sel_lyr4", AccessTable_name)
+        arcpy.Delete_management("sel_lyr4")
+
+        # Correction for school grounds from OSGS because playing fields were omitted (this will omit non-urban schools not in OSGS)
+        print "      Interpreting schools"
+        arcpy.MakeFeatureLayer_management("OSMM_CR_PHI_ALC_Desig_GS_PA", "school_lyr")
+        arcpy.SelectLayerByAttribute_management("school_lyr", where_clause="OSGS_priFunc = 'School Grounds'")
+        if arcpy.GetCount_management("school_lyr") > 0:
+            arcpy.CalculateField_management("school_lyr", "PAType", "'School Grounds'", "PYTHON_9.3")
+            arcpy.CalculateField_management("school_lyr", "PADescription", "'School Grounds'", "PYTHON_9.3")
+            arcpy.AddJoin_management("school_lyr", "PADescription", AccessTable, "Description", "KEEP_ALL")
+            arcpy.CalculateField_management("school_lyr", "Source", "'OSGS'", "PYTHON_9.3")
+            arcpy.CalculateField_management("school_lyr", "AccessType", "!" + AccessTable_name + ".AccessType!", "PYTHON_9.3")
+            arcpy.CalculateField_management("school_lyr", "AccessMult", "!" + AccessTable_name + ".AccessMult!", "PYTHON_9.3")
+            arcpy.RemoveJoin_management("school_lyr", AccessTable_name)
+        arcpy.Delete_management("school_lyr")
+
+        print "Correcting OMHD for sealed surfaces"
+        expression = "Interpreted_habitat_temp = 'Open mosaic habitats' AND Interpreted_habitat = 'Sealed surface'"
+        MyFunctions.select_and_copy("OSMM_CR_PHI_ALC_Desig_GS","Interpreted_habitat_temp", expression,"'Sealed surface'")
+        MyFunctions.select_and_copy("OSMM_CR_PHI_ALC_Desig_GS_PA","Interpreted_habitat_temp", expression,"'Sealed surface'")
+
+        # print "Correcting natural land within PHI woodland (should be rides)"
+        # Decided not to do this because sometimes PHI is correct
+        # expression = "PHI = 'Deciduous woodland' AND Interpreted_habitat_temp = 'Woodland: broadleaved, semi-natural' AND OSMM_hab = 'Natural surface'"
+        # MyFunctions.select_and_copy("OSMM_CR_PHI_ALC_Desig_GS","Interpreted_habitat_temp", expression,"'Natural surface'")
+        # MyFunctions.select_and_copy("OSMM_CR_PHI_ALC_Desig_GS_PA","Interpreted_habitat_temp", expression,"'Natural surface'")
+
+        print "Copying new hab field across"
+        arcpy.CalculateField_management("OSMM_CR_PHI_ALC_Desig_GS", "Interpreted_habitat", "!Interpreted_habitat_temp!", "Python_9.3")
+        arcpy.CalculateField_management("OSMM_CR_PHI_ALC_Desig_GS_PA", "Interpreted_habitat", "!Interpreted_habitat_temp!", "Python_9.3")
+        print("Deleting surplus fields from GS layer")
+        MyFunctions.tidy_fields("OSMM_CR_PHI_ALC_Desig_GS", True, ["fid"])
+        print "Deleting temp habitat field"
+        arcpy.DeleteField_management("OSMM_CR_PHI_ALC_Desig_GS","Interpreted_habitat_temp")
+        arcpy.DeleteField_management("OSMM_CR_PHI_ALC_Desig_GS_PA","Interpreted_habitat_temp")
 
     # Join base map to scores
     # -----------------------

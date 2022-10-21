@@ -60,13 +60,26 @@ if method == "CROME_PHI":
         #                  "Richmondshire", "Rotherham",  "Scarborough",
         #                  "Selby", "Sheffield", "Wakefield", "York", "Hambleton", "Harrogate", "Ryedale", "South Ribble", "Sefton",
         #                  "Stockport", "St Helens", "Tameside", "Trafford", "Warrington", "Wigan", "Wirral", "West Lancashire" ]
-        LADs_included = ["Copeland"]
+        LADs_included = ["Allerdale", "Barnsley", "Barrow-in-Furness", "Blackburn with Darwen", "Blackpool",
+                         "Bolton", "Bradford", "Burnley", "Bury", "Calderdale", "Carlisle",
+                         "Cheshire East", "Cheshire West and Chester", "Chorley", "Copeland", "County Durham",
+                         "Craven", "Darlington", "Doncaster", "East Riding of Yorkshire", "Eden", "Fylde",
+                         "Gateshead", "Halton", "Hambleton", "Harrogate", "Hartlepool", "Hyndburn", "Kirklees", "Knowsley",
+                         "Lancaster", "Leeds", "Liverpool", "Manchester", "Middlesbrough", "Newcastle upon Tyne",
+                         "North East Lincolnshire", "North Lincolnshire", "Northumberland", "North Tyneside", "Oldham",
+                         "Pendle", "Preston", "Redcar and Cleveland", "Ribble Valley",
+                         "Richmondshire", "Rochdale", "Rossendale", "Rotherham", "Ryedale", "Salford",
+                         "Scarborough", "Sefton", "Selby", "Sheffield", "South Lakeland", "South Ribble",
+                         "South Tyneside", "St Helens", "Stockport", "Stockton-on-Tees", "Sunderland",
+                         "Tameside", "Trafford", "Wakefield", "Warrington", "West Lancashire", "Wigan", "Wirral",
+                         "Wyre", "York"]
         data_gdb = r"M:\urban_development_natural_capital\Data.gdb"
         CROME_data = os.path.join(data_gdb, "CROME_North_West_diss")
         OSMM_Term = "descriptiveterm"
         OSMM_Group = "descriptivegroup"
         OSMM_Make = "make"
-    Hab_field = "Interpreted_habitat"
+#    Hab_field = "Interpreted_habitat"
+    Hab_field = "Interpreted_habitat_temp"
     LAD_table = os.path.join(data_gdb, "LADs")
 elif region == "Oxon" and method == "HLU":
     # Operate in the Oxon_county folder
@@ -78,9 +91,9 @@ elif region == "Oxon" and method == "HLU":
 else:
     print("ERROR: you cannot combine region " + region + " with method " + method)
     exit()
-
 in_map_name = "OSMM"
 out_map_name = "OSMM_CROME"
+
 LAD_names = []
 needed_fields = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab",
                  "primary_key", "fid", "versiondate", "descriptivegroup", "descriptiveterm", "make"]
@@ -210,7 +223,10 @@ if interpret_PHI:
         LAD_name = LAD.replace(" ", "")
         arcpy.env.workspace = os.path.join(folder, LAD_name + ".gdb")
         print("Interpreting " + LAD)
+
         out_map = out_map_name + "_PHI"
+        # *** temporary fix for corrections
+        # out_map = "OSMM_CR_PHI_ALC_Desig_GS"
 
         # Copy PHI habitat across, but not for manmade, gardens, water, unidentified PHI, grazing marsh, wood pasture or
         # OMHD (all dealt with later)
@@ -221,8 +237,7 @@ if interpret_PHI:
         MyFunctions.select_and_copy(out_map, Hab_field, expression, "!PHI!")
 
         # Correction for traditional orchards in large gardens
-        MyFunctions.select_and_copy(out_map, Hab_field, "PHI = 'Traditional orchard' AND OSMM_hab = 'Garden'",
-                                    "'Traditional orchards'")
+        MyFunctions.select_and_copy(out_map, Hab_field, "PHI = 'Traditional orchard' AND OSMM_hab = 'Garden'", "'Traditional orchards'")
 
         # Other corrections / consolidations
         MyFunctions.select_and_copy(out_map, Hab_field, Hab_field + " = 'Deciduous woodland'", "'Woodland: broadleaved, semi-natural'")
@@ -258,10 +273,11 @@ if interpret_PHI:
 
         # Copy over OMHD only if the habitat is fairly generic (OMHD dataset covers areas of mixed habitats)
         # Debatable whether 'Quarry or spoil' should be included. Previously only included if inactive, but inspection
-        # shows vegetation on many supposedly active sites.
+        # shows vegetation on many supposedly active sites. Used to include sealed surface but now do not, because this can be redevelopment
+        # on brownfield sites
         expression5 = "(OMHD IS NOT NULL AND OMHD <> '') AND (" + Hab_field + " IN ('Arable', 'Agricultural land'," \
                       " 'Improved grassland', 'Natural surface', 'Cultivated/disturbed land', 'Bare ground', 'Landfill: disused'," \
-                      "'Quarry or spoil: disused', 'Quarry or spoil', 'Sealed surface'))"
+                      "'Quarry or spoil: disused', 'Quarry or spoil'))"
         MyFunctions.select_and_copy(out_map, Hab_field, expression5, "'Open mosaic habitats'")
 
         # Copy over Wood pasture only if the habitat is fairly generic (WPP dataset covers very large areas of mixed habitats)

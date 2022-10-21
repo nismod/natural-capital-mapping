@@ -14,31 +14,42 @@ arcpy.CheckOutExtension("Spatial")
 folder = r"M:\urban_development_natural_capital\LADs"
 arcpy.env.workspace = folder
 # gdbs =  arcpy.ListWorkspaces("*", "FileGDB")
-# CROME_North dataset. Don't forget to delete spaces! Do "Northumberland.gdb", separately - failed to snap
-LADs = ["NewcastleuponTyne.gdb", "NorthTyneside.gdb", "SouthTyneside.gdb",
-        "Sunderland.gdb", "Gateshead.gdb", "CountyDurham.gdb", "Darlington.gdb", "Stockton-on-Tees.gdb", "Hartlepool.gdb",
-        "Middlesbrough.gdb", "RedcarandCleveland.gdb", "Carlisle.gdb", "Allerdale.gdb", "Eden.gdb"]
+LADs = ["Allerdale.gdb", "Barnsley.gdb", "Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
+        "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb", "Carlisle.gdb",
+        "Cheshire East.gdb", "Cheshire West and Chester.gdb", "Chorley.gdb", "Copeland.gdb", "County Durham.gdb",
+        "Craven.gdb", "Darlington.gdb", "Doncaster.gdb",
+        "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb",
+        "Halton.gdb", "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb",
+        "Lancaster.gdb", "Leeds.gdb", "Liverpool.gdb", "Manchester.gdb", "Middlesbrough.gdb", "Newcastle upon Tyne.gdb",
+        "North East Lincolnshire.gdb", "North Lincolnshire.gdb", "Northumberland.gdb", "North Tyneside.gdb", "Oldham.gdb",
+        "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
+        "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
+        "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
+        "South Tyneside.gdb", "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb",
+        "Tameside.gdb", "Trafford.gdb", "Wakefield.gdb", "Warrington.gdb", "West Lancashire.gdb",
+        "Wigan.gdb", "Wirral.gdb", "Wyre.gdb", "York.gdb"]
 gdbs = []
 for LAD in LADs:
-    gdbs.append(os.path.join(folder, LAD))
+    gdbs.append(os.path.join(folder, LAD.replace(" ", "")))
 
 # Feature classes to keep - the others will be deleted if they match the delete template and do not match the keep template
 # keep_fcs = ["Paid_vs_Free_Non_matching"]
 # keep_templates = ["Arc", "NatCap", "Water"]
-keep_fcs = ["boundary", "OSMM", "OSMM_CROME", "OSMM_CROME_PHI", "PHI", "New_snap_clean", "Base_TI"]
-keep_templates = []
+keep_fcs = ["boundary", "OSMM", "PHI", "Designations", "OSGS", "OS_Open_GS", "OSMM_CROME", "OSMM_CROME_PHI",  "OSMM_CR_PHI_ALC",
+            "OSMM_CR_PHI_ALC_Desig", "OSMM_CR_PHI_ALC_Desig_GS", "OSMM_CR_PHI_ALC_Desig_GS_PA", "New_snap_clean", "Public_access", "Base_TI"]
+keep_templates = ["NatCap"]
 # Delete rasters or feature classes?
 # type = "raster"
-type = "fc"
+type = "fcs"
 
 # Feature classes to delete
-delete_templates = ["*"]
+delete_templates = [""]
 # delete_templates = ["Halo1km_", "NatCap_Halo_", "Ox_Urban_1k_halo_no", "OP2050", "MRCF"]
 
 # Flag to either test this function first or do the actual deletions.
 # Do not set to Delete until you have checked the list of items to delete
-safety_flag = "Check"
-# safety_flag = "Delete"
+# safety_flag = "Check"
+safety_flag = "Delete"
 
 print("## Started on : " + time.ctime())
 
@@ -64,6 +75,7 @@ for gdb in gdbs:
             # print(fc + " is not in keep list")
             # Check to see if it matches a keep template
             for keep_template in keep_templates:
+                print "Checking against keep template " + keep_template
                 if keep == "Unknown":
                     if keep_template in fc:
                         print (fc + " matches keep template " + keep_template + " and will be kept")

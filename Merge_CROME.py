@@ -34,6 +34,12 @@ if region == "Oxon" and method == "HLU":
     arcpy.env.workspace = out_gdb
     in_map = "OSMM_HLU"
     out_map = "OSMM_HLU_CR"
+    # *** Late habitat corrections ***
+    # Hab_field = "Interpreted_habitat_temp"
+    # out_gdb = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data\Merge_OSMM_HLU_CR_ALC.gdb"
+    # arcpy.env.workspace = out_gdb
+    # in_map = "OSMM_HLU_CR_ALC"
+    # out_map = "OSMM_HLU_CR_ALC"
 
 # Which stages of the code do we want to run?
 merge_CROME = True

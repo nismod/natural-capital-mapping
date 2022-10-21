@@ -26,12 +26,12 @@ arcpy.env.XYTolerance = "0.001 Meters"
 
 # Choose region
 # region = "Arc"
-# region = "Oxon"
-region = "NP"
+region = "Oxon"
+# region = "NP"
 # Choice of method that has been used to generate the input files - this determines location and names of input files
-method = "CROME_PHI"
+# method = "CROME_PHI"
 # method = "LERC"
-# method = "HLU"
+method = "HLU"
 
 # Folder containing multiple OS Greenspace shapefile tiles to be joined together
 # OSGS_folder = r"D:\cenv0389\Oxon_GIS\OxCamArc\OSGS"
@@ -53,37 +53,33 @@ if region == "Oxon" and method == "HLU":
     Base_map_name = "OSMM_HLU_CR_ALC_Des"
     boundary = "Oxfordshire"
     Hab_field = "Interpreted_habitat"
+    TOID_field = "toid"
+    Base_Index_field = "OBJECTID"
+    DescGroup = "DescriptiveGroup"
 elif region == "NP":
     work_folder = r"M:\urban_development_natural_capital"
-    # gdb_names = ["Allerdale.gdb", "Barnsley.gdb", "Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
-    #              "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb",  "Carlisle.gdb", "Cheshire East.gdb",
-    #              "Cheshire West and Chester.gdb", "Chorley.gdb", "Copeland.gdb", "County Durham.gdb", "Craven.gdb", "Darlington.gdb",
-    #              "Doncaster.gdb",  "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb", "Halton.gdb",
-    #              "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb",
-    #              "Lancaster.gdb", "Liverpool.gdb",
-    #              "Manchester.gdb", "Middlesbrough.gdb", "Newcastle upon Tyne.gdb", "North East Lincolnshire.gdb",
-    #              "North Lincolnshire.gdb", "Northumberland.gdb",
-    #              "North Tyneside.gdb", "Oldham.gdb", "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
-    #              "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
-    #              "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
-    #              "South Tyneside.gdb",
-    #              "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb", "Tameside.gdb",
-    #              "Northumberland.gdb", "Trafford.gdb",
-    #              "Wakefield.gdb", "Warrington.gdb",  "West Lancashire.gdb",
-    #              "Wigan.gdb", "Wirral.gdb", "Wyre.gdb", "York.gdb"]
-    gdb_names = [ "Leeds.gdb"]
+    # done "Allerdale.gdb", "Barnsley.gdb", "Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
+    #                  "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb",  "Carlisle.gdb", "Cheshire East.gdb",
+    #                  "Cheshire West and Chester.gdb", "Chorley.gdb", "Copeland.gdb", "County Durham.gdb", "Craven.gdb", "Darlington.gdb",
+    #                  "Doncaster.gdb",  "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb", "Halton.gdb",
+    #                  "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb",
+    #                  "Lancaster.gdb", "Leeds.gdb", "Liverpool.gdb",
+    #                  "Manchester.gdb",
+    gdb_names = [ "Middlesbrough.gdb", "Newcastle upon Tyne.gdb", "North East Lincolnshire.gdb",
+                 "North Lincolnshire.gdb", "Northumberland.gdb",
+                 "North Tyneside.gdb", "Oldham.gdb", "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
+                 "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
+                 "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
+                 "South Tyneside.gdb",
+                 "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb", "Tameside.gdb",
+                 "Northumberland.gdb", "Trafford.gdb",
+                 "Wakefield.gdb", "Warrington.gdb",  "West Lancashire.gdb",
+                 "Wigan.gdb", "Wirral.gdb", "Wyre.gdb", "York.gdb"]
     gdbs = []
     for gdb_name in gdb_names:
         gdbs.append(os.path.join(r"M:\urban_development_natural_capital\LADs",  gdb_name.replace(" ", "")))
     Base_map_name = "OSMM_CR_PHI_ALC_Desig"
     boundary = "boundary"
-    # Flag if you only want to correct some habitat definitions that have been set up in OSMM_hab and then copied to a temporary habitat field
-    # using Habitat_corrections.py
-    correct_habitats = False
-    if correct_habitats:
-        Hab_field = "Interpreted_habitat_temp"
-    else:
-        Hab_field = "Interpreted_habitat"
     TOID_field = "fid"
     Base_Index_field = "OBJECTID"
     DescGroup = "descriptivegroup"
@@ -119,6 +115,14 @@ elif region == "Arc" or (region == "Oxon" and method == "CROME_PHI"):
         DescGroup = "DescriptiveGroup"
 
     boundary = "boundary"
+
+Hab_field = "Interpreted_habitat"
+# Flag if you only want to correct some habitat definitions that have been set up in OSMM_hab and then copied to a temporary habitat field
+# using Habitat_corrections.py. You may also then need to change the name of the base map in the main code (not here); currently line 179.
+correct_habitats = False
+if correct_habitats:
+    Hab_field = "Interpreted_habitat_temp"
+else:
     Hab_field = "Interpreted_habitat"
 
 OpenGS_Index_field = "OBJECTID"
@@ -130,10 +134,10 @@ clip_OSGS = False
 clip_openGS = False
 copy_base_map = False
 # Need to trim off "osgb" from beginning of toid? Don't need to do this with most recent version of OSGS
-trim_toid = False
-join_OSGS = False
-clip_openGS2 = False
-join_openGS = False
+trim_toid = True
+join_OSGS = True
+clip_openGS2 = True
+join_openGS = True
 interpret_GS = True
 
 # Loop through all the OSGS tiles in the OSGS folder and merge into a single file
@@ -177,7 +181,8 @@ for gdb in gdbs:
         arcpy.CopyFeatures_management(Base_map_name, Base_map_name + "_GS")
     Base_map = Base_map_name + "_GS"
     if correct_habitats:
-        Base_map = Base_map_name + "_GS_PA"
+        # May or may not need to be different from the above depending on which stage you want to apply the corrections to
+        Base_map = Base_map_name + "_GS"
     print ("    " + Base_map + " has " + str(arcpy.GetCount_management(Base_map_name)) + " rows")
 
     if clip_OSGS:
@@ -282,9 +287,10 @@ for gdb in gdbs:
             MyFunctions.select_and_copy(Base_map, "GreenSpace", "OpenGS_func IS NOT NULL AND OpenGS_func <>''", "!OpenGS_func!")
 
         # Modify base map habitats for allotments, playing fields, play spaces etc - but only generic areas (not paths, woods, water etc)
+        # Changed to also allow greenspace to over-ride Open mosaic habitats, as this usually indicates re-developed brownfield land
         print("    Interpreting habitats with GS")
-        generic_natural = "(" + Hab_field + " IN ('Agricultural land', 'Natural surface', 'Amenity grassland', 'Cultivated/disturbed land')"
-        generic_natural = generic_natural + " OR " + Hab_field + " LIKE 'Arable%' OR " + Hab_field + " LIKE 'Improved grass%'"
+        generic_natural = "(" + Hab_field + " IN ('Agricultural land', 'Natural surface', 'Amenity grassland', 'Cultivated/disturbed land',"
+        generic_natural = generic_natural + "'Open mosaic habitats') OR " + Hab_field + " LIKE 'Arable%' OR " + Hab_field + " LIKE 'Improved grass%'"
         # Two alternative 'generic natural' definitions, with or without parkland with scattered trees (which is a generic PHI definition)
         # which we want to keep separate for golf courses, cemeteries or religious grounds but not for other types of green space,
         # i.e. there can be patches of parkland with scattered trees within a golf course or cemetery but not within a tennis court, etc.
@@ -292,7 +298,9 @@ for gdb in gdbs:
         # identified as parkland from PHI. We can't distinguish which is correct.
         generic_natural_1 = generic_natural + ")"
         generic_natural_2 = generic_natural + " OR " + Hab_field + " LIKE 'Parkland%')"
-        expression = generic_natural_2 + " AND GreenSpace = 'Allotments Or Community Growing Spaces'"
+        # Correction 3/6/22 as I noticed some allotments marked as ephemeral vegetation have been missed, update to map not yet done
+        generic_natural_3 = generic_natural + " OR " + Hab_field + " LIKE 'Parkland%' OR " + Hab_field + " LIKE 'Ephemeral%')"
+        expression = generic_natural_3 + " AND GreenSpace = 'Allotments Or Community Growing Spaces'"
         MyFunctions.select_and_copy(Base_map, Hab_field, expression,  "'Allotments, city farm, community garden'")
 
         expression = generic_natural_2 + " AND GreenSpace IN ('Playing Field', 'Other Sports Facility', 'Play Space', 'Tennis Court', " \
@@ -311,7 +319,9 @@ for gdb in gdbs:
 
         # Replace 'Natural surface' with 'Amenity grassland' - but not for transport (roadside and railside) as not all of this is usable.
         # Also not for 'arable' or 'improved grassland' because some OSGS 'Amenity' is actually farmland around urban areas
-        expression = Hab_field + " = 'Natural surface' AND GreenSpace IN ('Amenity - Residential Or Business', 'Public Park Or Garden')"
+        # Changed so that this over-rides Open mosaic habitats
+        expression = Hab_field + " IN ('Natural surface', 'Open mosaic habitats')" \
+                                 " AND GreenSpace IN ('Amenity - Residential Or Business', 'Public Park Or Garden')"
         MyFunctions.select_and_copy(Base_map, Hab_field, expression,"'Amenity grassland'")
 
         # We do not copy over Amenity - Transport because that should be already identified as Road verge from OSMM

@@ -35,17 +35,18 @@ arcpy.env.workspace = gdb
 OSMM = "OSMM"
 HLU = "HLU"
 boundary = "Oxfordshire" #needed if clipping
+# Zach - Need to add Hab_field and S41_field variables to cope with field name changes
 
 # Fields that you want to keep (the rest will get deleted)
-OSMM_Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make"]
-HLU_Needed = ["POLYID", "PHASE1HAB", "S41HABITAT", "S41HAB2", "SITEREF", "COPYRIGHT", "VERSION"]
+OSMM_Needed = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make"]    # Zach - Needs changing!!!
+HLU_Needed = ["POLYID", "PHASE1HAB", "S41HABITAT", "S41HAB2", "SITEREF", "COPYRIGHT", "VERSION"]  # Zach - Needs changing!!
 
 # What stages of the code do we want to run? Useful for debugging or updates
 clip_HLU = False
 clip_OSMM = False
-delete_not_needed_fields_OSMM = False
+delete_not_needed_fields_OSMM = True
 delete_not_needed_fields_HLU = True
-delete_OSMM_overlaps = False
+delete_OSMM_overlaps = True
 delete_and_erase_HLU = True
 elim_HLU_slivers = True
 check = True
@@ -85,7 +86,7 @@ if delete_OSMM_overlaps:
     print("   Finished deleting overlapping 'Landform' and 'Pylon' from OSMM")
 
 if delete_and_erase_HLU:
-    # Delete HLU water features so we don't get remnants later.
+    # Delete HLU water features as we prefer to use OSMM
     print("   Deleting HLU water")
     arcpy.CopyFeatures_management(HLU, "HLU_noWater")
     arcpy.MakeFeatureLayer_management("HLU_noWater", "HLU_layer")
@@ -94,8 +95,18 @@ if delete_and_erase_HLU:
     arcpy.Delete_management("HLU_layer")
     print("   Finished deleting HLU water")
 
-    ###  Erasing buildings, roads and paths from HLU
-    print("   Erasing buildings, roads and paths from HLU")
+    # Delete HLU built up or unknown polygons as they do not add any useful information, unless S41 habitat is present
+    # (change by Alison 21 Oct 2022, not yet tested)
+    print("   Deleting HLU built-up or unknown areas")
+    arcpy.MakeFeatureLayer_management("HLU_noWater", "HLU_layer2")
+    expression = "(PHASE1HAB LIKE '%uilt-up%' or PHASE1HAB IN ['Unknown','Unidentified','']) AND S41Habitat NOT IN ['none','not assessed yet','',' ']"
+    arcpy.SelectLayerByAttribute_management("HLU_layer2", where_clause=expression)
+    arcpy.DeleteFeatures_management("HLU_layer2")
+    arcpy.Delete_management("HLU_layer2")
+    print("   Finished deleting HLU built-up or unknown areas")
+
+    ###  Erasing OSMM buildings, roads and paths from HLU
+    print("   Erasing OSMM buildings, roads and paths from HLU")
     arcpy.MakeFeatureLayer_management("OSMM_noLandform", "OSMM_layer2")
     # Alison: removed deletion of 'Roadside' as it was removing semi-natural grass verges. Manmade pavements will be removed anyway.
     arcpy.SelectLayerByAttribute_management("OSMM_layer2", where_clause="Make = 'Manmade' OR DescriptiveTerm = 'Track' OR Theme = 'Water'")

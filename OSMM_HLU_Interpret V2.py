@@ -22,24 +22,31 @@ arcpy.env.overwriteOutput = True  # Overwrites files
 # *** Enter parameters here
 # -------------------------
 # region = "Arc"
-# region = "Oxon"
+region = "Oxon"
 # region = "Blenheim"
-region = "NP"
+# region = "NP"
 
 # method = "CROME_PHI"
-# method = "HLU"
-method = "OSMM_only"
+method = "HLU"
+# method = "OSMM_only"
 
 if region == "Oxon" and method == "HLU":
     # Operate in the Oxon_county folder
     folder = r"D:\cenv0389\Oxon_GIS\Oxon_county\Data"
     gdbs = [os.path.join(folder, "Merge_OSMM_HLU_CR_ALC.gdb")]
-# LAD_table = os.path.join(folder, "Data.gdb", "Oxon_LADs")
+    # LAD_table = os.path.join(folder, "Data.gdb", "Oxon_LADs")
     in_file_name = "OSMM_HLU"
-    Hab_field = "PHASE1HAB"
-    BAP_field = "S41HABITAT"
+    Hab_field = "Interpreted_habitat"
+
+    # *** Late habitat corrections ***
+    # in_file_name = "OSMM_HLU_CR_ALC"
+    # Hab_field = "Interpreted_habitat_temp"
+
+    in_hab_field = "PHASE1HAB"   # Zach - change
+    BAP_field = "S41HABITAT"      # change
     # Which stages of the code do we want to run? Useful for debugging or updating.
-    delete_landform = False
+    delete_landform = True
+    add_OSMM_hab = True
     simplify_OSMM = True
     simplify_HLU = True
     select_HLU_or_OSMM = True
@@ -61,6 +68,7 @@ elif method == "CROME_PHI":
         exit()
     # We only want to run delete_landform and simplify_OSMM.
     delete_landform = True
+    add_OSMM_hab = False
     simplify_OSMM = True
     simplify_HLU = False
     select_HLU_or_OSMM = False
@@ -76,29 +84,30 @@ elif method == "OSMM_only":
     elif region == "NP":
         folder = r"M:\urban_development_natural_capital\LADs"
         arcpy.env.workspace = folder
-        # LAD_names = ["Allerdale.gdb", "Barnsley.gdb", "Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
-        #              "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb", "Carlisle.gdb",
-        #              "Cheshire East.gdb", "Cheshire West and Chester.gdb", "Chorley.gdb", "Copeland.gdb", "County Durham.gdb",
-        #              "Craven.gdb", "Darlington.gdb", "Doncaster.gdb", "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb",
-        #              "Halton.gdb", "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb",
-        #              "Lancaster.gdb", "Liverpool.gdb", "Manchester.gdb", "Middlesbrough.gdb", "Newcastle upon Tyne.gdb",
-        #              "North East Lincolnshire.gdb", "North Lincolnshire.gdb", "Northumberland.gdb", "North Tyneside.gdb", "Oldham.gdb",
-        #              "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
-        #              "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
-        #              "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
-        #              "South Tyneside.gdb", "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb",
-        #              "Tameside.gdb", "Trafford.gdb", "Wakefield.gdb", "Warrington.gdb", "West Lancashire.gdb", "Wigan.gdb", "Wirral.gdb",
-        #              "Wyre.gdb", "York.gdb"]
-        LAD_names = ["Leeds.gdb"]
+        LAD_names = ["Allerdale.gdb", "Barnsley.gdb", "Barrow-in-Furness.gdb", "Blackburn with Darwen.gdb", "Blackpool.gdb",
+                     "Bolton.gdb", "Bradford.gdb", "Burnley.gdb", "Bury.gdb", "Calderdale.gdb", "Carlisle.gdb",
+                     "Cheshire East.gdb", "Cheshire West and Chester.gdb", "Chorley.gdb", "Copeland.gdb", "County Durham.gdb",
+                     "Craven.gdb", "Darlington.gdb", "Doncaster.gdb", "East Riding of Yorkshire.gdb", "Eden.gdb", "Fylde.gdb", "Gateshead.gdb",
+                     "Halton.gdb", "Hambleton.gdb", "Harrogate.gdb", "Hartlepool.gdb", "Hyndburn.gdb", "Kirklees.gdb", "Knowsley.gdb",
+                     "Lancaster.gdb", "Leeds.gdb", "Liverpool.gdb", "Manchester.gdb", "Middlesbrough.gdb", "Newcastle upon Tyne.gdb",
+                     "North East Lincolnshire.gdb", "North Lincolnshire.gdb", "Northumberland.gdb", "North Tyneside.gdb", "Oldham.gdb",
+                     "Pendle.gdb", "Preston.gdb", "Redcar and Cleveland.gdb", "Ribble Valley.gdb",
+                     "Richmondshire.gdb", "Rochdale.gdb", "Rossendale.gdb", "Rotherham.gdb", "Ryedale.gdb", "Salford.gdb",
+                     "Scarborough.gdb", "Sefton.gdb", "Selby.gdb", "Sheffield.gdb", "South Lakeland.gdb", "South Ribble.gdb",
+                     "South Tyneside.gdb", "St Helens.gdb", "Stockport.gdb", "Stockton-on-Tees.gdb", "Sunderland.gdb",
+                     "Tameside.gdb", "Trafford.gdb", "Wakefield.gdb", "Warrington.gdb", "West Lancashire.gdb", "Wigan.gdb", "Wirral.gdb",
+                     "Wyre.gdb", "York.gdb"]
+        # LAD_names = []
         gdbs = []
         for LAD_name in LAD_names:
             gdbs.append(os.path.join(folder, LAD_name.replace(" ", "")))
         in_file_name = "OSMM"
-        # in_file_name = "OSMM_CR_PHI_ALC_Desig_GS_PA"  # Used for late corrections
+        # in_file_name = "OSMM_CR_PHI_ALC_Desig_GS"  # Used for late corrections
         Hab_field = "Interpreted_habitat"
 
     # We only want to run delete_landform and simplify_OSMM.
-    delete_landform = False
+    # *** Change to only simplify_OSMM for late habitat corrections ***.
+    delete_landform = True
     add_OSMM_hab = False
     simplify_OSMM = True
     simplify_HLU = False
@@ -370,7 +379,7 @@ def Simplify_OSMM(OSMM_Group, OSMM_Term, OSMM_Make):
             codeblock = """
 def Simplify_HLU(HLU_Hab):
 
-    if HLU_Hab is None or HLU_Hab.strip() == "" or HLU_Hab == "Unknown":
+    if HLU_Hab is None or HLU_Hab.strip() == "" or HLU_Hab == "Unknown" or HLU_Hab == "Unidentified":
         return ""
     else:
         HLU_Hab = HLU_Hab.lower()
@@ -413,6 +422,11 @@ def Simplify_HLU(HLU_Hab):
         return "Quarry or spoil"
     elif "fen" in HLU_Hab:
         return "Lowland fens"
+    elif "flush" in HLU_Hab:
+        if "upland" in HLU_Hab:
+            return "Upland flushes, fens and swamps"
+        else:
+            return "Fen, marsh and swamp"
     elif "marsh" in HLU_Hab:
         return "Marshy grassland"
     elif "marginal" in HLU_Hab:
@@ -422,13 +436,13 @@ def Simplify_HLU(HLU_Hab):
     else:
         return HLU_Hab.capitalize()
 """
-            arcpy.CalculateField_management(in_file, "HLU_hab", "Simplify_HLU(!" + Hab_field + "!)", "PYTHON_9.3", codeblock)
+            arcpy.CalculateField_management(in_file, "HLU_hab", "Simplify_HLU(!" + in_hab_field + "!)", "PYTHON_9.3", codeblock)
 
         # Choose whether to use OSMM or HLU
         # ----------------------------------
         if select_HLU_or_OSMM:
             print("Selecting or combining HLU and OSMM habitats")
-            MyFunctions.check_and_add_field(in_file, "Interpreted_habitat", "TEXT", 100)
+            MyFunctions.check_and_add_field(in_file, Hab_field, "TEXT", 100)
 
             codeblock = """
 def Interpret_hab(HLU_hab, OSMM_hab, OSMM_Make, OSMM_area, HLU_area, undefined_or_original):
@@ -469,7 +483,7 @@ def Interpret_hab(HLU_hab, OSMM_hab, OSMM_Make, OSMM_area, HLU_area, undefined_o
     if "trees" in OSMM_hab and "grassland" in HLU_hab and "scattered" not in HLU_hab:
         if "scattered" in OSMM_hab:
             if seminatural_grass:
-                return ("Parkland and scattered trees: " + wood)
+                return ("Semi-natural grassland with scattered trees: " + wood)
             else:
                 return ("Scattered trees: " + wood)
         else:
@@ -485,7 +499,7 @@ def Interpret_hab(HLU_hab, OSMM_hab, OSMM_Make, OSMM_area, HLU_area, undefined_o
             elif "improved" in HLU_hab and "semi" not in HLU_hab:
                 return "Improved grassland and scattered scrub"
             elif seminatural_grass == True:
-                return "Semi-natural grassland and scattered scrub"
+                return "Semi-natural grassland with scattered scrub"
         else:
             if seminatural_grass == True:
                 return "Scrub on semi-natural grassland"
@@ -510,9 +524,9 @@ def Interpret_hab(HLU_hab, OSMM_hab, OSMM_Make, OSMM_area, HLU_area, undefined_o
         return HLU_hab.capitalize()
  """
             expression = "Interpret_hab(!HLU_hab!, !OSMM_hab!, !Make!, !OSMM_Area!, !HLU_Area!, '" + undefined_or_original + "')"
-            arcpy.CalculateField_management(in_file, "Interpreted_habitat", expression, "PYTHON_9.3", codeblock)
+            arcpy.CalculateField_management(in_file, Hab_field, expression, "PYTHON_9.3", codeblock)
 
-        # Update Interpreted_habitat column where appropriate using S41 Habitat information
+        # Update Interpreted_habitat column where appropriate using S41 Habitat information (previously known as BAP habitat)
         if interpret_BAP:
             print(''.join(["## BAP interpretation started on : ", time.ctime()]))
 
@@ -528,22 +542,22 @@ def interpretBAP(Hab, BAP):
             else:
                 return Hab
         elif "possible priority grassland" in BAP:
-            if Hab in ["Natural surface", "Improved grassland", "Agricultural land"]:
+            if Hab in ["Natural surface", "Improved grassland", "Agricultural land", "Unknown", "Unidentified"]:
                 return "Semi-natural grassland"
             elif Hab == "Scattered scrub":
-                return "Semi-natural grassland and scattered scrub"
+                return "Semi-natural grassland with scattered scrub"
             elif Hab == "Dense scrub":
                 return "Scrub on semi-natural grassland"
             elif Hab == "Scattered trees: broadleaved":
-                return "Parkland and scattered trees: broadleaved"
+                return "Semi-natural grassland with scattered trees: broadleaved"
             elif Hab == "Scattered trees: mixed":
-                return "Parkland and scattered trees: mixed"
+                return "Semi-natural grassland with scattered trees: mixed"
             elif Hab == "Scattered trees: coniferous":
-                return "Parkland and scattered trees: coniferous"
+                return "Semi-natural grassland with scattered trees: coniferous"
             else:
                 return Hab
         elif "possible priority fen" in BAP:
-            if Hab == "Natural surface":
+            if Hab in ["Natural surface", "Improved grassland", "Agricultural land", "Unknown", "Unidentified"]:
                 return "Lowland fens"
             else:
                 return Hab
@@ -571,13 +585,15 @@ def interpretBAP(Hab, BAP):
             return "Heathland"
         elif "wood-pasture" in BAP or "wood pasture" in BAP:
             return "Parkland and scattered trees: broadleaved"
+        elif "pond" in BAP or "river" in BAP or "water" in BAP or "lake" in BAP:
+            return Hab
         else:
             return BAP.capitalize()
     else:
         return Hab
 """
-            arcpy.CalculateField_management(in_file, "Interpreted_habitat",
-                                            "interpretBAP( !Interpreted_habitat! , !" + BAP_field + "!)", "PYTHON_9.3", codeblock)
+            arcpy.CalculateField_management(in_file, Hab_field,
+                                            "interpretBAP( !" + Hab_field + "! , !" + BAP_field + "!)", "PYTHON_9.3", codeblock)
 
 print(''.join(["## Completed on : ", time.ctime()]))
 exit()

@@ -43,14 +43,14 @@ arcpy.env.XYTolerance = "0.001 Meters"
 # ---------------------------------------
 # The merge type simply identifies which block of pre-set parameters is selected from those listed below.
 # merge_type = "Oxon_OSMM_HLU"
-# merge_type = "Oxon_Designations"
+merge_type = "Oxon_Designations"
 # merge_type = "CROME_PHI"
-merge_type = "Designations"
+# merge_type = "Designations"
 # merge_type = "Arc_access"
 
-# region = "Oxon"
+region = "Oxon"
 # region = "Arc"
-region = "NP"
+# region = "NP"
 # Special case for LNCP project with LERC data
 LNCP_LERC = False
 
@@ -283,12 +283,12 @@ split_overlap = 0.95
 xy_tol = "0.001 Meters"
 
 # Which sections of code do we want to run? For de-bugging or updating - no point repeating sections already completed.
-sp_base = True                # Convert input base map to single part
+sp_base = False                # Convert input base map to single part
 if merge_type == "Designations" or merge_type == "Arc_access" or merge_type == "Arc_access":
     clip_new = True               # Clip new features to exact boundary of region, usually True unless restarting during debugging
 else:
     clip_new = False
-snap_new_features = True      # No need to snap if input features are consistent with base map geometry
+snap_new_features = False      # No need to snap if input features are consistent with base map geometry
 tabulate_intersections = True
 make_joint_shapes = True
 repair_before_elim = True    # This may not be needed
@@ -306,10 +306,10 @@ for gdb in gdbs:
     print (''.join(["## Started processing ", gdb, " which is number " + str(i) + " out of " + str(len(gdbs)) + " on : ", time.ctime()]))
 
     # Temporary correction
-    MyFunctions.select_and_copy(Base_map, "Interpreted_habitat", "Interpreted_habitat = 'Saline lagoons'", "'Coastal lagoons'")
-    # This one added at a later stage, also added to JoinGreenspace to pick up early gdbs (before County Durham)
-    MyFunctions.select_and_copy(Base_map, "Interpreted_habitat", "descriptiveterm IS NULL AND descriptivegroup = 'Tidal Water'",
-                                "'Saltwater'")
+    # MyFunctions.select_and_copy(Base_map, "Interpreted_habitat", "Interpreted_habitat = 'Saline lagoons'", "'Coastal lagoons'")
+    # # This one added at a later stage, also added to JoinGreenspace to pick up early gdbs (before County Durham)
+    # MyFunctions.select_and_copy(Base_map, "Interpreted_habitat", "descriptiveterm IS NULL AND descriptivegroup = 'Tidal Water'",
+    #                             "'Saltwater'")
     if sp_base:
         numrows = arcpy.GetCount_management(Base_map)
         print("   Converting base map to single part. " + str(numrows) + " features present initially.")
