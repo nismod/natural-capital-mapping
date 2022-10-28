@@ -15,13 +15,13 @@ arcpy.env.overwriteOutput = True         # Overwrites files
 arcpy.env.qualifiedFieldNames = False    # Joined fields will be exported without the join table name
 arcpy.env.XYTolerance = "0.001 Meters"
 
-# region = "Oxon"
+region = "Oxon"
 # region = "Arc"
 # region = "NP"
-region = "NP_Wales"
+# region = "NP_Wales"
 # Which method are we using - Phase 1 habitat data or LCM and PHI?
-# method = "HLU"
-method = "CROME_PHI"
+method = "HLU"
+# method = "CROME_PHI"
 
 if region == "NP" or region == "NP_Wales":
     folder = r"M:\urban_development_natural_capital"
@@ -67,17 +67,19 @@ elif method == "CROME_PHI":
     PHI_hab_field = "Main_habit"
 
 elif region == "Oxon" and method == "HLU":
-    # Caution - OSMM for Oxon has already been copied to the LAD gdbs and deleted from data.gdb, so need to replace it for updates
+    # Need to replace OSMM for Oxon in data.gdb for updates
     folder = r"C:\Users\cenv0389\Documents\Oxon_GIS\Oxon_county"
     data_gdb = os.path.join(folder, "Data\Data.gdb")
     LAD_table = os.path.join(data_gdb, "Oxon_LADs")
     HLU_data = os.path.join(data_gdb, "HLU")
-    LADs_included = ["Oxfordshire"]
-    needed_fields = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab"]
+    counties_included = ["Oxfordshire"]  # This is for doing whole county in one go
+    LADs_included = ["Cherwell", "Oxford", "South Oxfordshire", "Vale of White Horse", "West Oxfordshire"]   # This is for doing separate LADs
+#    needed_fields = ["TOID", "Theme", "DescriptiveGroup", "DescriptiveTerm", "Make", "OSMM_hab"]  # Old version of OSMM
+    needed_fields = ["fid", "theme", "descriptivegroup", "descriptiveterm", "make", "OSMM_hab"]    # Updated for new version of OSMM
     LAD_name_field = "_desc"
     County_field = "county"
-    PHI = "PHI"
-    PHI_hab_field = "Main_habit"
+    PHI = "PHI"  # not needed as using HLU  - not sure why I left this here
+    PHI_hab_field = "Main_habit"   # not needed as using HLU - not sure why I left this here
 
 else:
     print("ERROR: you cannot currently use the HLU method with the whole Arc region")
@@ -102,7 +104,8 @@ else:
 
 setup_LAD_gdbs = True
 create_gdb = True
-copy_OSMM = True
+setup_OSMM = True
+clip_OSMM = False
 setup_boundary = True
 
 arcpy.env.workspace = data_gdb
@@ -147,12 +150,12 @@ if setup_LAD_gdbs:
     for LAD in LADs:
         LAD_full_name = LAD.getValue(LAD_name_field)
         LAD_county = LAD.getValue(County_field)
-        # if LAD_county in counties_included and LAD_full_name <> "Leeds":
-        if LAD_full_name in LADs_included:
+        # if LAD_county in counties_included:          # This can be used if there is a county field and we want to select all LADs for a county
+        if LAD_full_name in LADs_included:             # Or if listing each LAD separately
             LAD_name = LAD_full_name.replace(" ", "")
             LAD_names.append(LAD_name)
 
-            # Set up a new geodatabase for each LAD, copy clipped OSMM, copy boundary, and clip LCM and PHI to the boundaries
+            # Set up a new geodatabase for each LAD, copy clipped OSMM, copy boundary, and clip HLU or PHI to the boundaries
             print ("Setting up " + LAD_full_name)
 
             if create_gdb:
@@ -160,11 +163,6 @@ if setup_LAD_gdbs:
                 arcpy.CreateFileGDB_management(LAD_folder, LAD_name)
 
             LAD_gdb = os.path.join(LAD_folder, LAD_name + ".gdb")
-
-            if copy_OSMM:
-                print("  Copying OSMM for " + LAD_name + " to new geodatabase")
-                outfc = os.path.join(LAD_gdb, "OSMM")
-                arcpy.CopyFeatures_management("OSMM_" + LAD_name, outfc)
 
             if setup_boundary:
                 print ("  Creating boundary for " + LAD_name)
@@ -175,7 +173,19 @@ if setup_LAD_gdbs:
 
             boundary = os.path.join(LAD_gdb, "boundary")
 
-            if setup_LCM:
+            if setup_OSMM:
+                out_fc = os.path.join(LAD_gdb, "OSMM")
+                if clip_OSMM:
+                    print ("  Clipping OSMM to LAD boundary")
+                    arcpy.MakeFeatureLayer_management("OSMM", "OSMM_lyr")
+                    arcpy.SelectLayerByLocation_management("OSMM_lyr", "INTERSECT", "boundary")  # To save time select all the intersecting features first
+                    arcpy.Clip_analysis("OSMM_lyr", boundary, out_fc)
+                    MyFunctions.check_and_repair(out_fc)
+                else:    # If OSMM has already been clipped to a feature class called OSMM_LADname (which should be in the current folder)
+                    print("  Copying OSMM for " + LAD_name + " to new geodatabase")
+                    arcpy.CopyFeatures_management("OSMM_" + LAD_name, out_fc)
+
+            if setup_LCM:    # Note: we don't use LCM (UK CEH Land Cover Map) any more
                 print ("  Clipping Land Cover Map farmland to LAD boundary")
                 out_file = os.path.join(LAD_gdb, "LCM_arable")
                 arcpy.Clip_analysis("LCM_arable", boundary, out_file)

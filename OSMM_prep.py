@@ -112,7 +112,7 @@ if split_LADs:
             arcpy.MakeFeatureLayer_management(OSMM_fc, "OSMM_lyr")
             arcpy.SelectLayerByLocation_management("OSMM_lyr", "INTERSECT", "LAD_lyr")
             if separate_LAD_gdbs:
-                # Option for copying direct to LAD gdb
+                # Option for copying direct to LAD gdb (gdb needs to be set up first)
                 out_file = os.path.join(LAD_gdb_folder, LAD_name + ".gdb", "OSMM")
             else:
                 # Option for copying to a single folder
